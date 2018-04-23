@@ -76,6 +76,18 @@ for(a in seq_len(dim(predictions)[3])){
     SSE <- sse(actual = obs_data,
                predicted = pred_data)
     
+    Pearson <- cor(obs_data,
+                   pred_data,
+                   method = "pearson")
+    
+    Spearman <- cor(obs_data,
+                    pred_data,
+                    method = "spearman")
+    
+    Kendall <- cor(obs_data,
+                   pred_data,
+                   method = "kendall")
+    
     ###----
     
     ## Set a threshold for binary classification for remaining metrics
