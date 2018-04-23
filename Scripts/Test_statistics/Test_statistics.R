@@ -67,6 +67,9 @@ for(a in seq_len(dim(predictions)[3])){
     MSE <- mse(actual = obs_data,
                predicted = pred_data)
     
+    R2 <- R2(obs = obs_data,
+             pred = pred_data)
+    
     RMSE <- rmse(actual = obs_data,
                  predicted = pred_data)
     
@@ -106,12 +109,19 @@ for(a in seq_len(dim(predictions)[3])){
     FDR <- FP / (TP + FP)                          # False Discovery Rate  
     NPV <- TN / (FN + TN)                          # Negative Predictive Value
     F_1 <- 2 / ((1 / TPR) + (1 / PPV))             # F1 Score. Equivalent to Sorenson-Dice?
+    Youden_J <- TPR + TNR -1                       # Youden's J statistic
+    Kappa <- cohen.kappa(cbind(obs_data,           # Cohen's Kappa
+                               pred_data))$kappa
+    # Kappa <- ((TP + TN) - 
+    #             (((TP + FN) * (TP + FP) + (FP + TN) + (FN + TN)) /
+    #                (TP + FP + TN + FN))) /
+    #          ((TP + FP + TN + FN) -
+    #             (((TP + FN) * (TP + FP) + (FP + TN) * (FN + TN)) /
+    #                (TP + FP + TN + FN))) 
     
     ###----
     
     ### Community Dissimilarity ----
-    
-    ###----
     
     #### Binary classification of predictions
     
@@ -199,6 +209,12 @@ for(a in seq_len(dim(predictions)[3])){
                     method = "raup", 
                     binary = TRUE)
  
+    ###----
+    
+    metrics <- c()
+    
+    test_statistics[i, , a] <- metrics
+    
   }
 }
 
