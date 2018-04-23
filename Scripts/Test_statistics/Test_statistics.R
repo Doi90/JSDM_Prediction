@@ -56,9 +56,7 @@ for(a in seq_len(dim(predictions)[3])){
     
     ## Calculate test statistics
     
-    apk <- apk(actual = obs_data,
-               predicted = pred_data,
-               k = length(pred_data))
+    ### Threshold independent ----
     
     AUC <- auc(actual = obs_data,
                predicted = pred_data)
@@ -75,121 +73,132 @@ for(a in seq_len(dim(predictions)[3])){
     SSE <- sse(actual = obs_data,
                predicted = pred_data)
     
-    confusion <- table(pred_data, obs_data)
+    ###----
+    
+    ## Set a threshold for binary classification for remaining metrics
+    
+    threshold <- 0.5
+    
+    ### Threshold dependent ----
+    
+    #### Create a confusion matrix and extract values
+    
+    confusion <- table(pred_data > threshold, obs_data)
     
     TP <- confusion[2,2]  # True positives
     FP <- confusion[2,1]  # False positives
     TN <- confusion[1,1]  # True negatives
     FN <- confusion[1,2]  # False negatives
     
-    TPR <- TP / (TP + FN) # True Positive Rate / Sensitivity
+    #### Calculate metrics
     
-    FPR <- FP / (FP + TN) # False Positive Rate
-    
-    TNR <- TN / (FP + TN) # True Negative Rate / Specificity
-    
-    FNR <- FN / (TP + FN) # False Negative Rate
-    
-    PLR <- TPR / FPR # Positive Likelihood Ratio
-    
-    NLR <- FNR / TNR # Negative Likelihood Ratio
-    
-    DOR <- PLR / NLR # Diagnositic Odds Ratio
-    
+    TPR <- TP / (TP + FN)                          # True Positive Rate / Sensitivity
+    FPR <- FP / (FP + TN)                          # False Positive Rate
+    TNR <- TN / (FP + TN)                          # True Negative Rate / Specificity
+    FNR <- FN / (TP + FN)                          # False Negative Rate
+    PLR <- TPR / FPR                               # Positive Likelihood Ratio
+    NLR <- FNR / TNR                               # Negative Likelihood Ratio
+    DOR <- PLR / NLR                               # Diagnositic Odds Ratio
     Prevalence <- (TP + FN) / (TP + FN + TN + FN)
-    
     Accuracy <- (TP + TN) / (TP + FN + TN + FN)
+    PPV <- TP / (TP + FP)                          # Positive Predictive Value
+    FOR <- FN / (FN + TN)                          # False Omission Rate
+    FDR <- FP / (TP + FP)                          # False Discovery Rate  
+    NPV <- TN / (FN + TN)                          # Negative Predictive Value
+    F_1 <- 2 / ((1 / TPR) + (1 / PPV))             # F1 Score. Equivalent to Sorenson-Dice?
     
-    PPV <- TP / (TP + FP) # Positive Predictive Value
+    ###----
     
-    FOR <- FN / (FN + TN) # False Omission Rate
+    ### Community Dissimilarity ----
     
-    FDR <- FP / (TP + FP) # False Discovery Rate  
+    ###----
     
-    NPV <- TN / (FN + TN) # Negative Predictive Value
+    #### Binary classification of predictions
     
-    F_1 <- 2 / ((1 / TPR) + (1 / PPV)) # F1 Score. Equivalent to Sorenson-Dice?
+    pred_thresh <- as.numeric(pred_data > threshold)
     
-    Manhattan <- vegdist(rbind(obs_data,
-                               pred_data),
-                         method = "manhattan",
-                         binary = TRUE)
+    #### Calulate community dissimilarity indices
     
-    Euclidean <- vegdist(rbind(obs_data,
-                               pred_data),
-                         method = "euclidean",
-                         binary = TRUE)
-    
-    Canberra <- vegdist(rbind(obs_data,
-                              pred_data),
-                        method = "canberra",
+    Binomial <- vegdist(rbind(obs_data,
+                              pred_thresh),
+                        method = "binomial", 
                         binary = TRUE)
     
     Bray <- vegdist(rbind(obs_data,
-                          pred_data),
+                          pred_thresh),
                     method = "bray",
                     binary = TRUE)
     
-    Kulczynski <- vegdist(rbind(obs_data,
-                                pred_data),
-                          method = "kulczynski",
-                          binary = TRUE)
+    Canberra <- vegdist(rbind(obs_data,
+                              pred_thresh),
+                        method = "canberra",
+                        binary = TRUE)
     
-    Jaccard <- vegdist(rbind(obs_data,
-                             pred_data),
-                       method = "jaccard",
-                       binary = TRUE)
+    Cao <- vegdist(rbind(obs_data,
+                         pred_thresh),
+                   method = "cao", 
+                   binary = TRUE)
+    
+    Chao <- vegdist(rbind(obs_data,
+                          pred_thresh),
+                    method = "chao", 
+                    binary = TRUE)
+    
+    Euclidean <- vegdist(rbind(obs_data,
+                               pred_thresh),
+                         method = "euclidean",
+                         binary = TRUE)
     
     Gower <- vegdist(rbind(obs_data,
-                           pred_data),
+                           pred_thresh),
                      method = "gower", 
                      binary = TRUE)
     
-    altGower <- vegdist(rbind(obs_data,
-                              pred_data),
-                        method = "altGower", 
-                        binary = TRUE)
-    
-    Morisita <- vegdist(rbind(obs_data,
-                              pred_data),
-                        method = "morisita", 
-                        binary = TRUE)
+    Gower_alt <- vegdist(rbind(obs_data,
+                               pred_thresh),
+                         method = "altGower", 
+                         binary = TRUE)
     
     Horn <- vegdist(rbind(obs_data,
-                          pred_data),
+                          pred_thresh),
                     method = "horn", 
                     binary = TRUE)
     
+    Jaccard <- vegdist(rbind(obs_data,
+                             pred_thresh),
+                       method = "jaccard",
+                       binary = TRUE)
+    
+    Kulczynski <- vegdist(rbind(obs_data,
+                                pred_thresh),
+                          method = "kulczynski",
+                          binary = TRUE)
+    
+    Mahalanobis <- vegdist(rbind(obs_data,
+                                 pred_thresh),
+                           method = "mahalanobis", 
+                           binary = TRUE)
+    
+    Manhattan <- vegdist(rbind(obs_data,
+                               pred_thresh),
+                         method = "manhattan",
+                         binary = TRUE)
+    
+    Morisita <- vegdist(rbind(obs_data,
+                              pred_thresh),
+                        method = "morisita", 
+                        binary = TRUE)
+    
     Mountford <- vegdist(rbind(obs_data,
-                               pred_data),
+                               pred_thresh),
                          method = "mountford",
                          binary = TRUE)
     
     Raup <- vegdist(rbind(obs_data,
-                          pred_data),
+                          pred_thresh),
                     method = "raup", 
                     binary = TRUE)
-    
-    Binomial <- vegdist(rbind(obs_data,
-                              pred_data),
-                        method = "binomial", 
-                        binary = TRUE)
-    
-    Chao <- vegdist(rbind(obs_data,
-                          pred_data),
-                    method = "chao", 
-                    binary = TRUE)
-    
-    Cao <- vegdist(rbind(obs_data,
-                         pred_data),
-                   method = "cao", 
-                   binary = TRUE)
-    
-    Mahalanobis <- vegdist(rbind(obs_data,
-                                 pred_data),
-                           method = "mahalanobis", 
-                           binary = TRUE)
-    
+ 
   }
 }
 
