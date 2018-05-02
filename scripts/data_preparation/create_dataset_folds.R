@@ -25,9 +25,9 @@ library(sp)
 ### Load Data ###
 #################
 
-Bird <- read.csv("Data/Birds/Birds_Compiled.csv")
-Eucalypt <- read.csv("Data/Eucalypts/Eucalypt_Compiled.csv")
-Frog <- read.csv("Data/Frogs/Frog_Compiled.csv")
+Bird <- read.csv("data/bird/birds_compiled.csv")
+Eucalypt <- read.csv("data/eucalypt/eucalypt_compiled.csv")
+Frog <- read.csv("data/frog/frog_compiled.csv")
 
 ###########################
 ### Create Random Folds ###
@@ -52,7 +52,7 @@ folds <- createFolds(1:nrow(Bird),                # Number of data points
 
 for(i in 1:5){
   
-  fold_id <- paste0("Fold",i, collapse = "")                    # set fold id
+  fold_id <- paste0("fold",i, collapse = "")                    # set fold id
   
   ## Create test/train split for fold i
   
@@ -76,14 +76,14 @@ for(i in 1:5){
   
   ## Save splits to file
   
-  y_test_filename <- sprintf('Data/Birds/y_Bird_%s_test_random.csv', fold_id)     # test filename
-  y_train_filename <- sprintf('Data/Birds/y_Bird_%s_train_random.csv', fold_id)   # train filename
+  y_test_filename <- sprintf('data/bird/y_bird_%s_test_random.csv', fold_id)     # test filename
+  y_train_filename <- sprintf('data/bird/y_bird_%s_train_random.csv', fold_id)   # train filename
   
-  X_test_filename <- sprintf('Data/Birds/X_Bird_%s_test_random.csv', fold_id)     # test filename
-  X_train_filename <- sprintf('Data/Birds/X_Bird_%s_train_random.csv', fold_id)   # train filename
+  X_test_filename <- sprintf('data/bird/X_bird_%s_test_random.csv', fold_id)     # test filename
+  X_train_filename <- sprintf('data/bird/X_bird_%s_train_random.csv', fold_id)   # train filename
   
-  LL_test_filename <- sprintf('Data/Birds/LL_Bird_%s_test_random.csv', fold_id)   # test filename
-  LL_train_filename <- sprintf('Data/Birds/LL_Bird_%s_train_random.csv', fold_id) # train filename
+  LL_test_filename <- sprintf('data/bird/LL_bird_%s_test_random.csv', fold_id)   # test filename
+  LL_train_filename <- sprintf('data/bird/LL_bird_%s_train_random.csv', fold_id) # train filename
   
   write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
   write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
@@ -115,7 +115,7 @@ folds <- createFolds(1:nrow(Eucalypt),            # Number of data points
 
 for(i in 1:5){
   
-  fold_id <- paste0("Fold",i, collapse = "")                    # set fold id
+  fold_id <- paste0("fold",i, collapse = "")                    # set fold id
   
   command_y_test <- sprintf('Euc_y[folds$%s,]', fold_id)       # command to call test fold
   command_y_train <- sprintf('Euc_y[-folds$%s,]', fold_id)     # command to call train folds
@@ -135,14 +135,14 @@ for(i in 1:5){
   tmp_LL_test <- eval(parse(text = command_LL_test))            # evaluate test fold command
   tmp_LL_train <- eval(parse(text = command_LL_train))          # evaluate train fold command
   
-  y_test_filename <- sprintf('Data/Eucalypts/y_Eucalypts_%s_test_random.csv', fold_id)     # test filename
-  y_train_filename <- sprintf('Data/Eucalypts/y_Eucalypts_%s_train_random.csv', fold_id)   # train filename
+  y_test_filename <- sprintf('data/eucalypt/y_eucalypt_%s_test_random.csv', fold_id)     # test filename
+  y_train_filename <- sprintf('data/eucalypt/y_eucalypt_%s_train_random.csv', fold_id)   # train filename
   
-  X_test_filename <- sprintf('Data/Eucalypts/X_Eucalypts_%s_test_random.csv', fold_id)     # test filename
-  X_train_filename <- sprintf('Data/Eucalypts/X_Eucalypts_%s_train_random.csv', fold_id)   # train filename
+  X_test_filename <- sprintf('data/eucalypt/X_eucalypt_%s_test_random.csv', fold_id)     # test filename
+  X_train_filename <- sprintf('data/eucalypt/X_eucalypt_%s_train_random.csv', fold_id)   # train filename
   
-  LL_test_filename <- sprintf('Data/Eucalypts/LL_Eucalypts_%s_test_random.csv', fold_id)   # test filename
-  LL_train_filename <- sprintf('Data/Eucalypts/LL_Eucalypts_%s_train_random.csv', fold_id) # train filename
+  LL_test_filename <- sprintf('data/eucalypt/LL_eucalypt_%s_test_random.csv', fold_id)   # test filename
+  LL_train_filename <- sprintf('data/eucalypt/LL_eucalypt_%s_train_random.csv', fold_id) # train filename
   
   write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
   write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
@@ -174,7 +174,7 @@ folds <- createFolds(1:nrow(Frog),            # Number of data points
 
 for(i in 1:5){
   
-  fold_id <- paste0("Fold",i, collapse = "")                    # set fold id
+  fold_id <- paste0("fold",i, collapse = "")                    # set fold id
   
   command_y_test <- sprintf('Frog_y[folds$%s,]', fold_id)       # command to call test fold
   command_y_train <- sprintf('Frog_y[-folds$%s,]', fold_id)     # command to call train folds
@@ -194,14 +194,14 @@ for(i in 1:5){
   tmp_LL_test <- eval(parse(text = command_LL_test))            # evaluate test fold command
   tmp_LL_train <- eval(parse(text = command_LL_train))          # evaluate train fold command
   
-  y_test_filename <- sprintf('Data/Frogs/y_Frog_%s_test_random.csv', fold_id)     # test filename
-  y_train_filename <- sprintf('Data/Frogs/y_Frog_%s_train_random.csv', fold_id)   # train filename
+  y_test_filename <- sprintf('data/frog/y_frog_%s_test_random.csv', fold_id)     # test filename
+  y_train_filename <- sprintf('data/frog/y_frog_%s_train_random.csv', fold_id)   # train filename
   
-  X_test_filename <- sprintf('Data/Frogs/X_Frog_%s_test_random.csv', fold_id)     # test filename
-  X_train_filename <- sprintf('Data/Frogs/X_Frog_%s_train_random.csv', fold_id)   # train filename
+  X_test_filename <- sprintf('data/frog/X_frog_%s_test_random.csv', fold_id)     # test filename
+  X_train_filename <- sprintf('data/frog/X_frog_%s_train_random.csv', fold_id)   # train filename
   
-  LL_test_filename <- sprintf('Data/Frogs/LL_Frog_%s_test_random.csv', fold_id)   # test filename
-  LL_train_filename <- sprintf('Data/Frogs/LL_Frog_%s_train_random.csv', fold_id) # train filename
+  LL_test_filename <- sprintf('data/frog/LL_frog_%s_test_random.csv', fold_id)   # test filename
+  LL_train_filename <- sprintf('data/frog/LL_frog_%s_train_random.csv', fold_id) # train filename
   
   write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
   write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
@@ -242,7 +242,7 @@ Bird_blockCV <- spatialBlock(speciesData = Bird_SP,
 
 for(i in 1:5){
   
-  fold_id <- paste0("Fold",i, collapse = "")          # set fold id
+  fold_id <- paste0("fold",i, collapse = "")          # set fold id
     
   train_id <- Bird_blockCV$folds[[i]][[1]]            # Training site ids
   test_id <- Bird_blockCV$folds[[i]][[2]]             # Testing site ids
@@ -256,14 +256,14 @@ for(i in 1:5){
   tmp_LL_test <- Bird_LL[test_id, ]                   # Lat/long test data
   tmp_LL_train <- Bird_LL[train_id, ]                 # Lat/long train data
   
-  y_test_filename <- sprintf('Data/Birds/y_Bird_%s_test_spatial.csv', fold_id)     # test filename
-  y_train_filename <- sprintf('Data/Birds/y_Bird_%s_train_spatial.csv', fold_id)   # train filename
+  y_test_filename <- sprintf('data/bird/y_bird_%s_test_spatial.csv', fold_id)     # test filename
+  y_train_filename <- sprintf('data/bird/y_bird_%s_train_spatial.csv', fold_id)   # train filename
   
-  X_test_filename <- sprintf('Data/Birds/X_Bird_%s_test_spatial.csv', fold_id)     # test filename
-  X_train_filename <- sprintf('Data/Birds/X_Bird_%s_train_spatial.csv', fold_id)   # train filename
+  X_test_filename <- sprintf('data/bird/X_bird_%s_test_spatial.csv', fold_id)     # test filename
+  X_train_filename <- sprintf('data/bird/X_bird_%s_train_spatial.csv', fold_id)   # train filename
   
-  LL_test_filename <- sprintf('Data/Birds/LL_Bird_%s_test_spatial.csv', fold_id)   # test filename
-  LL_train_filename <- sprintf('Data/Birds/LL_Bird_%s_train_spatial.csv', fold_id) # train filename
+  LL_test_filename <- sprintf('data/bird/LL_bird_%s_test_spatial.csv', fold_id)   # test filename
+  LL_train_filename <- sprintf('data/bird/LL_bird_%s_train_spatial.csv', fold_id) # train filename
   
   write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
   write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
@@ -298,7 +298,7 @@ Euc_blockCV <- spatialBlock(speciesData = Euc_SP,
 
 for(i in 1:5){
   
-  fold_id <- paste0("Fold",i, collapse = "")          # set fold id
+  fold_id <- paste0("fold",i, collapse = "")          # set fold id
   
   train_id <- Euc_blockCV$folds[[i]][[1]]             # Training site ids
   test_id <- Euc_blockCV$folds[[i]][[2]]              # Testing site ids
@@ -312,14 +312,14 @@ for(i in 1:5){
   tmp_LL_test <- Euc_LL[test_id, ]                    # Lat/long test data
   tmp_LL_train <- Euc_LL[train_id, ]                  # Lat/long train data
   
-  y_test_filename <- sprintf('Data/Eucalypts/y_Eucalypts_%s_test_spatial.csv', fold_id)     # test filename
-  y_train_filename <- sprintf('Data/Eucalypts/y_Eucalypts_%s_train_spatial.csv', fold_id)   # train filename
+  y_test_filename <- sprintf('data/eucalypt/y_eucalypt_%s_test_spatial.csv', fold_id)     # test filename
+  y_train_filename <- sprintf('data/eucalypt/y_eucalypt_%s_train_spatial.csv', fold_id)   # train filename
   
-  X_test_filename <- sprintf('Data/Eucalypts/X_Eucalypts_%s_test_spatial.csv', fold_id)     # test filename
-  X_train_filename <- sprintf('Data/Eucalypts/X_Eucalypts_%s_train_spatial.csv', fold_id)   # train filename
+  X_test_filename <- sprintf('data/eucalypt/X_eucalypt_%s_test_spatial.csv', fold_id)     # test filename
+  X_train_filename <- sprintf('data/eucalypt/X_eucalypt_%s_train_spatial.csv', fold_id)   # train filename
   
-  LL_test_filename <- sprintf('Data/Eucalypts/LL_Eucalypts_%s_test_spatial.csv', fold_id)   # test filename
-  LL_train_filename <- sprintf('Data/Eucalypts/LL_Eucalypts_%s_train_spatial.csv', fold_id) # train filename
+  LL_test_filename <- sprintf('data/eucalypt/LL_eucalypt_%s_test_spatial.csv', fold_id)   # test filename
+  LL_train_filename <- sprintf('data/eucalypt/LL_eucalypt_%s_train_spatial.csv', fold_id) # train filename
   
   write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
   write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
@@ -353,7 +353,7 @@ Frog_blockCV <- spatialBlock(speciesData = Frog_SP,
                              k = 2)
 for(i in 1:2){
   
-  fold_id <- paste0("Fold",i, collapse = "")          # set fold id
+  fold_id <- paste0("fold",i, collapse = "")          # set fold id
   
   train_id <- Frog_blockCV$folds[[i]][[1]]            # Training site ids
   test_id <- Frog_blockCV$folds[[i]][[2]]             # Testing site ids
@@ -367,14 +367,14 @@ for(i in 1:2){
   tmp_LL_test <- Frog_LL[test_id, ]                   # Lat/long test data
   tmp_LL_train <- Frog_LL[train_id, ]                 # Lat/long train data
   
-  y_test_filename <- sprintf('Data/Frogs/y_Frog_%s_test_spatial.csv', fold_id)     # test filename
-  y_train_filename <- sprintf('Data/Frogs/y_Frog_%s_train_spatial.csv', fold_id)   # train filename
+  y_test_filename <- sprintf('data/frog/y_frog_%s_test_spatial.csv', fold_id)     # test filename
+  y_train_filename <- sprintf('data/frog/y_frog_%s_train_spatial.csv', fold_id)   # train filename
   
-  X_test_filename <- sprintf('Data/Frogs/X_Frog_%s_test_spatial.csv', fold_id)     # test filename
-  X_train_filename <- sprintf('Data/Frogs/X_Frog_%s_train_spatial.csv', fold_id)   # train filename
+  X_test_filename <- sprintf('data/frog/X_frog_%s_test_spatial.csv', fold_id)     # test filename
+  X_train_filename <- sprintf('data/frog/X_frog_%s_train_spatial.csv', fold_id)   # train filename
   
-  LL_test_filename <- sprintf('Data/Frogs/LL_Frog_%s_test_spatial.csv', fold_id)   # test filename
-  LL_train_filename <- sprintf('Data/Frogs/LL_Frog_%s_train_spatial.csv', fold_id) # train filename
+  LL_test_filename <- sprintf('data/frog/LL_frog_%s_test_spatial.csv', fold_id)   # test filename
+  LL_train_filename <- sprintf('data/frog/LL_frog_%s_train_spatial.csv', fold_id) # train filename
   
   write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
   write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
