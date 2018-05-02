@@ -123,50 +123,70 @@ n_covar <- ncol(X_train) # includes intercept
 n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chains. Post thinning
   
 
-
-  
-
-
 ##################
-### PREDICTION ###
+### Prediction ###
 ##################
 
-# DO NOT ALTER CODE IN THIS SECTION ONCE FINALISED
-# MUST BE KEPT CONSTANT ACROSS ALL JSDMS FOR THE
-# COMPARISON TO BE FAIR
+## Marginal
+
+marg_pred <- predict.marginal(Beta = Beta_posterior,
+                              X = X_test,
+                              n_species = n_species,
+                              n_iter = n_iter)
+
+filename <- sprintf("%s_%s_fold%s_marginal.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+saveRDS(marg_pred,
+        filename)
+
+## Conditional - Leave One In
+
+cond_LOI_pred <- predict.conditional.LOI(Beta = Beta_posterior,
+                                         X = X_test,
+                                         y = y_test,
+                                         R = R_posterior,
+                                         n_species = n_species,
+                                         n_iter = n_iter)
+
+filename <- sprintf("%s_%s_fold%s_condLOI.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+saveRDS(cond_LOI_pred,
+        filename)
+
+## Conditional - Leave One Out
+
+cond_LOO_pred <- predict.conditional.LOO(Beta = Beta_posterior,
+                                         X = X_test,
+                                         y = y_test,
+                                         R = R_posterior,
+                                         n_species = n_species,
+                                         n_iter = n_iter)
+
+filename <- sprintf("%s_%s_fold%s_condLOO.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+saveRDS(cond_LOO_pred,
+        filename)
+
+## Joint
+
+joint_pred <- predict.joint(Beta = Beta_posterior,
+                            X = X_test,
+                            y = y_test,
+                            R = R_posterior,
+                            n_species = n_species,
+                            n_iter = n_iter)
+
+filename <- sprintf("%s_%s_fold%s_joint.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+saveRDS(joint_pred,
+        filename)
 
 
-
-### Run prediction code ----
-
-marg_pred <- predict.marginal()
-
-cond_LOI_pred <- predict.conditional.LOI()
-
-cond_LOO_pred <- predict.conditional.LOO()
-
-joint_pred <- predict.joint()
-
-#----
-
-### Evaluate test statistics ----
-
-
-#----
-
-##############
-### OUTPUT ###
-##############
-
-prediction_list <- list(marg_pred = marg_pred,
-                        marg_ts = marg_ts,
-                        cond_LOI_pred = cond_LOI_pred,
-                        cond_LOI_ts = cond_LOI_ts,
-                        cond_LOO_pred = cond_LOO_pred,
-                        cond_LOO_ts = cond_LOO_ts,
-                        joint_pred = joint_pred,
-                        joint_ts = joint_ts,
-                        fold_id = fold_id,
-                        dataset_id = dataset_id,
-                        session_info = sessionInfo(),
-                        date_time = Sys.time())
