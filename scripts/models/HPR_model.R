@@ -10,18 +10,6 @@
 #########################################################
 #########################################################
 
-### Load Packages ----
-
-library(R2jags)
-library(parallel)
-library(random)
-library(abind)
-library(MCMCpack)
-library(MASS)
-library(mclust)
-
-## Commented packages out in "fit_JSDM.R" script
-
 ### Load Data ----
 
 ## Pres/Abs data
