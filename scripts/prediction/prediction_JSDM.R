@@ -134,7 +134,7 @@ marg_pred <- predict.marginal(Beta = Beta_posterior,
                               n_species = n_species,
                               n_iter = n_iter)
 
-filename <- sprintf("%s_%s_fold%s_marginal.rds",
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -150,7 +150,7 @@ cond_LOI_pred <- predict.conditional.LOI(Beta = Beta_posterior,
                                          n_species = n_species,
                                          n_iter = n_iter)
 
-filename <- sprintf("%s_%s_fold%s_condLOI.rds",
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -166,7 +166,7 @@ cond_LOO_pred <- predict.conditional.LOO(Beta = Beta_posterior,
                                          n_species = n_species,
                                          n_iter = n_iter)
 
-filename <- sprintf("%s_%s_fold%s_condLOO.rds",
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -182,7 +182,7 @@ joint_pred <- predict.joint(Beta = Beta_posterior,
                             n_species = n_species,
                             n_iter = n_iter)
 
-filename <- sprintf("%s_%s_fold%s_joint.rds",
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_joint.rds",
                     model_id,
                     dataset_id,
                     fold_id)
