@@ -33,7 +33,7 @@ model_options <- c("MPR",
                    "LPR",
                    "DPR",
                    "HLR_NS",
-                   "HLR-S",
+                   "HLR_S",
                    "SSDM")
 
 dataset_options <- c("Frog",
