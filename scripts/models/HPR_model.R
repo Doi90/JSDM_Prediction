@@ -24,20 +24,11 @@ library(mclust)
 
 ### Load Data ----
 
-## CV fold id
-
-fold_id <- read.table("fold.txt")[1,1]   # CV fold id needs to be read in from text file.
-                                         # Pass in Spartan index.
-## Dataset id
-
-dataset_id <- read.table("dataset.txt",                 # Dataset id needs to be read in from
-                         stringsAsFactors = FALSE)[1,1] #  text file
-
 ## Pres/Abs data
 
-command <- sprintf("read.csv('y_%s_Fold%s_train.csv')", # Need to build command to read in
-                   dataset_id,                          #  specific files for this CV fold
-                   fold_id)
+command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train_spatial.csv')", 
+                   dataset_id,                          # Need to build command to read in
+                   fold_id)                             # specific files for this CV fold
 
 y <- eval(parse(text = command))                        # Evaluate command to read in data
 
@@ -45,9 +36,9 @@ y <- y[ , -1]                                           # Remove rownames
 
 ## Site data
 
-command <- sprintf("read.csv('x_%s_Fold%s_train.csv')", # Need to build command to read in
-                   dataset_id,                          #  specific files for this CV fold
-                   fold_id)
+command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train_spatial.csv')", 
+                   dataset_id,                          # Need to build command to read in
+                   fold_id)                             # specific files for this CV fold
 
 X <- eval(parse(text = command))                        # Evaluate command to read in data
 
@@ -65,8 +56,7 @@ n_species <- ncol(y)
 
 n_env_vars <- ncol(X)
 
-coefs <- matrix(runif(n_species * (n_env_vars + 1),
-                      -1, 1),
+coefs <- matrix(runif(n_species * (n_env_vars + 1), -1, 1),
                 ncol=n_env_vars + 1)
 
 ## Set up MCMC
@@ -92,7 +82,6 @@ model_name <- "JSDM"
 set.seed(28041948)          # Creator's birthday
 
 source('fit_JSDM.r')
-
 
 ### Extract posteriors ----
 
@@ -150,13 +139,15 @@ for(c in seq_len(n.chains)){                            # For each chain
 
 ### Save Posteriors ----
 
-filename <- sprintf("Pollock_Beta_%s_fold_%s.rds",
+filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+                    model_id,
                     dataset_id,
                     fold_id)
 saveRDS(Beta_posterior,
         filename)
 
-filename <- sprintf("Pollock_R_%s_fold_%s.rds",
+filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+                    model_id,
                     dataset_id,
                     fold_id)
 saveRDS(R_posterior,
