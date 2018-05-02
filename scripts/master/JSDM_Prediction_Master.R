@@ -18,6 +18,11 @@
 ###########################################
 ###########################################
 
+##################################
+### Command line arguments and ###
+###       defining indices     ###
+##################################
+
 ## Read in the command line arguments
 
 command_args <- commandArgs(trailingOnly = TRUE)
@@ -36,9 +41,9 @@ model_options <- c("MPR",
                    "HLR_S",
                    "SSDM")
 
-dataset_options <- c("Frog",
-                     "Eucalypt",
-                     "Bird")
+dataset_options <- c("frog",
+                     "eucalypt",
+                     "bird")
 
 fold_options <- c(1:5)
 
@@ -50,14 +55,107 @@ dataset_id <- model_options[model_index]
 
 fold_id <- model_options[model_index]
 
-## Run the correct model script
+#####################
+### Load packages ###
+#####################
 
+### Model script packages
+
+if(model_id == "MPR"){
+  
+  library(BayesComm)
+  library(coda)
+  
+} else if(model_id == "HPR"){
+  
+  library(R2jags)
+  library(parallel)
+  library(random)
+  library(abind)
+  library(MCMCpack)
+  library(MASS)
+  library(mclust)
+  
+} else if(model_id == "LPR"){
+  
+  library(boral)
+  library(coda)
+  
+} else if(model_id == "DPR"){
+  
+  library(gjam)
+  
+} else if(model_id == "HLR_NS" | model_id == "HLR_S"){
+  
+  library(HMSC)
+  library(coda)
+  
+} else if(model_id == "SSDM"){
+  
+  library(coda)
+  
+}
+
+### Prediction packages
+
+library(tmvtnorm)
+
+### Test statistics packages
+
+library(Metrics)
+library(caret)
+library(vegan)
+
+##################
+### Run Status ###
+##################
+
+## Define run status. 
+## Frog data only has two folds so don't run for folds >2
+
+if(dataset_id == "frog" & fold_id > 2){
+  run_status <- FALSE
+} else {
+  run_status <- TRUE
+}
+
+########################
+### Run Model Script ###
+########################
+
+if(run_status){
+  
 command <- sprintf("source('scripts/models/%s_model.R')",
                    model_id)
 
 eval(parse(text = command))
 
-## Run the prediction script
+} 
 
+##############################
+### Run Prediction Scripts ###
+##############################
 
-## Run the test statistic script
+if(run_status){
+  
+  if(model_id != "SSDM"){
+    
+    source("scripts/prediction/prediction_functions_JSDM.R")
+    source("scripts/prediction/prediction_JSDM.R")
+    
+  } else if(model_id == "SSDM"){
+    
+    source()
+    source()
+  }
+}
+
+#################################
+### Run Test Statistic Script ###
+#################################
+
+if(run_status){
+  
+  source("scripts/test_statistics/test_statistics.R")
+
+}
