@@ -27,6 +27,8 @@ y <- eval(parse(text = command))                        # Evaluate command to re
 
 y <- y[ , -1]                                           # Remove rownames
 
+y <- as.matrix(y)                                       # Required format
+
 ## Site data
 
 command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train_spatial.csv')", 
@@ -36,6 +38,8 @@ command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train_spatial.csv')",
 X <- eval(parse(text = command))                        # Evaluate command to read in data
 
 X <- X[ , -1]                                           # Remove rownames
+
+X <- as.matrix(X)                                       # Required format
 
 ## Set up latent factors
 
