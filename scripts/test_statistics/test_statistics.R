@@ -1,7 +1,7 @@
 ######################################################
 ######################################################
 ###                                                ###
-###           Calculate Test Statistics            ###
+###           Test Statistics Workflow             ###
 ###                                                ###
 ###    This script calculates the various test     ###
 ###       statistics used in this analysis.        ###
@@ -13,212 +13,140 @@
 ### Load Data ###
 #################
 
-## Observed / Testing Data ----
+## Observed / Testing Data
 
-# Matrix with <sites> rows and <species> columns
+command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_test_spatial.csv')", 
+                   dataset_id,                          # Need to build command to read in
+                   fold_id)                             # specific files for this CV fold
 
-## Predicted Data ----
+y_test <- eval(parse(text = command))                   # Evaluate command to read in data
 
-# Array with <sites> rows, <species> columns, and <samples> slices
-
-#----
+y_test <- y_test[ , -1]                                 # Remove rownames
 
 #################################
 ### Calculate Test Statistics ###
 #################################
 
-## Create empty array to store results
+## Marginal 
 
-test_statistics <- array(NA,
-                         dim = c(ncol(y),
-                                 7,
-                                 dim(predictions)[3]))
+### Load Data
 
-## Calculate test statistics
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
 
-for(a in seq_len(dim(predictions)[3])){
-  
-  for(i in seq_len(dim(predictions)[1])){
-    
-    ## Extract observed and predicted data
-    
-    obs_data <- observed[i, ]
-    
-    pred_data <- predictions[i, , a]
-    
-    ## Calculate test statistics
-    
-    ### Threshold independent ----
-    
-    AUC <- auc(actual = obs_data,
-               predicted = pred_data)
-    
-    bias <- bias(actual = obs_data,
-                 predicted = pred_data)
-    
-    MSE <- mse(actual = obs_data,
-               predicted = pred_data)
-    
-    R2 <- R2(obs = obs_data,
-             pred = pred_data)
-    
-    RMSE <- rmse(actual = obs_data,
-                 predicted = pred_data)
-    
-    SSE <- sse(actual = obs_data,
-               predicted = pred_data)
-    
-    Pearson <- cor(obs_data,
-                   pred_data,
-                   method = "pearson")
-    
-    Spearman <- cor(obs_data,
-                    pred_data,
-                    method = "spearman")
-    
-    Kendall <- cor(obs_data,
-                   pred_data,
-                   method = "kendall")
-    
-    ###----
-    
-    ## Set a threshold for binary classification for remaining metrics
-    
-    threshold <- 0.5
-    
-    ### Threshold dependent ----
-    
-    #### Create a confusion matrix and extract values
-    
-    confusion <- table(pred_data > threshold, obs_data)
-    
-    TP <- confusion[2,2]  # True positives
-    FP <- confusion[2,1]  # False positives
-    TN <- confusion[1,1]  # True negatives
-    FN <- confusion[1,2]  # False negatives
-    
-    #### Calculate metrics
-    
-    TPR <- TP / (TP + FN)                          # True Positive Rate / Sensitivity
-    FPR <- FP / (FP + TN)                          # False Positive Rate
-    TNR <- TN / (FP + TN)                          # True Negative Rate / Specificity
-    FNR <- FN / (TP + FN)                          # False Negative Rate
-    PLR <- TPR / FPR                               # Positive Likelihood Ratio
-    NLR <- FNR / TNR                               # Negative Likelihood Ratio
-    DOR <- PLR / NLR                               # Diagnositic Odds Ratio
-    Prevalence <- (TP + FN) / (TP + FN + TN + FN)
-    Accuracy <- (TP + TN) / (TP + FN + TN + FN)
-    PPV <- TP / (TP + FP)                          # Positive Predictive Value
-    FOR <- FN / (FN + TN)                          # False Omission Rate
-    FDR <- FP / (TP + FP)                          # False Discovery Rate  
-    NPV <- TN / (FN + TN)                          # Negative Predictive Value
-    F_1 <- 2 / ((1 / TPR) + (1 / PPV))             # F1 Score. Equivalent to Sorenson-Dice?
-    Youden_J <- TPR + TNR -1                       # Youden's J statistic
-    Kappa <- cohen.kappa(cbind(obs_data,           # Cohen's Kappa
-                               pred_data))$kappa
-    # Kappa <- ((TP + TN) - 
-    #             (((TP + FN) * (TP + FP) + (FP + TN) + (FN + TN)) /
-    #                (TP + FP + TN + FN))) /
-    #          ((TP + FP + TN + FN) -
-    #             (((TP + FN) * (TP + FP) + (FP + TN) * (FN + TN)) /
-    #                (TP + FP + TN + FN))) 
-    
-    ###----
-    
-    ### Community Dissimilarity ----
-    
-    #### Binary classification of predictions
-    
-    pred_thresh <- as.numeric(pred_data > threshold)
-    
-    #### Calulate community dissimilarity indices
-    
-    Binomial <- vegdist(rbind(obs_data,
-                              pred_thresh),
-                        method = "binomial", 
-                        binary = TRUE)
-    
-    Bray <- vegdist(rbind(obs_data,
-                          pred_thresh),
-                    method = "bray",
-                    binary = TRUE)
-    
-    Canberra <- vegdist(rbind(obs_data,
-                              pred_thresh),
-                        method = "canberra",
-                        binary = TRUE)
-    
-    Cao <- vegdist(rbind(obs_data,
-                         pred_thresh),
-                   method = "cao", 
-                   binary = TRUE)
-    
-    Chao <- vegdist(rbind(obs_data,
-                          pred_thresh),
-                    method = "chao", 
-                    binary = TRUE)
-    
-    Euclidean <- vegdist(rbind(obs_data,
-                               pred_thresh),
-                         method = "euclidean",
-                         binary = TRUE)
-    
-    Gower <- vegdist(rbind(obs_data,
-                           pred_thresh),
-                     method = "gower", 
-                     binary = TRUE)
-    
-    Gower_alt <- vegdist(rbind(obs_data,
-                               pred_thresh),
-                         method = "altGower", 
-                         binary = TRUE)
-    
-    Horn <- vegdist(rbind(obs_data,
-                          pred_thresh),
-                    method = "horn", 
-                    binary = TRUE)
-    
-    Jaccard <- vegdist(rbind(obs_data,
-                             pred_thresh),
-                       method = "jaccard",
-                       binary = TRUE)
-    
-    Kulczynski <- vegdist(rbind(obs_data,
-                                pred_thresh),
-                          method = "kulczynski",
-                          binary = TRUE)
-    
-    Mahalanobis <- vegdist(rbind(obs_data,
-                                 pred_thresh),
-                           method = "mahalanobis", 
-                           binary = TRUE)
-    
-    Manhattan <- vegdist(rbind(obs_data,
-                               pred_thresh),
-                         method = "manhattan",
-                         binary = TRUE)
-    
-    Morisita <- vegdist(rbind(obs_data,
-                              pred_thresh),
-                        method = "morisita", 
-                        binary = TRUE)
-    
-    Mountford <- vegdist(rbind(obs_data,
-                               pred_thresh),
-                         method = "mountford",
-                         binary = TRUE)
-    
-    Raup <- vegdist(rbind(obs_data,
-                          pred_thresh),
-                    method = "raup", 
-                    binary = TRUE)
- 
-    ###----
-    
-    metrics <- c()
-    
-    test_statistics[i, , a] <- metrics
-    
-  }
-}
+marg_pred <- readRDS(filename)
+
+### Calculate Test Statistics
+
+marg_ts <- test_statistic(observed = y_test,
+                          predictions = marg_pred)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_marginal_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(marg_ts,
+        filename)
+
+### Memory purge
+
+rm(c("marg_pred",
+     "marg_ts"))
+
+## Conditional - leave one out
+
+### Load data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+cond_LOO_pred <- readRDS(filename)
+
+### Calculate Test Statistics
+
+cond_LOO_ts <- test_statistic(observed = y_test,
+                              predictions = cond_LOO_pred)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_cond_LOO_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_LOO_ts,
+        filename)
+
+### Memory purge
+
+rm(c("cond_LOO_pred",
+     "cond_LOO_ts"))
+
+## Conditional - leave one in
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+cond_LOI_pred <- readRDS(filename)
+
+### Calculate Test Statistics
+
+# Loop over array 4th dimension, fill new empty array, then average over that?
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_cond_LOI_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_LOI_ts,
+        filename)
+
+### Memory purge
+
+rm(c("cond_LOI_pred",
+     "cond_LOI_ts"))
+
+## Joint
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_joint.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+joint_pred <- readRDS(filename)
+
+### Calculate Test Statistics
+
+joint_ts <- test_statistic(observed = y_test,
+                           predictions = joint_pred)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_joint_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(joint_ts,
+        filename)
+
+### Memory purge
+
+rm(c("joint_pred",
+     "joint_ts"))
 
