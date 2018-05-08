@@ -14,12 +14,24 @@
 ### Load Posteriors ###
 #######################
 
+## Beta
+# Array of regression coefficients.
+# Row = Measured variable. K rows (INCLUDES INTERCEPT!)
+# Column = Species. J columns
+# Slice = Iterations. n_iter slices
+
 Beta_filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
                          model_id,
                          dataset_id,
                          fold_id)
 
 Beta_posterior <- readRDS(Beta_filename)
+
+## R
+# Array of correlation coefficients.
+# Row = Species. J rows
+# Column = Species. J columns
+# Slice = Iterations. n_iter slices
 
 R_filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
                       model_id,
@@ -79,37 +91,6 @@ Intercept <- rep(1, nrow(X_test))                       # Create an intercept co
 X_test <- cbind(Intercept, X_test)                      # Add intercept column to front of dataset
   
 #----
-
-#######################
-### Load Posteriors ###
-#######################
-
-## Beta
-# Array of regression coefficients.
-# Row = Measured variable. K rows (INCLUDES INTERCEPT!)
-# Column = Species. J columns
-# Slice = Iterations. n_iter slices
-
-Beta_RDS <- sprintf("readRDS('posteriors/%s_beta_%s_fold_%s.rds')",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-Beta_posterior <- eval(parse(text = Beta_RDS))
-
-
-## R
-# Array of correlation coefficients.
-# Row = Species. J rows
-# Column = Species. J columns
-# Slice = Iterations. n_iter slices
-
-R_RDS <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
-                 model_id,
-                 dataset_id,
-                 fold_id)
-
-R_posterior <- eval(parse(text=R_RDS))
 
 ########################
 ### Define Constants ###
