@@ -47,7 +47,7 @@ dataset_options <- c("frog",
                      "eucalypt",
                      "bird")
 
-fold_options <- c(1:5)
+fold_options <- 1:5
 
 ## Extract IDs corresponding to command line argument indices
 
