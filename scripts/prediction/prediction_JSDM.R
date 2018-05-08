@@ -46,14 +46,6 @@ R_posterior <- readRDS(R_filename)
 
 ### Presence/Absence ----
 
-command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train_spatial.csv')", 
-                   dataset_id,                          # Need to build command to read in
-                   fold_id)                             # specific files for this CV fold
-
-y_train <- eval(parse(text = command))                  # Evaluate command to read in data
-
-y_train <- y_train[ , -1]                               # Remove rownames
-
 command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_test_spatial.csv')", 
                    dataset_id,                          # Need to build command to read in
                    fold_id)                             # specific files for this CV fold
@@ -65,18 +57,6 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Environmental variables ----
 
 # MUST INCLUDE INTERCEPTS!
-
-command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train_spatial.csv')", 
-                   dataset_id,                          # Need to build command to read in
-                   fold_id)                             # specific files for this CV fold
-
-X_train <- eval(parse(text = command))                  # Evaluate command to read in data
-
-X_train <- X_train[ , -1]                               # Remove rownames
-
-Intercept <- rep(1, nrow(X_train))                      # Create an intercept column
-
-X_train <- cbind(Intercept, X_train)                    # Add intercept column to front of dataset
 
 command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_test_spatial.csv')", 
                    dataset_id,                          # Need to build command to read in
@@ -96,11 +76,11 @@ X_test <- cbind(Intercept, X_test)                      # Add intercept column t
 ### Define Constants ###
 ########################
 
-n_species <- ncol(y_train)
+n_species <- ncol(y_test)
   
-n_sites <- nrow(y_train)
+n_sites <- nrow(y_test)
   
-n_covar <- ncol(X_train) # includes intercept
+n_covar <- ncol(X_test) # includes intercept
 
 n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chains. Post thinning
   
