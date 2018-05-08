@@ -3,8 +3,9 @@
 ###                                                       ### 
 ###              DEFINE PREDICTION CODE                   ###
 ###                                                       ###
-### This script defines the different types of prediction ###
-### we use in our JSDM prediction comparison.             ###
+### This script performs the types of prediction defined  ###
+### for JSDMs in this comparison. Performs each type of   ###
+### prediction in series, & saves to file                 ###
 ###                                                       ###
 #############################################################
 #############################################################
