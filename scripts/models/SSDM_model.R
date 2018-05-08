@@ -51,10 +51,11 @@ for(j in seq_len(ncol(y))){                             # For each species
   
   ## Build command to run glm and save to list
   
-  command <- sprintf("model_list[[j]] <-                 
+  command <- sprintf("model_list[[%s]] <-                 
                          glm_%s <- glm(formula = form,
                                        data = data,
                                        family = binomial(link = 'probit')",
+                     j,
                      colnames(y)[j])
   
   eval(parse(text = command))                           # Run command
