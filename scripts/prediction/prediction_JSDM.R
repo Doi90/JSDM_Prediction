@@ -1,7 +1,7 @@
 #############################################################
 #############################################################
 ###                                                       ### 
-###              DEFINE PREDICTION CODE                   ###
+###              PERFORM JSDM PREDICTION                  ###
 ###                                                       ###
 ### This script performs the types of prediction defined  ###
 ### for JSDMs in this comparison. Performs each type of   ###
