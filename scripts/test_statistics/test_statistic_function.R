@@ -213,5 +213,5 @@ test_statistic <- function(observed,
       
     }
   }
-  
+  return(test_statistics)
 }
