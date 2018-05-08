@@ -1,7 +1,7 @@
 #########################################################
 #########################################################    
 ###                                                   ###
-###               Stacked probit GLM                  ###    
+###               STACKED PROBIT GLM                  ###    
 ###                                                   ###
 ### This script runs a Stacked probit GLM set up for  ###
 ### cross-validation on Spartan. Also defines outputs ###
@@ -10,9 +10,9 @@
 #########################################################
 #########################################################
 
-### Load Data ----
+## Load Data ----
 
-## Pres/Abs data
+### Pres/Abs data
 
 command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train_spatial.csv')", 
                    dataset_id,                          # Need to build command to read in
@@ -22,7 +22,7 @@ y <- eval(parse(text = command))                        # Evaluate command to re
 
 y <- y[ , -1]                                           # Remove rownames
 
-## Site data
+### Site data
 
 command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train_spatial.csv')", 
                    dataset_id,                          # Need to build command to read in
@@ -32,7 +32,7 @@ X <- eval(parse(text = command))                        # Evaluate command to re
 
 X <- X[ , -1]                                           # Remove rownames
 
-### Run Stacked probit GLM ----
+## Run Stacked probit GLM ----
 
 set.seed(28041948)                                      # Creator's Birthday
 
