@@ -18,6 +18,8 @@
 ###########################################
 ###########################################
 
+start_time <- Sys.time()
+
 ##################################
 ### Command line arguments and ###
 ###       defining indices     ###
@@ -123,6 +125,14 @@ if(dataset_id == "frog" & fold_id > 2){
 ### Run Model Script ###
 ########################
 
+## Purge environment for memory's sake. Need to keep 5 constants.
+
+rm(list = ls()[-which(ls() %in% c("model_id",
+                                  "dataset_id",
+                                  "fold_id",
+                                  "run_status",
+                                  "start_time"))])
+
 if(run_status){
   
 command <- sprintf("source('scripts/models/%s_model.R')",
@@ -135,6 +145,14 @@ eval(parse(text = command))
 ##############################
 ### Run Prediction Scripts ###
 ##############################
+
+## Purge environment for memory's sake. Need to keep 5 constants.
+
+rm(list = ls()[-which(ls() %in% c("model_id",
+                                  "dataset_id",
+                                  "fold_id",
+                                  "run_status",
+                                  "start_time"))])
 
 if(run_status){
   
@@ -154,8 +172,43 @@ if(run_status){
 ### Run Test Statistic Script ###
 #################################
 
+## Purge environment for memory's sake. Need to keep 5 constants.
+
+rm(list = ls()[-which(ls() %in% c("model_id",
+                                  "dataset_id",
+                                  "fold_id",
+                                  "run_status",
+                                  "start_time"))])
+
 if(run_status){
   
-  source("scripts/test_statistics/test_statistics.R")
+  source("scripts/test_statistics/test_statistic_function.R")
 
 }
+
+##############
+### OUTPUT ###
+##############
+
+## Model posteriors saved in model fitting script
+##   to outputs/posteriors
+## Prediction posteriors saved in prediction script
+##   to outputs/predictions
+## Test statistics saved in test statistic script
+##   to outputs/test_statistics
+
+meta_data <- list(model = model_id,
+                  dataset = dataset_id,
+                  fold = fold_id,
+                  run_status = run_status,
+                  session_info = sessionInfo(),
+                  start_time = start_time,
+                  end_time = Sys.time())
+
+filename <- sprintf("outputs/meta_data/%s_%s_fold%s_metadata.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(meta_data,
+        filename)
