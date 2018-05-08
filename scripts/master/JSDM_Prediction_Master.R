@@ -163,8 +163,8 @@ if(run_status){
     
   } else if(model_id == "SSDM"){
     
-    source()
-    source()
+    source("scripts/prediction/prediction_SSDM.R")
+    
   }
 }
 
