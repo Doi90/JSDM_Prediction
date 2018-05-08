@@ -201,10 +201,15 @@ test_statistic <- function(observed,
       
       ###----
       
-      test_statistics[i, , a] <- c(AUC, bias, MSE, R2, RMSE, SSE, Pearson, Spearman, Kendall,
-                                   TPR, FPR, TNR, FNR, PLR, NLR, DOR, Prevalence, Accuracy, PPV, FOR, FDR, NPV, F_1, Youden_J, Kappa,
-                                   Binomial, Bray, Canberra, Cao, Chao, Euclidean, Gower, Gower_alt,
-                                   Horn, Jaccard, Kulczynski, Mahalanobis, Manhattan, Morisita, Mountford, Raup)
+      test_statistics[i, , a] <- c(
+        # Threshold-independent
+        AUC, bias, MSE, R2, RMSE, SSE, Pearson, Spearman, Kendall,
+        # Threshold-dependant
+        TPR, FPR, TNR, FNR, PLR, NLR, DOR, Prevalence, Accuracy, PPV, FOR, FDR, NPV, F_1, Youden_J, Kappa,
+        # Community dissimilarity metrics
+        Binomial, Bray, Canberra, Cao, Chao, Euclidean, Gower, Gower_alt,
+        Horn, Jaccard, Kulczynski, Mahalanobis, Manhattan, Morisita, Mountford, Raup
+      )
       
     }
   }
