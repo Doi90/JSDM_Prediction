@@ -183,7 +183,8 @@ rm(list = ls()[-which(ls() %in% c("model_id",
 if(run_status){
   
   source("scripts/test_statistics/test_statistic_function.R")
-
+  source("scripts/test_statistics/test_statistics.R")
+  
 }
 
 ##############
