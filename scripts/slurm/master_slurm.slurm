@@ -37,6 +37,6 @@ export R_LIB_USER="~/R/lib/"
 module load PROJ
 module load GDAL
 module load JAGS
-module load R
+module load R/3.5.0-GCC-4.9.2
 
 Rscript --vanilla scripts/master/JSDM_Prediction_Master.R $model $dataset $fold
