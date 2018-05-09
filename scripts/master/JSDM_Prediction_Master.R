@@ -183,9 +183,17 @@ rm(list = ls()[-which(ls() %in% c("model_id",
 
 if(run_status){
   
-  source("scripts/test_statistics/test_statistic_function.R")
-  source("scripts/test_statistics/test_statistics.R")
-  
+  if(model_id != "SSDM"){
+    
+    source("scripts/test_statistics/test_statistic_function.R")
+    source("scripts/test_statistics/test_statistics_JSDM.R")
+    
+  } else if(model_id == "SSDM"){
+    
+    source("scripts/test_statistics/test_statistic_function.R")
+    source("scripts/test_statistics/test_statistics_SSDM.R")
+    
+  }
 }
 
 ##############
