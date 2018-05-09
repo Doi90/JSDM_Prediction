@@ -100,19 +100,19 @@ predict.conditional.LOI <- function(Beta = Beta,
   
   if(is.null(y)){
     stop("y not supplied.")
-  }
+  } 
   
   if(is.null(R)){
     stop("R not supplied.")
-  }
+  } 
   
   if(is.null(n_species)){
     stop("n_species not supplied.")
-  }
+  } 
   
   if(is.null(n_iter)){
     stop("n_iter not supplied.")
-  }
+  } 
   
   ## Create an array of distribution mean values. Beta * X values
   
@@ -125,7 +125,6 @@ predict.conditional.LOI <- function(Beta = Beta,
   ## this one needs a 4D array for predictions as we need to predict
   ## all species at a site once for each species left out. Thus,
   ## J-1 predictions per species per site
-  
   
   predictions <- array(NA,
                        dim = c(nrow(X),     # Number of sites in test data
@@ -141,7 +140,7 @@ predict.conditional.LOI <- function(Beta = Beta,
   
   ### For each 4th dimension/left-in species
   
-  for(z in seq_len(n_species)){
+  for(j in seq_len(n_species)){
     
     ### For each slice of array
     
@@ -153,68 +152,43 @@ predict.conditional.LOI <- function(Beta = Beta,
         
         occ_state <- y[i, ]         # observed occurrence state  at site i
         
-        ### For each species
+        #### Define probability distribution thresholds
         
-        for(j in seq_len(n_species)){
-          
-          #### Define probability distribution thresholds
-          
-          ## lower / upper to truncate distribution (known pres/abs)
-          
-          lower <- rep(-Inf, n_species)  # default vector of -Inf lower limits
-          upper <- rep(+Inf, n_species)  # default vector of +Inf upper limits
-          
-          if(occ_state[j] == 0){         # If species j (left-in) is absent
-            upper[j] <- 0                # set upper threshold
-          } 
-          
-          if(occ_state[j] == 1){         # If species j (left-in) is present
-            lower[j] <- 0                # set lower threshold
-          } 
-          
-          for(k in seq_len(n_species)){         # Predict for all non-j species
-            
-            ## For the left-in species, set prediction to known value
-            
-            if(k == j){                      
-              predictions[i, k, a, z] <- occ_state[j]  
-            } 
-            
-            ## For other species, actually predict
-            
-            if(k != j){
-              
-              #### lowerx / upperx to define probability to calculate (target species Pr(z>0))
-              
-              lowerx <- lower
-              upperx <- upper
-              
-              lowerx[k] <- 0
-              
-              #### Prediction for species k (non-j) at site i using values from slice a
-              
-              spp_pred <- ptmvnorm(mean = colSums(mean_values[ , , a]),
-                                   sigma = R[ , , a],
-                                   lower = lower,
-                                   upper = upper,
-                                   lowerx = lowerx,
-                                   upperx = upperx)
-              
-              #### Fill predictions array with value
-              
-              predictions[i, k, a, z] <- spp_pred
-              
-            } 
-            
-            
-          }
-        }
-      }
-      
-      return(predictions)
-      
+        ## lower / upper to truncate distribution (known pres/abs)
+        
+        lower <- rep(-Inf, n_species)  # default vector of -Inf lower limits
+        upper <- rep(+Inf, n_species)  # default vector of +Inf upper limits
+        
+        if(occ_state[j] == 0){         # If species j (left-in) is absent
+          upper[j] <- 0                # set upper threshold
+        } 
+        
+        if(occ_state[j] == 1){         # If species j (left-in) is present
+          lower[j] <- 0                # set lower threshold
+        } 
+        
+        #### Perform prediction / random draws from multivariate normal  
+        
+        spp_pred <- rtmvnorm(n = 1,
+                             mean = colSums(mean_values[ , , a]),
+                             sigma = R[ , , a],
+                             lower = lower, 
+                             upper = upper)
+        
+        #### Convert latent variable draws to pres/abs
+        
+        spp_pred <- ifelse(spp_pred > 0, 1, 0) 
+        
+        #### Fill predictions array with value
+        
+        predictions[i, , a, j] <- spp_pred
+        
+      } 
     }
   }
+  
+  return(predictions)  
+  
 }
 
 #### Leave-one-out ----
