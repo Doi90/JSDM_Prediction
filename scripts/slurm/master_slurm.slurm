@@ -32,6 +32,11 @@ fold=$3
 
 module purge
 
-module load R/3.4.4-GCC-4.9.2 
+export R_LIB_USER="~/R/lib/"
+
+module load PROJ
+module load GDAL
+module load JAGS
+module load R
 
 Rscript --vanilla scripts/master/JSDM_Prediction_Master.R $model $dataset $fold
