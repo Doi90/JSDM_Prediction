@@ -1,10 +1,10 @@
 ######################################################
 ######################################################
 ###                                                ###
-###           Test Statistics Workflow             ###
+###         JSDM TEST STATISTICS WORKFLOW          ###
 ###                                                ###
 ###    This script calculates the various test     ###
-###       statistics used in this analysis.        ###
+### statistics used in this analysis for the JSDMs ###
 ###                                                ###
 ######################################################
 ######################################################
