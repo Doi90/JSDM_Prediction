@@ -83,8 +83,7 @@ for(j in seq_len(n_species)){
                          predict.glm(object = model_list[[%1$s]],
                                      newdata = new_data,
                                      type = 'response')",
-                     j,
-                     colnames(y_test)[j])
+                     j)
   
   eval(parse(text = command))                           # Run command
   
@@ -98,5 +97,6 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(pred_array,
         filename)
