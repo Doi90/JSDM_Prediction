@@ -365,7 +365,7 @@ predict.joint <- function(Beta = Beta,
   
   predictions <- array(NA,
                        dim = c(nrow(X),     # Number of sites in test data
-                               1,           # Only one assemblage per site to predict   
+                               n_species,   # Number of species in test data   
                                n_iter),     # 1:1 Prediction slice:Posterior slice
                        dimnames = list(rownames(X),
                                        "Prediction",
@@ -390,42 +390,24 @@ predict.joint <- function(Beta = Beta,
       lower <- rep(-Inf, n_species)  # default vector of -Inf lower limits
       upper <- rep(+Inf, n_species)  # default vector of +Inf upper limits
       
-      ## lowerx / upperx to define probability to calculate (target species Pr(z>0))
-      
-      lowerx <- lower
-      upperx <- upper
-      
-      for(i in seq_len(length(occ_state))){
-        
-        if(occ_state[i] == 1){       # If present, limit distribution to >0
-          
-          lowerx[i] <- 0
-          
-        } 
-        
-        if(occ_state[i] == 0){       # If absent, limit distributoin to <0
-          
-          upperx[i] <- 0
-          
-        } 
-      }
-      
       #### Prediction for species assemblage at site i using values from slice a
       
-      spp_pred <- ptmvnorm(mean = colSums(mean_values[ , , a]),
+      spp_pred <- rtmvnorm(n = 1,
+                           mean = colSums(mean_values[ , , a]),
                            sigma = R[ , , a], 
                            lower = lower, 
-                           upper = upper,
-                           lowerx = lowerx,
-                           upperx = upperx)
+                           upper = upper)
+      
+      #### Convert latent variable draws to pres/abs
+      
+      spp_pred <- ifelse(spp_pred > 0, 1, 0)
       
       #### Fill predictions array with value
       
-      predictions[i, 1, a] <- spp_pred
+      predictions[i, , a] <- spp_pred
       
     } 
   } 
-  
   
   return(predictions)
   
