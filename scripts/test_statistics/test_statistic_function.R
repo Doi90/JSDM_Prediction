@@ -14,11 +14,24 @@ test_statistic <- function(observed,
 
   ## Create empty array to store results
   
+  metric_names <- c(
+    # Threshold-independent
+    "AUC", "bias", "MSE", "R2", "RMSE", "SSE", "Pearson", "Spearman", "Kendall",
+    # Threshold-dependant
+    "TPR", "FPR", "TNR", "FNR", "PLR", "NLR", "DOR", "Prevalence", "Accuracy",
+    "PPV", "FOR", "FDR", "NPV", "F_1", "Youden_J", "Kappa",
+    # Community dissimilarity metrics
+    "Binomial", "Bray", "Canberra", "Cao", "Chao", "Euclidean", "Gower", "Gower_alt",
+    "Horn", "Jaccard", "Kulczynski", "Mahalanobis", "Manhattan", "Morisita", "Mountford", "Raup"
+  )
+  
   test_statistics <- array(NA,
-                           dim = c(ncol(y),
-                                   7,
-                                   dim(predictions)[3])
-                           )
+                           dim = c(nrow(observed),
+                                   length(metric_names),
+                                   dim(predictions)[3]),
+                           dimnames = list(NULL,
+                                           metric_names,
+                                           NULL))
   
   ## Calculate test statistics
   
