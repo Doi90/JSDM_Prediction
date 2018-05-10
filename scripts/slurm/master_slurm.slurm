@@ -20,7 +20,7 @@
 #SBATCH --job-name=JPred_$1_$2_$3
 #
 # Set up output file name. Format of JPred_ModelID_DatasetID_FoldID.out
-#SBATCH --output=slurm_outputs/JPred_$1_$2_$3.out
+#SBATCH --output=outputs/slurm_outputs/JPred_$1_$2_$3.out
 #
 # Set email notifications
 #SBATCH --mail-user=davidpw@student.unimelb.edu.au
