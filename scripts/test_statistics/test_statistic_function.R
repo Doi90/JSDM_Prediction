@@ -18,6 +18,7 @@ test_statistic <- function(observed,
     # Threshold-independent
     "AUC", "bias", "MSE", "R2", "RMSE", "SSE", "Pearson", "Spearman", "Kendall",
     # Threshold-dependant
+    "TP", "FP", "TN", "FN",
     "TPR", "FPR", "TNR", "FNR", "PLR", "NLR", "DOR", "Prevalence", "Accuracy",
     "PPV", "FOR", "FDR", "NPV", "F_1", "Youden_J", "Kappa",
     # Community dissimilarity metrics
@@ -87,14 +88,21 @@ test_statistic <- function(observed,
       
       ### Threshold dependent ----
       
-      #### Create a confusion matrix and extract values
+      #### Create a binary confusion matrix and extract values
       
-      confusion <- table(pred_data > threshold, obs_data)
+      # confusion <- table(pred_data > threshold, obs_data)
+      # 
+      # TP <- confusion[2,2]  # True positives
+      # FP <- confusion[2,1]  # False positives
+      # TN <- confusion[1,1]  # True negatives
+      # FN <- confusion[1,2]  # False negatives
       
-      TP <- confusion[2,2]  # True positives
-      FP <- confusion[2,1]  # False positives
-      TN <- confusion[1,1]  # True negatives
-      FN <- confusion[1,2]  # False negatives
+      #### Create a probabilistic confusion matrix and extract values
+      
+      TP <- sum(pred_data * obs_data)
+      FP <- sum(pred_data * (1 - obs_data))
+      TN <- sum(1 - pred_data) * (1 - obs_data)
+      FN <- sum((1 - pred_data) * obs_data)
       
       #### Calculate metrics
       
@@ -218,7 +226,8 @@ test_statistic <- function(observed,
         # Threshold-independent
         AUC, bias, MSE, R2, RMSE, SSE, Pearson, Spearman, Kendall,
         # Threshold-dependant
-        TPR, FPR, TNR, FNR, PLR, NLR, DOR, Prevalence, Accuracy, PPV, FOR, FDR, NPV, F_1, Youden_J, Kappa,
+        TP, FP, TN, FN, TPR, FPR, TNR, FNR, PLR, NLR, DOR, Prevalence,
+        Accuracy, PPV, FOR, FDR, NPV, F_1, Youden_J, Kappa,
         # Community dissimilarity metrics
         Binomial, Bray, Canberra, Cao, Chao, Euclidean, Gower, Gower_alt,
         Horn, Jaccard, Kulczynski, Mahalanobis, Manhattan, Morisita, Mountford, Raup
