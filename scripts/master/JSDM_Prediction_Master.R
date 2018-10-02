@@ -164,7 +164,34 @@ if(run_status){
     
   } else if(model_id == "SSDM"){
     
-    source("scripts/prediction/prediction_SSDM.R")
+    source("scripts/prediction/prediction_functions_SESAM.R")
+    source("scripts/prediction/prediction_SSDM_SESAM.R")
+    
+  }
+}
+
+#################################
+### Run Log-Likelihood Script ###
+#################################
+
+## Purge environment for memory's sake. Need to keep 5 constants.
+
+rm(list = ls()[-which(ls() %in% c("model_id",
+                                  "dataset_id",
+                                  "fold_id",
+                                  "run_status",
+                                  "start_time"))])
+
+if(run_status){
+  
+  if(model_id != "SSDM"){
+    
+    source("scripts/test_statistics/likelihood_function_JSDM.R")
+    source("scripts/test_statistics/likelihood_JSDM.R")
+    
+  } else if(model_id == "SSDM"){
+    
+    source("scripts/test_statistics/likelihood_SSDM.R")
     
   }
 }

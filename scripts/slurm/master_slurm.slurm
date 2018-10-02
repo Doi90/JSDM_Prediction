@@ -39,6 +39,6 @@ module load GDAL
 module load JAGS
 module load R/3.5.0-GCC-4.9.2
 
-cd ~/../../data/cephfs/punim0200
+cd /data/cephfs/punim0200
 
 Rscript --vanilla scripts/master/JSDM_Prediction_Master.R $model $dataset $fold

@@ -63,5 +63,5 @@ for model in {1..7}
       
         for fold in {1..5}
         
-          sbatch ~/../../data/cephfs/punim0200/scripts/slurm/master_slurm.slurm $model $dataset $fold $MEMORY_LIMIT $PARTITION $WALLTIME $nCPU
+          sbatch /data/cephfs/punim0200/scripts/slurm/master_slurm.slurm $model $dataset $fold $MEMORY_LIMIT $PARTITION $WALLTIME $nCPU
         

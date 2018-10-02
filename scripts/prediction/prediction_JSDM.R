@@ -84,7 +84,6 @@ n_covar <- ncol(X_test) # includes intercept
 
 n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chains. Post thinning
   
-
 ##################
 ### Prediction ###
 ##################

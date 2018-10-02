@@ -69,7 +69,7 @@ model_name <- "JSDM"
 
 set.seed(28041948)          # Creator's birthday
 
-source('fit_JSDM.r')
+source('scripts/models/fit_JSDM.r')
 
 ### Extract posteriors ----
 

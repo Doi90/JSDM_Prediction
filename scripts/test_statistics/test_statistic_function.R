@@ -113,8 +113,8 @@ test_statistic <- function(observed,
       PLR <- TPR / FPR                               # Positive Likelihood Ratio
       NLR <- FNR / TNR                               # Negative Likelihood Ratio
       DOR <- PLR / NLR                               # Diagnositic Odds Ratio
-      Prevalence <- (TP + FN) / (TP + FN + TN + FN)
-      Accuracy <- (TP + TN) / (TP + FN + TN + FN)
+      Prevalence <- (TP + FN) / (TP + FP + TN + FN)
+      Accuracy <- (TP + TN) / (TP + FP + TN + FN)
       PPV <- TP / (TP + FP)                          # Positive Predictive Value
       FOR <- FN / (FN + TN)                          # False Omission Rate
       FDR <- FP / (TP + FP)                          # False Discovery Rate  
@@ -124,7 +124,7 @@ test_statistic <- function(observed,
       Kappa <- cohen.kappa(cbind(obs_data,           # Cohen's Kappa
                                  pred_data))$kappa
       # Kappa <- ((TP + TN) - 
-      #             (((TP + FN) * (TP + FP) + (FP + TN) + (FN + TN)) /
+      #             (((TP + FN) * (TP + FP) + (FP + TN) * (FN + TN)) /
       #                (TP + FP + TN + FN))) /
       #          ((TP + FP + TN + FN) -
       #             (((TP + FN) * (TP + FP) + (FP + TN) * (FN + TN)) /
@@ -154,16 +154,6 @@ test_statistic <- function(observed,
                                 pred_thresh),
                           method = "canberra",
                           binary = TRUE)
-      
-      Cao <- vegdist(rbind(obs_data,
-                           pred_thresh),
-                     method = "cao", 
-                     binary = TRUE)
-      
-      Chao <- vegdist(rbind(obs_data,
-                            pred_thresh),
-                      method = "chao", 
-                      binary = TRUE)
       
       Euclidean <- vegdist(rbind(obs_data,
                                  pred_thresh),
@@ -205,11 +195,6 @@ test_statistic <- function(observed,
                            method = "manhattan",
                            binary = TRUE)
       
-      Morisita <- vegdist(rbind(obs_data,
-                                pred_thresh),
-                          method = "morisita", 
-                          binary = TRUE)
-      
       Mountford <- vegdist(rbind(obs_data,
                                  pred_thresh),
                            method = "mountford",
@@ -229,8 +214,8 @@ test_statistic <- function(observed,
         TP, FP, TN, FN, TPR, FPR, TNR, FNR, PLR, NLR, DOR, Prevalence,
         Accuracy, PPV, FOR, FDR, NPV, F_1, Youden_J, Kappa,
         # Community dissimilarity metrics
-        Binomial, Bray, Canberra, Cao, Chao, Euclidean, Gower, Gower_alt,
-        Horn, Jaccard, Kulczynski, Mahalanobis, Manhattan, Morisita, Mountford, Raup
+        Binomial, Bray, Canberra, Euclidean, Gower, Gower_alt,
+        Horn, Jaccard, Kulczynski, Mahalanobis, Manhattan, Mountford, Raup
       )
       
     }

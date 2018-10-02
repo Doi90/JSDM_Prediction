@@ -1,12 +1,19 @@
-#############################################################
-#############################################################
-###                                                       ### 
-###              PERFORM SSDM PREDICTION                  ###
-###                                                       ###
-### This script performs the SSDM model predictions.      ###
-###                                                       ###
-#############################################################
-#############################################################
+########################################################
+########################################################
+###                                                  ### 
+###         PERFORM SSDM & SESAM PREDICTION          ###
+###                                                  ###
+###   This script performs the SSDM and SESAM model  ###
+### predictions. Both prediction methods use the     ###
+### individual species GLM models. SSDM performs a   ###
+### standard stacked species distribution model      ###
+### prediction. SESAM constrains the stacked model   ###
+### predictions using a measure of estimates species ###
+### richness at each site (here, sum of predicted    ###
+### probabilities for all species).                  ###
+###                                                  ###
+########################################################
+########################################################
 
 #######################
 ### Load Model List ###
@@ -61,9 +68,9 @@ n_sites <- nrow(y_test)
 
 n_covar <- ncol(X_test) # includes intercept
 
-##################
-### Prediction ###
-##################
+#######################
+### SSDM Prediction ###
+#######################
 
 ## Empty array
 
@@ -89,9 +96,24 @@ for(j in seq_len(n_species)){
   
 }
 
+########################
+### SESAM Prediction ###
+########################
+
+spp_probabilities <- as.data.frame(pred_array[ , , 1])
+
+spp_richness <- apply(spp_probabilities,
+                      MARGIN = 1,
+                      FUN = sum)
+
+SESAM_prediction <- SESAM(probabilities = spp_probabilities,
+                          species_richness = spp_richness)
+
 ###################
 ### Save Output ###
 ###################
+
+## SSDM
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
                     model_id,
@@ -99,4 +121,13 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
                     fold_id)
 
 saveRDS(pred_array,
+        filename)
+
+## SESAM
+
+filename <- sprintf("outputs/prediction/SESAM_%s_fold%s.rds",
+                    dataset_id,
+                    fold_id)
+
+saveRDS(SEASM_prediction,
         filename)
