@@ -37,6 +37,6 @@ module load GDAL/2.2.3-intel-2017.u2
 module load JAGS/4.3.0-intel-2017.u2
 module load R/3.5.0-intel-2017.u2-X11-20171023
 
-cd /data/cephfs/punim0200
+cd /data/cephfs/punim0200/JSDM_Prediction
 
 Rscript --vanilla scripts/master/JSDM_Prediction_Master.R $model $dataset $fold

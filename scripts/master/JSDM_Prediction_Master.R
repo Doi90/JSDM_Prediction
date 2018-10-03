@@ -222,7 +222,34 @@ if(run_status){
   } else if(model_id == "SSDM"){
     
     source("scripts/test_statistics/test_statistic_function.R")
-    source("scripts/test_statistics/test_statistics_SSDM.R")
+    source("scripts/test_statistics/test_statistics_SSDM_SESAM.R")
+    
+  }
+}
+
+###################################
+### Run Species Richness Script ###
+###################################
+
+## Purge environment for memory's sake. Need to keep 5 constants.
+
+rm(list = ls()[-which(ls() %in% c("model_id",
+                                  "dataset_id",
+                                  "fold_id",
+                                  "run_status",
+                                  "start_time"))])
+
+if(run_status){
+  
+  if(model_id != "SSDM"){
+    
+    source("scripts/species_richness/species_richness_function.R")
+    source("scripts/species_richness/species_richness_JSDM.R")
+    
+  } else if(model_id == "SSDM"){
+    
+    source("scripts/species_richness/species_richness_function.R")
+    source("scripts/species_richness/species_richness_SSDM_SESAM.R")
     
   }
 }

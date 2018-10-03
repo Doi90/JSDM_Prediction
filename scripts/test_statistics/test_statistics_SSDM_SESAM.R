@@ -27,7 +27,9 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Calculate Test Statistics ###
 #################################
 
-## Load Data
+## SSDM
+
+### Load Data
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
                     model_id,
@@ -36,7 +38,7 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
 
 SSDM_pred <- readRDS(filename)
 
-## Calculate Test Statistics
+### Calculate Test Statistics
 
 SSDM_ts <- test_statistic(observed = y_test,
                           predictions = SSDM_pred)
@@ -55,3 +57,32 @@ saveRDS(SSDM_ts,
 
 rm(c("SSDM_pred",
      "SSDM_ts"))
+
+## SESAM
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/SESAM_%s_fold%s.rds",
+                    dataset_id,
+                    fold_id)
+
+SESAM_pred <- readRDS(filename)
+
+### Calculate Test Statistics
+
+SESAM_ts <- test_statistic(observed = y_test,
+                           predictions = SESAM_pred)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/SESAM_%s_fold%s_ts.rds",
+                    dataset_id,
+                    fold_id)
+
+saveRDS(SESAM_ts,
+        filename)
+
+### Memory purge
+
+rm(c("SESAM_pred",
+     "SESAM_ts"))

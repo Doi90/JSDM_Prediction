@@ -63,7 +63,7 @@ do
       
         for fold in {1..5}
         do
-          sbatch /data/cephfs/punim0200/scripts/slurm/master_slurm.slurm $model $dataset $fold $MEMORY_LIMIT $PARTITION $WALLTIME $nCPU
+          sbatch /data/cephfs/punim0200/JSDM_Prediction/scripts/slurm/master_slurm.slurm $model $dataset $fold $MEMORY_LIMIT $PARTITION $WALLTIME $nCPU
         done
 	done	  
 done        
