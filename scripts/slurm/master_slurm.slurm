@@ -32,12 +32,10 @@ fold=$3
 
 module purge
 
-export R_LIB_USER="~/R/lib/"
-
-module load PROJ
-module load GDAL
-module load JAGS
-module load R/3.5.0-GCC-4.9.2
+module load PROJ/5.0.0-intel-2017.u2
+module load GDAL/2.2.3-intel-2017.u2
+module load JAGS/4.3.0-intel-2017.u2
+module load R/3.5.0-intel-2017.u2-X11-20171023
 
 cd /data/cephfs/punim0200
 

@@ -119,6 +119,7 @@ filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(Beta_posterior,
         filename)
 
@@ -126,5 +127,6 @@ filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(R_posterior,
         filename)

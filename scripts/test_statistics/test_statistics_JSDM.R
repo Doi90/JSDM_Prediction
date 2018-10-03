@@ -76,7 +76,7 @@ cond_LOO_ts <- test_statistic(observed = y_test,
 
 ### Save To File
 
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_cond_LOO_ts.rds",
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOO_ts.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -106,7 +106,7 @@ cond_LOI_pred <- readRDS(filename)
 
 ### Save To File
 
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_cond_LOI_ts.rds",
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_ts.rds",
                     model_id,
                     dataset_id,
                     fold_id)

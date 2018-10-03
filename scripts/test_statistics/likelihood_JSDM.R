@@ -19,7 +19,7 @@
 # Column = Species. J columns
 # Slice = Iterations. n_iter slices
 
-Beta_filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+Beta_filename <- sprintf("outputs/posteriors/%s_beta_%s_fold_%s.rds",
                          model_id,
                          dataset_id,
                          fold_id)
@@ -32,7 +32,7 @@ Beta_posterior <- readRDS(Beta_filename)
 # Column = Species. J columns
 # Slice = Iterations. n_iter slices
 
-R_filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+R_filename <- sprintf("outputs/posteriors/%s_R_%s_fold_%s.rds",
                       model_id,
                       dataset_id,
                       fold_id)

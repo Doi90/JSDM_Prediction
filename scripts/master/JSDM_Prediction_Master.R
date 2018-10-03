@@ -117,9 +117,13 @@ library(psych)
 ## Frog data only has two folds so don't run for folds >2
 
 if(dataset_id == "frog" & fold_id > 2){
+  
   run_status <- FALSE
+  
 } else {
+  
   run_status <- TRUE
+  
 }
 
 ########################
@@ -224,7 +228,7 @@ if(run_status){
 }
 
 ##############
-### OUTPUT ###
+### Output ###
 ##############
 
 ## Model posteriors saved in model fitting script

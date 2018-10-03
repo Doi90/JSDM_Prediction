@@ -34,16 +34,18 @@ X <- X[ , -1]                                           # Remove rownames
 
 ### Run boral JSDM ----
 
-JSDM <- boral(y,                                        # Pres/Abs data
-              X = X,                                    # Predictors. DO NOT INCLUDE INTERCEPT COLUMN
-              family = "binomial",                      # Makes model use PA data, probit link
-              num.lv = 2,                               # Set number of latent factors
-              save.model = TRUE,                        # Saves JAGS model as a txt file, allows coda package to analyse MCMC
-              mcmc.control = list(n.burnin = 10000,     # Burn in
-                                  n.iteration = 60000,  # Total number of samples
-                                  n.thin = 50,          # Amount of thinning
-                                  seed = 28041948),     # Seed
-              model.name = NULL)                        # Name of saved txt file. Can change, but default means dont have to change code between models
+JSDM <- boral(y,                                           # Pres/Abs data
+              X = X,                                       # Predictors. DO NOT INCLUDE INTERCEPT COLUMN
+              family = "binomial",                         # Makes model use PA data, probit link
+              num.lv = 2,                                  # Set number of latent factors
+              save.model = TRUE,                           # Saves JAGS model as a txt file, allows coda package to analyse MCMC
+              mcmc.control = list(n.burnin = 10000,        # Burn in
+                                  n.iteration = 60000,     # Total number of samples
+                                  n.thin = 50,             # Amount of thinning
+                                  seed = 28041948),        # Seed
+              model.name = sprintf("boral_JAGS_%s_%s.txt", # Name of saved txt file.
+                                   dataset_id,
+                                   fold_id))                         
 
 ### Extract posteriors ----
 
@@ -99,6 +101,7 @@ filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(Beta_posterior,
         filename)
 
@@ -106,5 +109,6 @@ filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(R_posterior,
         filename)

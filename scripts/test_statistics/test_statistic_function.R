@@ -9,9 +9,17 @@
 ######################################################
 ######################################################
 
-test_statistic <- function(observed,
-                           predictions){
+test_statistic <- function(observed = NULL,
+                           predictions = NULL){
 
+  if(is.null(observed)){
+    stop("observed not supplied")
+  }
+  
+  if(is.null(predictions)){
+    stop("observed not supplied")
+  }
+  
   ## Create empty array to store results
   
   metric_names <- c(
@@ -22,8 +30,8 @@ test_statistic <- function(observed,
     "TPR", "FPR", "TNR", "FNR", "PLR", "NLR", "DOR", "Prevalence", "Accuracy",
     "PPV", "FOR", "FDR", "NPV", "F_1", "Youden_J", "Kappa",
     # Community dissimilarity metrics
-    "Binomial", "Bray", "Canberra", "Cao", "Chao", "Euclidean", "Gower", "Gower_alt",
-    "Horn", "Jaccard", "Kulczynski", "Mahalanobis", "Manhattan", "Morisita", "Mountford", "Raup"
+    "Binomial", "Bray", "Canberra", "Euclidean", "Gower", "Gower_alt",
+    "Horn", "Jaccard", "Kulczynski", "Mahalanobis", "Manhattan", "Mountford", "Raup"
   )
   
   test_statistics <- array(NA,
@@ -220,5 +228,7 @@ test_statistic <- function(observed,
       
     }
   }
+  
   return(test_statistics)
+
 }

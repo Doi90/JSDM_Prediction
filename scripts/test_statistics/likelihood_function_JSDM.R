@@ -9,13 +9,13 @@
 #############################################################
 #############################################################
 
-log_likelihood <- function(Beta = Beta,
-                           X,
-                           y,
-                           R,
-                           n_species = n_species,
-                           n_sites = n_sites,
-                           n_iter = n_iter){
+log_likelihood <- function(Beta = NULL,
+                           X = NULL,
+                           y = NULL,
+                           R = NULL,
+                           n_species = NULL,
+                           n_sites = NULL,
+                           n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
   

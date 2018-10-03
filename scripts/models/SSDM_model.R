@@ -68,5 +68,6 @@ filename <- sprintf("posteriors/%s_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(model_list,
         filename)

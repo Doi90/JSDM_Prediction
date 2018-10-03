@@ -20,7 +20,7 @@
 # Column = Species. J columns
 # Slice = Iterations. n_iter slices
 
-Beta_filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+Beta_filename <- sprintf("outputs/posteriors/%s_beta_%s_fold_%s.rds",
                          model_id,
                          dataset_id,
                          fold_id)
@@ -33,7 +33,7 @@ Beta_posterior <- readRDS(Beta_filename)
 # Column = Species. J columns
 # Slice = Iterations. n_iter slices
 
-R_filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+R_filename <- sprintf("outputs/posteriors/%s_R_%s_fold_%s.rds",
                       model_id,
                       dataset_id,
                       fold_id)
@@ -99,6 +99,7 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(marg_pred,
         filename)
 
@@ -115,6 +116,7 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(cond_LOI_pred,
         filename)
 
@@ -131,6 +133,7 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(cond_LOO_pred,
         filename)
 
@@ -147,7 +150,6 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_joint.rds",
                     model_id,
                     dataset_id,
                     fold_id)
+
 saveRDS(joint_pred,
         filename)
-
-

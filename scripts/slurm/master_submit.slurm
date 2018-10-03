@@ -1,7 +1,7 @@
 #!/bin/bash
 
 for model in {1..7}
-
+do
   if [ $model -eq 2 ]
   then
     nCPU=3
@@ -10,12 +10,12 @@ for model in {1..7}
   fi
   
     for dataset in {1..3}
-    
+    do
       if [ $dataset -eq 1 ]
       then
         MEMORY_LIMIT=20480
         PARTITION="cloud"
-        WALLTIME=5
+        WALLTIME=24
       fi
       
       if [ $dataset -eq 2 ]
@@ -27,7 +27,7 @@ for model in {1..7}
         then
           WALLTIME=168
         else
-          WALLTIME=24
+          WALLTIME=48
         fi
         
       fi
@@ -39,7 +39,7 @@ for model in {1..7}
         
         if [ $model -eq 1 ]
         then
-          WALLTIME=24
+          WALLTIME=48
         elif [ $model -eq 2 ]
         then
           WALLTIME=336
@@ -48,20 +48,22 @@ for model in {1..7}
           WALLTIME=336
         elif [ $model -eq 4 ]
         then
-          WALLTIME=48
+          WALLTIME=96
         elif [ $model -eq 5 ]
         then
-          WALLTIME=48
+          WALLTIME=96
         elif [ $model -eq 6 ]
         then
           WALLTIME=336
         elif [ $model -eq 7 ]
         then
-          WALLTIME=24
+          WALLTIME=48
         fi  
       fi
       
         for fold in {1..5}
-        
+        do
           sbatch /data/cephfs/punim0200/scripts/slurm/master_slurm.slurm $model $dataset $fold $MEMORY_LIMIT $PARTITION $WALLTIME $nCPU
-        
+        done
+	done	  
+done        

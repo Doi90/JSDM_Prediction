@@ -16,10 +16,10 @@
 # other target species.
 # Environment-only prediction. Ignores species interactions.
 
-predict.marginal <- function(Beta = Beta,
-                             X,
-                             n_species = n_species,
-                             n_iter = n_iter){
+predict.marginal <- function(Beta = NULL,
+                             X = NULL,
+                             n_species = NULL,
+                             n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
   
@@ -65,7 +65,6 @@ predict.marginal <- function(Beta = Beta,
   
 }
 
-
 ### Conditional prediction ----
 
 # Conditional prediction involves predicting the probability
@@ -81,12 +80,12 @@ predict.marginal <- function(Beta = Beta,
 #  the probability of occurrence for J-1 target species when we
 #  know the occurrence state of one
 
-predict.conditional.LOI <- function(Beta = Beta,
-                                    X,
-                                    y,
-                                    R,
-                                    n_species = n_species,
-                                    n_iter = n_iter){
+predict.conditional.LOI <- function(Beta = NULL,
+                                    X = NULL,
+                                    y = NULL,
+                                    R = NULL,
+                                    n_species = NULL,
+                                    n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
   
@@ -197,12 +196,12 @@ predict.conditional.LOI <- function(Beta = Beta,
 #  the probability of occurrence of one species when we know the
 #  occurrence state of J-1 target species.
 
-predict.conditional.LOO <- function(Beta = Beta,
-                                    X,
-                                    y,
-                                    R,
-                                    n_species = n_species,
-                                    n_iter = n_iter){
+predict.conditional.LOO <- function(Beta = NULL,
+                                    X = NULL,
+                                    y = NULL,
+                                    R = NULL,
+                                    n_species = NULL,
+                                    n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
   
@@ -313,7 +312,6 @@ predict.conditional.LOO <- function(Beta = Beta,
   
 } 
 
-
 ### Joint prediction ----
 
 # Joint prediction involves predicting the probability of 
@@ -321,12 +319,12 @@ predict.conditional.LOO <- function(Beta = Beta,
 #  for both the measured environmental variables and species
 #  interactions
 
-predict.joint <- function(Beta = Beta,
-                          X,
-                          y,
-                          R,
-                          n_species = n_species,
-                          n_iter = n_iter){
+predict.joint <- function(Beta = NULL,
+                          X = NULL,
+                          y = NULL,
+                          R = NULL,
+                          n_species = NULL,
+                          n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
   
