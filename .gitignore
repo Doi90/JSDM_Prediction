@@ -3,8 +3,7 @@
 .RData
 .Ruserdata
 *.Rproj
-Old/*
-Data/*
+old/*
 Overall_Workflow.txt
 Overall_workflow.pdf
 *_skeleton.docx
