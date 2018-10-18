@@ -53,7 +53,7 @@ predict.marginal <- function(Beta = NULL,
   
   for(i in seq_len(dim(Beta)[3])){
     
-    predictions[ , , i] <- pnorm(X %*% Beta[ , , i])
+    predictions[ , , i] <- pnorm(X * Beta[ , , i])
     
   }
   
