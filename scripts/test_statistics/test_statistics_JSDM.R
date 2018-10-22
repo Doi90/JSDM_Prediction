@@ -27,7 +27,7 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Calculate Test Statistics ###
 #################################
 
-## Marginal 
+## Marginal ----
 
 ### Load Data
 
@@ -58,7 +58,7 @@ saveRDS(marg_ts,
 rm(c("marg_pred",
      "marg_ts"))
 
-## Conditional - leave one out
+## Conditional - leave one out ----
 
 ### Load data
 
@@ -89,7 +89,7 @@ saveRDS(cond_LOO_ts,
 rm(c("cond_LOO_pred",
      "cond_LOO_ts"))
 
-## Conditional - leave one in
+## Conditional - leave one in ----
 
 ### Load Data
 
@@ -102,7 +102,20 @@ cond_LOI_pred <- readRDS(filename)
 
 ### Calculate Test Statistics
 
-# Loop over array 4th dimension, fill new empty array, then average over that?
+# Loop over array 4th dimension, calculate test statistic separately
+# Save as list, turn back into 4D array
+
+ts_list <- list()
+
+for(i in seq_len(dim(cond_LOI_pred)[4])){
+  
+  ts_list[[i]] <- test_statistic(observed = y_test,
+                                 predictions = cond_LOO_pred[ , , , i])
+
+}
+
+cond_LOI_ts <- abind(ts_list,
+                     along = 4)
 
 ### Save To File
 
@@ -119,7 +132,7 @@ saveRDS(cond_LOI_ts,
 rm(c("cond_LOI_pred",
      "cond_LOI_ts"))
 
-## Joint
+## Joint ----
 
 ### Load Data
 
@@ -150,3 +163,4 @@ saveRDS(joint_ts,
 rm(c("joint_pred",
      "joint_ts"))
 
+#----
