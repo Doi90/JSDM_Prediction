@@ -58,7 +58,7 @@ species_richness <- function(observed = NULL,
   
   ## Richness difference
   
-  spp_richness[ , 3, ] <- spp_richness[ , 1, ] - spp_richness[ , 2, ] 
+  spp_richness[ , 3, ] <- spp_richness[ , 2, ] - spp_richness[ , 1, ] 
   
   ## Output
   
