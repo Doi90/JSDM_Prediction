@@ -29,9 +29,9 @@ start_time <- Sys.time()
 
 command_args <- commandArgs(trailingOnly = TRUE)
 
-model_index <- command_args[1]
-dataset_index <- command_args[2]
-fold_index <- command_args[3]
+model_index <- as.numeric(command_args[1])
+dataset_index <- as.numeric(command_args[2])
+fold_index <- as.numeric(command_args[3])
 
 ## Possible ID options
 
