@@ -93,6 +93,7 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 marg_pred <- predict.marginal(Beta = Beta_posterior,
                               X = X_test,
                               n_species = n_species,
+                              n_sites = n_sites,
                               n_iter = n_iter)
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal.rds",

@@ -97,6 +97,7 @@ predict.conditional.LOI <- function(Beta = NULL,
                                     y = NULL,
                                     R = NULL,
                                     n_species = NULL,
+                                    n_sites = NULL,
                                     n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
@@ -119,6 +120,10 @@ predict.conditional.LOI <- function(Beta = NULL,
   
   if(is.null(n_species)){
     stop("n_species not supplied.")
+  } 
+  
+  if(is.null(n_sites)){
+    stop("n_sites not supplied.")
   } 
   
   if(is.null(n_iter)){
