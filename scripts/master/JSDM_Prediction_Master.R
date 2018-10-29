@@ -53,13 +53,15 @@ fold_options <- 1:5
 
 model_id <- model_options[model_index]
 
-dataset_id <- model_options[model_index]
+dataset_id <- dataset_options[dataset_index]
 
-fold_id <- model_options[model_index]
+fold_id <- fold_options[fold_index]
 
 #####################
 ### Load packages ###
 #####################
+
+.libPaths("/home/davidpw/R/lib/3.5")
 
 ### Model script packages
 
