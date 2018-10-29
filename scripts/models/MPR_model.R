@@ -20,7 +20,7 @@ command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train_spatial.csv')",
 
 y <- eval(parse(text = command))                        # Evaluate command to read in data
 
-y <- y[ , -1]                                           # Remove rownames
+y <- as.matrix(y[ , -1])                                # Remove rownames
 
 ## Site data
 
@@ -30,7 +30,7 @@ command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train_spatial.csv')",
 
 X <- eval(parse(text = command))                        # Evaluate command to read in data
 
-X <- X[ , -1]                                           # Remove rownames
+X <- as.matrix(X[ , -1])                                # Remove rownames
 
 ### Run BayesComm JSDM ----
 
@@ -52,7 +52,7 @@ Beta_extract <- JSDM$trace$B                    # Extract Beta posterior from mo
 n_samples <- (JSDM$call$its - JSDM$call$start + 1) / JSDM$call$thin  # determine number of samples in posterior
 
 Beta_posterior <- array(NA,                     # Create empty array of required shape
-                        dim = c(ncol(X),
+                        dim = c(ncol(X) + 1,    # +1 for Intercept
                                 ncol(y),
                                 n_samples))
 
