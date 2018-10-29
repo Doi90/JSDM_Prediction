@@ -2,7 +2,7 @@
 
 for model in {1..7}
 do
-  if [ $model -eq 2 ]
+  if [ $model = "2" ]
   then
     nCPU=3
   else
@@ -11,19 +11,19 @@ do
   
     for dataset in {1..3}
     do
-      if [ $dataset -eq 1 ]
+	  if [ $dataset = "1" ]
       then
         MEMORY_LIMIT=20480
         PARTITION="cloud"
         WALLTIME=24
       fi
       
-      if [ $dataset -eq 2 ]
+      if [ $dataset = "2" ]
       then
         MEMORY_LIMIT=51200
         PARTITION="cloud"
         
-        if [ $model -eq 6 ]
+        if [ $model = "6" ]
         then
           WALLTIME=168
         else
@@ -32,30 +32,30 @@ do
         
       fi
       
-      if [ $dataset -eq 3 ]
+      if [ $dataset = "3" ]
       then
         MEMORY_LIMIT=225280
         PARTITION="physical"
         
-        if [ $model -eq 1 ]
+        if [ $model = "1" ]
         then
           WALLTIME=48
-        elif [ $model -eq 2 ]
+        elif [ $model = "2" ]
         then
           WALLTIME=336
-        elif [ $model -eq 3 ]
+        elif [ $model = "3" ]
         then
           WALLTIME=336
-        elif [ $model -eq 4 ]
+        elif [ $model = "4" ]
         then
           WALLTIME=96
-        elif [ $model -eq 5 ]
+        elif [ $model = "5" ]
         then
           WALLTIME=96
-        elif [ $model -eq 6 ]
+        elif [ $model = "6" ]
         then
           WALLTIME=336
-        elif [ $model -eq 7 ]
+        elif [ $model = "7" ]
         then
           WALLTIME=48
         fi  
@@ -63,7 +63,11 @@ do
       
         for fold in {1..5}
         do
-          sbatch /data/cephfs/punim0200/JSDM_Prediction/scripts/slurm/master_slurm.slurm $model $dataset $fold $MEMORY_LIMIT $PARTITION $WALLTIME $nCPU
+		  WALLTIME_FORMAT="$WALLTIME:00:00"
+		  JOB_NAME="JPred_$model_$dataset_$fold"
+		  OUT_NAME="/data/cephfs/punim0200/JSDM_Prediction/outputs/slurm_outputs/JPred_$model_$dataset_$fold.out"
+		  
+          sbatch -p $PARTITION --cpus-per-task=$nCPU --mem=$MEMORY_LIMIT --time=$WALLTIME_FORMAT --job-name=$JOB_NAME --output=$OUT_NAME /data/cephfs/punim0200/JSDM_Prediction/scripts/slurm/master_slurm.slurm $model $dataset $fold 
         done
 	done	  
 done        
