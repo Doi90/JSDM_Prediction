@@ -94,7 +94,7 @@ for(i in seq_len(dim(R_posterior)[3])){         # Fill correct shape with poster
 
 ### Save Posteriors ----
 
-filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_beta_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -102,7 +102,7 @@ filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
 saveRDS(Beta_posterior,
         filename)
 
-filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_R_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
