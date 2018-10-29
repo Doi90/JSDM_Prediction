@@ -19,6 +19,7 @@
 predict.marginal <- function(Beta = NULL,
                              X = NULL,
                              n_species = NULL,
+                             n_sites = NULL,
                              n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
@@ -35,6 +36,10 @@ predict.marginal <- function(Beta = NULL,
     stop("n_species not supplied.")
   }
   
+  if(is.null(n_sites)){
+    stop("n_sites not supplied.")
+  }
+  
   if(is.null(n_iter)){
     stop("n_iter not supplied.")
   }
@@ -42,7 +47,7 @@ predict.marginal <- function(Beta = NULL,
   ## Create a prediction array full of NAs
   
   predictions <- array(NA,
-                       dim = c(nrow(X),     # Number of sites in test data
+                       dim = c(n_sites,     # Number of sites in test data
                                n_species,   
                                n_iter),     # 1:1 Prediction slice:Posterior slice
                        dimnames = list(rownames(X),
@@ -51,11 +56,18 @@ predict.marginal <- function(Beta = NULL,
   
   ## Make predictions. Fill predictions array with values as we go
   
-  for(i in seq_len(dim(Beta)[3])){
+  for(i in seq_len(n_sites)){
     
-    predictions[ , , i] <- pnorm(X * Beta[ , , i])
-    
+    for(j in seq_len(n_species)){
+      
+      for(k in seq_len(n_iter)){
+        
+        predictions[i, j, k] <- pnorm(sum(X[i, ] * Beta[ , j, k]))
+        
+      }
+    }
   }
+  
   
   if(any(is.na(predictions))){
     warning("Some predictions returned NAs")
@@ -115,10 +127,22 @@ predict.conditional.LOI <- function(Beta = NULL,
   
   ## Create an array of distribution mean values. Beta * X values
   
-  mean_values <- Beta * array(data = X,
-                              dim = c(nrow(X),
-                                      ncol(X),
-                                      dim(Beta)[3]))
+  mean_values <- array(data = NA,
+                       dim = c(nrow(X),
+                               ncol(y),
+                               dim(Beta)[3]))
+  
+  for(i in seq_len(n_sites)){
+    
+    for(j in seq_len(n_species)){
+      
+      for(k in seq_len(n_iter)){
+        
+        mean_values[i, j, k] <- sum(X[i, ] * Beta[ , j, k])
+        
+      }
+    }
+  }
   
   ## Create a prediction array full of NAs. Unlike other predictions,
   ## this one needs a 4D array for predictions as we need to predict
@@ -126,7 +150,7 @@ predict.conditional.LOI <- function(Beta = NULL,
   ## J-1 predictions per species per site
   
   predictions <- array(NA,
-                       dim = c(nrow(X),     # Number of sites in test data
+                       dim = c(n_sites,     # Number of sites in test data
                                n_species,
                                n_iter,      # 1:1 Prediction slice:Posterior slice
                                n_species),  # Need to predict for each species left in   
@@ -143,11 +167,11 @@ predict.conditional.LOI <- function(Beta = NULL,
     
     ### For each slice of array
     
-    for(a in seq_len(dim(Beta)[3])){
+    for(k in seq_len(n_iter)){
       
       ### For each site
       
-      for(i in seq_len(nrow(y))){
+      for(i in seq_len(n_sites)){
         
         occ_state <- y[i, ]         # observed occurrence state  at site i
         
@@ -169,8 +193,8 @@ predict.conditional.LOI <- function(Beta = NULL,
         #### Perform prediction / random draws from multivariate normal  
         
         spp_pred <- rtmvnorm(n = 1,
-                             mean = colSums(mean_values[ , , a]),
-                             sigma = R[ , , a],
+                             mean = mean_values[ i, , k],
+                             sigma = R[ , , k],
                              lower = lower, 
                              upper = upper)
         
@@ -180,7 +204,7 @@ predict.conditional.LOI <- function(Beta = NULL,
         
         #### Fill predictions array with value
         
-        predictions[i, , a, j] <- spp_pred
+        predictions[i, , k, j] <- spp_pred
         
       } 
     }
@@ -201,6 +225,7 @@ predict.conditional.LOO <- function(Beta = NULL,
                                     y = NULL,
                                     R = NULL,
                                     n_species = NULL,
+                                    n_sites = NULL,
                                     n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
@@ -225,21 +250,37 @@ predict.conditional.LOO <- function(Beta = NULL,
     stop("n_species not supplied.")
   } 
   
+  if(is.null(n_sites)){
+    stop("n_sites not supplied.")
+  }
+  
   if(is.null(n_iter)){
     stop("n_iter not supplied.")
   } 
   
   ## Create an array of distribution mean values. Beta * X values
   
-  mean_values <- Beta * array(data = X,
-                              dim = c(nrow(X),
-                                      ncol(X),
-                                      dim(Beta)[3]))
+  mean_values <- array(data = NA,
+                       dim = c(nrow(X),
+                               ncol(y),
+                               dim(Beta)[3]))
+  
+  for(i in seq_len(n_sites)){
+    
+    for(j in seq_len(n_species)){
+      
+      for(k in seq_len(n_iter)){
+        
+        mean_values[i, j, k] <- sum(X[i, ] * Beta[ , j, k])
+        
+      }
+    }
+  }
   
   ## Create a prediction array full of NAs
   
   predictions <- array(NA,
-                       dim = c(nrow(X),     # Number of sites in test data
+                       dim = c(n_sites,     # Number of sites in test data
                                n_species,   
                                n_iter),     # 1:1 Prediction slice:Posterior slice
                        dimnames = list(rownames(X),
@@ -250,11 +291,11 @@ predict.conditional.LOO <- function(Beta = NULL,
   
   ### For each slice of array
   
-  for(a in seq_len(dim(Beta)[3])){
+  for(k in seq_len(n_iter)){
     
     ### For each site
     
-    for(i in seq_len(nrow(y))){
+    for(i in seq_len(n_sites)){
       
       occ_state <- y[i, ]         # observed occurrence state  at site i
       
@@ -269,16 +310,16 @@ predict.conditional.LOO <- function(Beta = NULL,
         lower <- rep(-Inf, n_species)  # default vector of -Inf lower limits
         upper <- rep(+Inf, n_species)  # default vector of +Inf upper limits
         
-        for(k in seq_len(n_species)){  # set actual lower/upper limits based on known occurrence states
+        for(a in seq_len(n_species)){  # set actual lower/upper limits based on known occurrence states
           
-          if(k != j){                  # do this for all species we aren't predicting
+          if(a != j){                  # do this for all species we aren't predicting
             
-            if(occ_state[k] == 0){     # if species is absent
-              upper[k] <- 0            # species absent when z<0
+            if(occ_state[a] == 0){     # if species is absent
+              upper[a] <- 0            # species absent when z<0
             } 
             
-            if(occ_state[k] == 1){     # if species is present
-              lower[k] <- 0            # species present when z>0
+            if(occ_state[a] == 1){     # if species is present
+              lower[a] <- 0            # species present when z>0
             } 
             
           } 
@@ -293,8 +334,8 @@ predict.conditional.LOO <- function(Beta = NULL,
         
         #### Prediction for species j at site i using values from slice a
         
-        spp_pred <- ptmvnorm(mean = colSums(mean_values[ , , a]),
-                             sigma = R[ , , a],
+        spp_pred <- ptmvnorm(mean = mean_values[ i, , k],
+                             sigma = R[ , , k],
                              lower = lower,
                              upper = upper,
                              lowerx = lowerx,
@@ -302,7 +343,7 @@ predict.conditional.LOO <- function(Beta = NULL,
         
         #### Fill predictions array with value
         
-        predictions[i, j, a] <- spp_pred
+        predictions[i, j, k] <- spp_pred[[1]]
         
       } 
     } 
@@ -324,6 +365,7 @@ predict.joint <- function(Beta = NULL,
                           y = NULL,
                           R = NULL,
                           n_species = NULL,
+                          n_sites = NULL,
                           n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
@@ -348,21 +390,37 @@ predict.joint <- function(Beta = NULL,
     stop("n_species not supplied.")
   }  
   
+  if(is.null(n_sites)){
+    stop("n_sites not supplied.")
+  } 
+  
   if(is.null(n_iter)){
     stop("n_iter not supplied.")
   }  
   
   ## Create an array of distribution mean values. Beta * X values
   
-  mean_values <- Beta * array(data = X,
-                              dim = c(nrow(X),
-                                      ncol(X),
-                                      dim(Beta)[3]))
+  mean_values <- array(data = NA,
+                       dim = c(nrow(X),
+                               ncol(y),
+                               dim(Beta)[3]))
+  
+  for(i in seq_len(n_sites)){
+    
+    for(j in seq_len(n_species)){
+      
+      for(k in seq_len(n_iter)){
+        
+        mean_values[i, j, k] <- sum(X[i, ] * Beta[ , j, k])
+        
+      }
+    }
+  }
   
   ## Create a prediction array full of NAs
   
   predictions <- array(NA,
-                       dim = c(nrow(X),     # Number of sites in test data
+                       dim = c(n_sites,     # Number of sites in test data
                                n_species,   # Number of species in test data   
                                n_iter),     # 1:1 Prediction slice:Posterior slice
                        dimnames = list(rownames(X),
@@ -373,11 +431,11 @@ predict.joint <- function(Beta = NULL,
   
   ### For each slice of array
   
-  for(a in seq_len(dim(Beta)[3])){
+  for(k in seq_len(n_iter)){
     
     ### For each site
     
-    for(i in seq_len(nrow(y))){
+    for(i in seq_len(n_sites)){
       
       occ_state <- y[i, ]         # observed occurrence state  at site i
       
@@ -391,8 +449,8 @@ predict.joint <- function(Beta = NULL,
       #### Prediction for species assemblage at site i using values from slice a
       
       spp_pred <- rtmvnorm(n = 1,
-                           mean = colSums(mean_values[ , , a]),
-                           sigma = R[ , , a], 
+                           mean = mean_values[ i, , k],
+                           sigma = R[ , , k], 
                            lower = lower, 
                            upper = upper)
       
