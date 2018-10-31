@@ -44,7 +44,7 @@ test_statistic <- function(observed = NULL,
   
   ## Calculate test statistics
   
-  for(a in seq_len(dim(predictions)[3])){
+  for(s in seq_len(dim(predictions)[3])){
     
     for(i in seq_len(dim(predictions)[1])){
       
@@ -52,7 +52,7 @@ test_statistic <- function(observed = NULL,
       
       obs_data <- observed[i, ]
       
-      pred_data <- predictions[i, , a]
+      pred_data <- predictions[i, , s]
       
       ## Calculate test statistics
       
@@ -215,7 +215,7 @@ test_statistic <- function(observed = NULL,
       
       ###----
       
-      test_statistics[i, , a] <- c(
+      test_statistics[i, , s] <- c(
         # Threshold-independent
         AUC, bias, MSE, R2, RMSE, SSE, Pearson, Spearman, Kendall,
         # Threshold-dependant
