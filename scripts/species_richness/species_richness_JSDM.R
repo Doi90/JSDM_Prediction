@@ -55,8 +55,8 @@ saveRDS(marg_SR,
 
 ### Memory purge
 
-rm(c("marg_pred",
-     "marg_SR"))
+rm(marg_pred,
+   marg_SR)
 
 ## Conditional - leave one out
 
@@ -86,8 +86,8 @@ saveRDS(cond_LOO_SR,
 
 ### Memory purge
 
-rm(c("cond_LOO_pred",
-     "cond_LOO_SR"))
+rm(cond_LOO_pred,
+   cond_LOO_SR)
 
 ## Conditional - leave one in
 
@@ -116,8 +116,8 @@ saveRDS(cond_LOI_ts,
 
 ### Memory purge
 
-rm(c("cond_LOI_pred",
-     "cond_LOI_ts"))
+rm(cond_LOI_pred,
+   cond_LOI_ts)
 
 ## Joint
 
@@ -147,6 +147,6 @@ saveRDS(joint_SR,
 
 ### Memory purge
 
-rm(c("joint_pred",
-     "joint_SR"))
+rm(joint_pred,
+   joint_SR)
 

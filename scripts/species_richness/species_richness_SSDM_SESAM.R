@@ -55,8 +55,8 @@ saveRDS(SSDM_SR,
 
 ### Memory purge
 
-rm(c("SSDM_pred",
-     "SSDM_SR"))
+rm(SSDM_pred,
+   SSDM_SR)
 
 ## SESAM
 
@@ -84,5 +84,5 @@ saveRDS(SESAM_SR,
 
 ### Memory purge
 
-rm(c("SESAM_pred",
-     "SESAM_SR"))
+rm(SESAM_pred,
+   SESAM_SR)
