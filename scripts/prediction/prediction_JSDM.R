@@ -115,35 +115,6 @@ message(sprintf("Marginal prediction duration: %s hours",
 rm(marg_start,
    marg_pred)
 
-## Conditional - Leave One In
-
-cond_LOI_start <- Sys.time()
-
-cond_LOI_pred <- predict.conditional.LOI(Beta = Beta_posterior,
-                                         X = X_test,
-                                         y = y_test,
-                                         R = R_posterior,
-                                         n_species = n_species,
-                                         n_sites = n_sites,
-                                         n_iter = n_iter)
-
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-saveRDS(cond_LOI_pred,
-        filename)
-
-message(sprintf("Conditional LOI prediction duration: %s hours",
-                round(difftime(Sys.time(),
-                               cond_LOI_start,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-rm(cond_LOI_start,
-   cond_LOI_pred)
-
 ## Conditional - Leave One Out
 
 cond_LOO_start <- Sys.time()
@@ -172,6 +143,35 @@ message(sprintf("Conditional LOO prediction duration: %s hours",
 
 rm(cond_LOO_start,
    cond_LOO_pred)
+
+## Conditional - Leave One In
+
+cond_LOI_start <- Sys.time()
+
+cond_LOI_pred <- predict.conditional.LOI(Beta = Beta_posterior,
+                                         X = X_test,
+                                         y = y_test,
+                                         R = R_posterior,
+                                         n_species = n_species,
+                                         n_sites = n_sites,
+                                         n_iter = n_iter)
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_LOI_pred,
+        filename)
+
+message(sprintf("Conditional LOI prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               cond_LOI_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+rm(cond_LOI_start,
+   cond_LOI_pred)
 
 ## Joint
 
