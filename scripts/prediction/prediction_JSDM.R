@@ -90,6 +90,8 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 
 ## Marginal
 
+marg_start <- Sys.time()
+
 marg_pred <- predict.marginal(Beta = Beta_posterior,
                               X = X_test,
                               n_species = n_species,
@@ -104,13 +106,22 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal.rds",
 saveRDS(marg_pred,
         filename)
 
+message(sprintf("Marginal prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               marg_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
 ## Conditional - Leave One In
+
+cond_LOI_start <- Sys.time()
 
 cond_LOI_pred <- predict.conditional.LOI(Beta = Beta_posterior,
                                          X = X_test,
                                          y = y_test,
                                          R = R_posterior,
                                          n_species = n_species,
+                                         n_sites = n_sites,
                                          n_iter = n_iter)
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
@@ -121,13 +132,22 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
 saveRDS(cond_LOI_pred,
         filename)
 
+message(sprintf("Conditional LOI prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               cond_LOI_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
 ## Conditional - Leave One Out
+
+cond_LOO_start <- Sys.time()
 
 cond_LOO_pred <- predict.conditional.LOO(Beta = Beta_posterior,
                                          X = X_test,
                                          y = y_test,
                                          R = R_posterior,
                                          n_species = n_species,
+                                         n_sites = n_sites,
                                          n_iter = n_iter)
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
@@ -138,13 +158,22 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
 saveRDS(cond_LOO_pred,
         filename)
 
+message(sprintf("Conditional LOO prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               cond_LOO_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
 ## Joint
+
+joint_start <- Sys.time()
 
 joint_pred <- predict.joint(Beta = Beta_posterior,
                             X = X_test,
                             y = y_test,
                             R = R_posterior,
                             n_species = n_species,
+                            n_sites = n_sites,
                             n_iter = n_iter)
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s_joint.rds",
@@ -154,3 +183,9 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_joint.rds",
 
 saveRDS(joint_pred,
         filename)
+
+message(sprintf("Joint prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               cond_LOO_start,
+                               units = "hours")[[1]],
+                      digits = 5)))

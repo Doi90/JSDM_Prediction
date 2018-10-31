@@ -72,6 +72,8 @@ n_covar <- ncol(X_test) # includes intercept
 ### SSDM Prediction ###
 #######################
 
+SSDM_start <- Sys.time()
+
 ## Empty array
 
 pred_array <- array(NA,
@@ -96,9 +98,17 @@ for(j in seq_len(n_species)){
   
 }
 
+message(sprintf("SSDM prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               SSDM_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
 ########################
 ### SESAM Prediction ###
 ########################
+
+SESAM_start <- Sys.time()
 
 spp_probabilities <- as.data.frame(pred_array[ , , 1])
 
@@ -108,6 +118,12 @@ spp_richness <- apply(spp_probabilities,
 
 SESAM_prediction <- SESAM(probabilities = spp_probabilities,
                           species_richness = spp_richness)
+
+message(sprintf("SESAM prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               SESAM_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
 
 ###################
 ### Save Output ###

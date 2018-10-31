@@ -20,6 +20,9 @@
 
 start_time <- Sys.time()
 
+message(sprintf("Job started at %s",
+                start_time))
+
 ##################################
 ### Command line arguments and ###
 ###       defining indices     ###
@@ -56,6 +59,8 @@ model_id <- model_options[model_index]
 dataset_id <- dataset_options[dataset_index]
 
 fold_id <- fold_options[fold_index]
+
+message("Command line arguments finished")
 
 #####################
 ### Load packages ###
@@ -111,6 +116,8 @@ library(caret)
 library(vegan)
 library(psych)
 
+message("Packages loaded")
+
 ##################
 ### Run Status ###
 ##################
@@ -128,6 +135,9 @@ if(dataset_id == "frog" & fold_id > 2){
   
 }
 
+message(sprintf("Run status: %s",
+                run_status))
+
 ########################
 ### Run Model Script ###
 ########################
@@ -140,6 +150,8 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "run_status",
                                   "start_time"))])
 
+model_start <- Sys.time()
+
 if(run_status){
   
 command <- sprintf("source('scripts/models/%s_model.R')",
@@ -148,6 +160,18 @@ command <- sprintf("source('scripts/models/%s_model.R')",
 eval(parse(text = command))
 
 } 
+
+message(sprintf("Model fitting duration: %s hours",
+                round(difftime(Sys.time(),
+                         model_start,
+                         units = "hours")[[1]],
+                      digits = 5)))
+
+message(sprintf("Total time elapsed: %s hours",
+                round(difftime(Sys.time(),
+                               start_time,
+                               units = "hours")[[1]],
+                      digits = 5)))
 
 ##############################
 ### Run Prediction Scripts ###
@@ -160,6 +184,8 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "fold_id",
                                   "run_status",
                                   "start_time"))])
+
+prediction_start <- Sys.time()
 
 if(run_status){
   
@@ -176,6 +202,18 @@ if(run_status){
   }
 }
 
+message(sprintf("Total prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               prediction_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+message(sprintf("Total time elapsed: %s hours",
+                round(difftime(Sys.time(),
+                               start_time,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
 #################################
 ### Run Log-Likelihood Script ###
 #################################
@@ -187,6 +225,8 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "fold_id",
                                   "run_status",
                                   "start_time"))])
+
+likelihood_start <- Sys.time()
 
 if(run_status){
   
@@ -202,6 +242,18 @@ if(run_status){
   }
 }
 
+message(sprintf("Likelihood calculation duration: %s hours",
+                round(difftime(Sys.time(),
+                               likelihood_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+message(sprintf("Total time elapsed: %s hours",
+                round(difftime(Sys.time(),
+                               start_time,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
 #################################
 ### Run Test Statistic Script ###
 #################################
@@ -213,6 +265,8 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "fold_id",
                                   "run_status",
                                   "start_time"))])
+
+test_start <- Sys.time()
 
 if(run_status){
   
@@ -229,6 +283,18 @@ if(run_status){
   }
 }
 
+message(sprintf("Test statistic calculation duration: %s hours",
+                round(difftime(Sys.time(),
+                               test_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+message(sprintf("Total time elapsed: %s hours",
+                round(difftime(Sys.time(),
+                               start_time,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
 ###################################
 ### Run Species Richness Script ###
 ###################################
@@ -240,6 +306,8 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "fold_id",
                                   "run_status",
                                   "start_time"))])
+
+richness_start <- Sys.time()
 
 if(run_status){
   
@@ -255,6 +323,18 @@ if(run_status){
     
   }
 }
+
+message(sprintf("Species richness calculation duration: %s hours",
+                round(difftime(Sys.time(),
+                               richness_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+message(sprintf("Total time elapsed: %s hours",
+                round(difftime(Sys.time(),
+                               start_time,
+                               units = "hours")[[1]],
+                      digits = 5)))
 
 ##############
 ### Output ###
@@ -282,3 +362,13 @@ filename <- sprintf("outputs/meta_data/%s_%s_fold%s_metadata.rds",
 
 saveRDS(meta_data,
         filename)
+
+message("Metadata saved to file")
+
+message("Analysis complete!")
+
+message(sprintf("Total time elapsed: %s hours",
+                round(difftime(meta_data$end_time,
+                               start_time,
+                               units = "hours")[[1]],
+                      digits = 5)))
