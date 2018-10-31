@@ -71,9 +71,9 @@ for(j in seq_len(length(Beta_extract))){        # Fill correct shape with poster
                                                 #  j = species
   tmp <- Beta_extract[[j]]                      # Extract single species from list
   
-  for(i in seq_len(n_samples)){                 # Extract samples and fill Beta_posterior
-                                                #  i = sample
-    Beta_posterior[ , j, i] <- tmp[i, ]         # Fill Beta_posterior
+  for(s in seq_len(n_samples)){                 # Extract samples and fill Beta_posterior
+                                                #  s = sample
+    Beta_posterior[ , j, s] <- tmp[s, ]         # Fill Beta_posterior
     
   }
 }
@@ -92,14 +92,14 @@ R_posterior <- array(NA,                        # Create empty array of required
                              ncol(y),
                              nrow(R_extract)))
 
-for(i in seq_len(dim(R_posterior)[3])){         # Fill correct shape with posterior values
+for(s in seq_len(n_samples)){                   # Fill correct shape with posterior values
   
   tmp <- matrix(0,                              # 0 not NA so we can use addition later
                 nrow = ncol(y),
                 ncol = ncol(y))
   
   tmp[upper.tri(tmp,                            # Fill upper.tri of matrix
-                diag = TRUE)] <- R_extract[i, ] #  gjam includes diagonal
+                diag = TRUE)] <- R_extract[s, ] #  gjam includes diagonal
   
   tmp_diag <- diag(tmp)                         # Save diag because it gets
                                                 #  doubled in next step
@@ -109,7 +109,7 @@ for(i in seq_len(dim(R_posterior)[3])){         # Fill correct shape with poster
   
   tmp <- cov2cor(tmp)                           # Covariance to correlation
   
-  R_posterior[ , , i] <- tmp                    # Save each full correlation matrix to an 
+  R_posterior[ , , s] <- tmp                    # Save each full correlation matrix to an 
                                                 #  array slice
 }
 

@@ -43,7 +43,7 @@ JSDM <- boral(y,                                           # Pres/Abs data
                                   n.iteration = 60000,     # Total number of samples
                                   n.thin = 50,             # Amount of thinning
                                   seed = 28041948),        # Seed
-              model.name = sprintf("boral_JAGS_%s_%s.txt", # Name of saved txt file.
+              model.name = sprintf("outputs/boral_JAGS_%s_%s.txt", # Name of saved txt file.
                                    dataset_id,
                                    fold_id))                         
 
@@ -63,12 +63,12 @@ Beta_posterior <- array(NA,                     # Create empty array of required
 
 for(j in seq_len(ncol(Beta_extract$X.coefs))){  # Fill correct shape with posterior values
                                                 #  j = species
-  for(i in seq_len(n_samples)){                 # Extract samples and fill Beta_posterior
+  for(s in seq_len(n_samples)){                 # Extract samples and fill Beta_posterior
                                                 #  i = sample
-    tmp <- c(Beta_extract$lv.coefs[i, j, 1],    # Intercept
-             Beta_extract$X.coefs[i, j, ])      # Non-intercept regression coefficients
+    tmp <- c(Beta_extract$lv.coefs[s, j, 1],    # Intercept
+             Beta_extract$X.coefs[s, j, ])      # Non-intercept regression coefficients
     
-    Beta_posterior[ , j, i] <- tmp              # Fill Beta_posterior
+    Beta_posterior[ , j, s] <- tmp              # Fill Beta_posterior
     
   }
 }
@@ -83,15 +83,15 @@ R_posterior <- array(NA,                        # Create empty array of required
                              ncol(y),
                              n_samples))
 
-for(i in seq_len(dim(R_posterior)[3])){         # Fill correct shape with posterior values
+for(s in seq_len(n_samples)){                   # Fill correct shape with posterior values
                                                 #  i=samples
-  lambda <- R_extract[i, , ]                    # Extract factor loadings matrix
+  lambda <- R_extract[s, , ]                    # Extract factor loadings matrix
                                                 #  lambda = J rows, H col
   tmp <- lambda %*% t(lambda) + diag(ncol(y))   # Convert factor loadings to covariance matrix
   
   tmp <- cov2cor(tmp)                           # Convert covariance matrix to correlation matrix
   
-  R_posterior[ , , i] <- tmp                    # Save each full correlation matrix to an array slice
+  R_posterior[ , , s] <- tmp                    # Save each full correlation matrix to an array slice
 
 }
 

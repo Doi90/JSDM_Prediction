@@ -93,11 +93,11 @@ for(c in seq_len(n.chains)){                               # For each chain
     
     for(j in seq_len(n_species)){                          # For each species
       
-      for(i in seq_len(n_samples)){                        # For each sample in chain
+      for(s in seq_len(n_samples)){                        # For each sample in chain
         
-        array_dim3_id <- ((c * n_samples) - n_samples) + i  # Need to define a new array
+        array_dim3_id <- ((c * n_samples) - n_samples) + s  # Need to define a new array
                                                             # Index so successive chains don't overwrite each other
-        Beta_posterior[k, j, array_dim3_id] <- Beta_extract[i, j, k]  # Fill empty array with correct values
+        Beta_posterior[k, j, array_dim3_id] <- Beta_extract[s, j, k]  # Fill empty array with correct values
         
       }
     }
@@ -115,9 +115,9 @@ for(c in seq_len(n.chains)){                            # For each chain
   
   R_extract <- JSDM[[c]]$BUGSoutput$sims.list$Tau       # Extract posterior in wrong shape
   
-  for(i in seq_len(n_samples)){                         # For each sample
+  for(s in seq_len(n_samples)){                         # For each sample
     
-    array_dim3_id <- ((c * n_samples) - n_samples) + i  # Need to define a new array
+    array_dim3_id <- ((c * n_samples) - n_samples) + s  # Need to define a new array
                                                         # Index so successive chains don't overwrite each other
     R_posterior[array_dim3_id, , ] <- cov2cor(R_extract[array_dim3_id, , ])
     

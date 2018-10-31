@@ -89,11 +89,11 @@ Beta_posterior <- array(NA,                     # Create empty array of required
                                 ncol(y),
                                 n_samples))
 
-for(i in seq_len(n_samples)){                        # Extract samples and fill Beta_posterior
-                                                     #  i = sample
+for(s in seq_len(n_samples)){                        # Extract samples and fill Beta_posterior
+                                                     #  s = sample
   for(j in seq_len(length(Beta_extract))){           # Fill correct shape with posterior values                 
                                                      #  j = species
-    Beta_posterior[ , j, i] <- Beta_extract[j, , i]  # Fill Beta_posterior
+    Beta_posterior[ , j, s] <- Beta_extract[j, , s]  # Fill Beta_posterior
     
   }
 }
@@ -108,9 +108,9 @@ R_posterior <- array(NA,                         # Create empty array of require
                              ncol(y),
                              nrow(n_samples)))
 
-for(i in seq_len(dim(R_posterior)[3])){    # Fill correct shape with posterior values
+for(s in seq_len(n_samples)){              # Fill correct shape with posterior values
   
-  tmp <- R_extract[[i]]                    # Extract sample's factor loadings matrix
+  tmp <- R_extract[[s]]                    # Extract sample's factor loadings matrix
   
   tmp <- tmp %*% t(tmp)                    # Factor loadings => covariance matrix
   
@@ -118,7 +118,7 @@ for(i in seq_len(dim(R_posterior)[3])){    # Fill correct shape with posterior v
   
   tmp <- cov2cor(tmp)                      # Convert covariance to correlation
   
-  R_posterior[ , , i] <- tmp               # Save each full correlation matrix to an 
+  R_posterior[ , , s] <- tmp               # Save each full correlation matrix to an 
                                            #  array slice
 }
 
