@@ -112,6 +112,9 @@ message(sprintf("Marginal prediction duration: %s hours",
                                units = "hours")[[1]],
                       digits = 5)))
 
+rm(marg_start,
+   marg_pred)
+
 ## Conditional - Leave One In
 
 cond_LOI_start <- Sys.time()
@@ -137,6 +140,9 @@ message(sprintf("Conditional LOI prediction duration: %s hours",
                                cond_LOI_start,
                                units = "hours")[[1]],
                       digits = 5)))
+
+rm(cond_LOI_start,
+   cond_LOI_pred)
 
 ## Conditional - Leave One Out
 
@@ -164,6 +170,9 @@ message(sprintf("Conditional LOO prediction duration: %s hours",
                                units = "hours")[[1]],
                       digits = 5)))
 
+rm(cond_LOO_start,
+   cond_LOO_pred)
+
 ## Joint
 
 joint_start <- Sys.time()
@@ -189,3 +198,6 @@ message(sprintf("Joint prediction duration: %s hours",
                                cond_LOO_start,
                                units = "hours")[[1]],
                       digits = 5)))
+
+rm(joint_start,
+   joint_pred)
