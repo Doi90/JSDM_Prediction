@@ -60,9 +60,9 @@ predict.marginal <- function(Beta = NULL,
     
     for(j in seq_len(n_species)){
       
-      for(k in seq_len(n_iter)){
+      for(s in seq_len(n_iter)){
         
-        predictions[i, j, k] <- pnorm(sum(X[i, ] * Beta[ , j, k]))
+        predictions[i, j, s] <- pnorm(sum(X[i, ] * Beta[ , j, s]))
         
       }
     }
@@ -141,9 +141,9 @@ predict.conditional.LOI <- function(Beta = NULL,
     
     for(j in seq_len(n_species)){
       
-      for(k in seq_len(n_iter)){
+      for(s in seq_len(n_iter)){
         
-        mean_values[i, j, k] <- sum(X[i, ] * Beta[ , j, k])
+        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
         
       }
     }
@@ -172,7 +172,7 @@ predict.conditional.LOI <- function(Beta = NULL,
     
     ### For each slice of array
     
-    for(k in seq_len(n_iter)){
+    for(s in seq_len(n_iter)){
       
       ### For each site
       
@@ -198,8 +198,8 @@ predict.conditional.LOI <- function(Beta = NULL,
         #### Perform prediction / random draws from multivariate normal  
         
         spp_pred <- rtmvnorm(n = 1,
-                             mean = mean_values[ i, , k],
-                             sigma = R[ , , k],
+                             mean = mean_values[ i, , s],
+                             sigma = R[ , , s],
                              lower = lower, 
                              upper = upper)
         
@@ -209,7 +209,7 @@ predict.conditional.LOI <- function(Beta = NULL,
         
         #### Fill predictions array with value
         
-        predictions[i, , k, j] <- spp_pred
+        predictions[i, , s, j] <- spp_pred
         
       } 
     }
@@ -274,9 +274,9 @@ predict.conditional.LOO <- function(Beta = NULL,
     
     for(j in seq_len(n_species)){
       
-      for(k in seq_len(n_iter)){
+      for(s in seq_len(n_iter)){
         
-        mean_values[i, j, k] <- sum(X[i, ] * Beta[ , j, k])
+        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
         
       }
     }
@@ -296,7 +296,7 @@ predict.conditional.LOO <- function(Beta = NULL,
   
   ### For each slice of array
   
-  for(k in seq_len(n_iter)){
+  for(s in seq_len(n_iter)){
     
     ### For each site
     
@@ -315,16 +315,16 @@ predict.conditional.LOO <- function(Beta = NULL,
         lower <- rep(-Inf, n_species)  # default vector of -Inf lower limits
         upper <- rep(+Inf, n_species)  # default vector of +Inf upper limits
         
-        for(a in seq_len(n_species)){  # set actual lower/upper limits based on known occurrence states
+        for(jj in seq_len(n_species)){  # set actual lower/upper limits based on known occurrence states
           
-          if(a != j){                  # do this for all species we aren't predicting
+          if(jj != j){                  # do this for all species we aren't predicting
             
-            if(occ_state[a] == 0){     # if species is absent
-              upper[a] <- 0            # species absent when z<0
+            if(occ_state[jj] == 0){     # if species is absent
+              upper[jj] <- 0            # species absent when z<0
             } 
             
-            if(occ_state[a] == 1){     # if species is present
-              lower[a] <- 0            # species present when z>0
+            if(occ_state[jj] == 1){     # if species is present
+              lower[jj] <- 0            # species present when z>0
             } 
             
           } 
@@ -339,8 +339,8 @@ predict.conditional.LOO <- function(Beta = NULL,
         
         #### Prediction for species j at site i using values from slice a
         
-        spp_pred <- ptmvnorm(mean = mean_values[ i, , k],
-                             sigma = R[ , , k],
+        spp_pred <- ptmvnorm(mean = mean_values[ i, , s],
+                             sigma = R[ , , s],
                              lower = lower,
                              upper = upper,
                              lowerx = lowerx,
@@ -348,7 +348,7 @@ predict.conditional.LOO <- function(Beta = NULL,
         
         #### Fill predictions array with value
         
-        predictions[i, j, k] <- spp_pred[[1]]
+        predictions[i, j, s] <- spp_pred[[1]]
         
       } 
     } 
@@ -414,9 +414,9 @@ predict.joint <- function(Beta = NULL,
     
     for(j in seq_len(n_species)){
       
-      for(k in seq_len(n_iter)){
+      for(s in seq_len(n_iter)){
         
-        mean_values[i, j, k] <- sum(X[i, ] * Beta[ , j, k])
+        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
         
       }
     }
@@ -436,7 +436,7 @@ predict.joint <- function(Beta = NULL,
   
   ### For each slice of array
   
-  for(k in seq_len(n_iter)){
+  for(s in seq_len(n_iter)){
     
     ### For each site
     
@@ -454,8 +454,8 @@ predict.joint <- function(Beta = NULL,
       #### Prediction for species assemblage at site i using values from slice a
       
       spp_pred <- rtmvnorm(n = 1,
-                           mean = mean_values[ i, , k],
-                           sigma = R[ , , k], 
+                           mean = mean_values[ i, , s],
+                           sigma = R[ , , s], 
                            lower = lower, 
                            upper = upper)
       
@@ -465,7 +465,7 @@ predict.joint <- function(Beta = NULL,
       
       #### Fill predictions array with value
       
-      predictions[i, , a] <- spp_pred
+      predictions[i, , s] <- spp_pred
       
     } 
   } 
