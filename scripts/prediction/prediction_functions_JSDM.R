@@ -133,9 +133,9 @@ predict.conditional.LOI <- function(Beta = NULL,
   ## Create an array of distribution mean values. Beta * X values
   
   mean_values <- array(data = NA,
-                       dim = c(nrow(X),
-                               ncol(y),
-                               dim(Beta)[3]))
+                       dim = c(n_sites,
+                               n_species,
+                               n_iter))
   
   for(i in seq_len(n_sites)){
     
@@ -266,9 +266,9 @@ predict.conditional.LOO <- function(Beta = NULL,
   ## Create an array of distribution mean values. Beta * X values
   
   mean_values <- array(data = NA,
-                       dim = c(nrow(X),
-                               ncol(y),
-                               dim(Beta)[3]))
+                       dim = c(n_sites,
+                               n_species,
+                               n_iter))
   
   for(i in seq_len(n_sites)){
     
@@ -406,9 +406,9 @@ predict.joint <- function(Beta = NULL,
   ## Create an array of distribution mean values. Beta * X values
   
   mean_values <- array(data = NA,
-                       dim = c(nrow(X),
-                               ncol(y),
-                               dim(Beta)[3]))
+                       dim = c(n_sites,
+                               n_species,
+                               n_iter))
   
   for(i in seq_len(n_sites)){
     
