@@ -160,7 +160,7 @@ predict.conditional.LOI <- function(Beta = NULL,
                                n_iter,      # 1:1 Prediction slice:Posterior slice
                                n_species),  # Need to predict for each species left in   
                        dimnames = list(rownames(X),
-                                       colnames(Beta),
+                                       colnames(y),
                                        NULL,
                                        NULL))
   
@@ -289,7 +289,7 @@ predict.conditional.LOO <- function(Beta = NULL,
                                n_species,   
                                n_iter),     # 1:1 Prediction slice:Posterior slice
                        dimnames = list(rownames(X),
-                                       colnames(Beta),
+                                       colnames(y),
                                        NULL))
   
   ## Make predictions. Fill predictions array with values as we go
@@ -429,7 +429,7 @@ predict.joint <- function(Beta = NULL,
                                n_species,   # Number of species in test data   
                                n_iter),     # 1:1 Prediction slice:Posterior slice
                        dimnames = list(rownames(X),
-                                       "Prediction",
+                                       colnames(y),
                                        NULL))
   
   ## Make predictions. Fill predictions array with values as we go
