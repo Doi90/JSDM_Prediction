@@ -13,9 +13,9 @@ do
     do
 	  if [ $dataset = "1" ]
       then
-        MEMORY_LIMIT=20480
+        MEMORY_LIMIT=51200
         PARTITION="cloud"
-        WALLTIME=24
+        WALLTIME=3	
       fi
       
       if [ $dataset = "2" ]
@@ -25,9 +25,9 @@ do
         
         if [ $model = "6" ]
         then
-          WALLTIME=168
+          WALLTIME=10
         else
-          WALLTIME=48
+          WALLTIME=6
         fi
         
       fi
@@ -39,31 +39,31 @@ do
         
         if [ $model = "1" ]
         then
-          WALLTIME=48
+          WALLTIME=7
         elif [ $model = "2" ]
         then
-          WALLTIME=336
+          WALLTIME=20
         elif [ $model = "3" ]
         then
-          WALLTIME=336
+          WALLTIME=20
         elif [ $model = "4" ]
         then
-          WALLTIME=96
+          WALLTIME=10
         elif [ $model = "5" ]
         then
-          WALLTIME=96
+          WALLTIME=10
         elif [ $model = "6" ]
         then
-          WALLTIME=336
+          WALLTIME=20
         elif [ $model = "7" ]
         then
-          WALLTIME=48
+          WALLTIME=6
         fi  
       fi
       
         for fold in {1..5}
         do
-		  WALLTIME_FORMAT="$WALLTIME:00:00"
+		  WALLTIME_FORMAT="$WALLTIME-00"
 		  JOB_NAME="JPred_$model_$dataset_$fold"
 		  OUT_NAME="/data/cephfs/punim0200/JSDM_Prediction/outputs/slurm_outputs/JPred_$model_$dataset_$fold.out"
 		  
