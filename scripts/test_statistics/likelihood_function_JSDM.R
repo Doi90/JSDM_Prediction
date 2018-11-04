@@ -45,10 +45,22 @@ log_likelihood <- function(Beta = NULL,
   
   ## Create an array of distribution mean values. Beta * X values
   
-  mean_values <- Beta * array(data = X,
-                              dim = c(n_sites,
-                                      n_species,
-                                      n_iter))
+  mean_values <- array(data = NA,
+                       dim = c(n_sites,
+                               n_species,
+                               n_iter))
+  
+  for(i in seq_len(n_sites)){
+    
+    for(j in seq_len(n_species)){
+      
+      for(s in seq_len(n_iter)){
+        
+        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
+        
+      }
+    }
+  }
   
   ## Create a log_likelihood matrix full of NAs
   
