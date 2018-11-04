@@ -62,6 +62,11 @@ fold_id <- fold_options[fold_index]
 
 message("Command line arguments finished")
 
+message(sprintf("Combination:\nModel: %s \nDataset: %s \nFold: %s",
+                model_id,
+                dataset_id,
+                fold_id))
+
 #####################
 ### Load packages ###
 #####################
