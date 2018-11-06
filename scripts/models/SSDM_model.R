@@ -46,7 +46,7 @@ for(j in seq_len(ncol(y))){                             # For each species
   colnames(data)[1] <- "Occurrence"                     # Standardise P/A column name
   
   form <- as.formula(paste("Occurrence ~ ",             # Build formula from X column names
-                           paste(colnames(X)[-1],
+                           paste(colnames(X),
                                  collapse = "+")))
   
   ## Build command to run glm and save to list
@@ -54,7 +54,8 @@ for(j in seq_len(ncol(y))){                             # For each species
   command <- sprintf("model_list[[%s]] <-                 
                          glm_%s <- glm(formula = form,
                                        data = data,
-                                       family = binomial(link = 'probit')",
+                                       family = binomial(link = 'probit'),
+                                       control = list(maxit = 1000))",
                      j,
                      colnames(y)[j])
   
@@ -64,7 +65,7 @@ for(j in seq_len(ncol(y))){                             # For each species
 
 ## Save Model Outputs ----
 
-filename <- sprintf("posteriors/%s_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
