@@ -54,17 +54,17 @@ JSDM <- boral(y,                                           # Pres/Abs data
 Beta_extract <- JSDM$jags.model$BUGSoutput$sims.list    # Extract Beta posterior from model (wrong shape)
 
 n_samples <- (JSDM$mcmc.control$n.iteration -
-                JSDM$mcmc.control$n.burnin) / JSDM$call$thin  # Determine number of samples in posterior
+                JSDM$mcmc.control$n.burnin) / JSDM$mcmc.control$n.thin  # Determine number of samples in posterior
 
 Beta_posterior <- array(NA,                     # Create empty array of required shape
-                        dim = c(ncol(X),
+                        dim = c(ncol(X) + 1,
                                 ncol(y),
                                 n_samples))
 
 for(j in seq_len(ncol(Beta_extract$X.coefs))){  # Fill correct shape with posterior values
                                                 #  j = species
   for(s in seq_len(n_samples)){                 # Extract samples and fill Beta_posterior
-                                                #  i = sample
+                                                #  s = sample
     tmp <- c(Beta_extract$lv.coefs[s, j, 1],    # Intercept
              Beta_extract$X.coefs[s, j, ])      # Non-intercept regression coefficients
     
@@ -97,7 +97,7 @@ for(s in seq_len(n_samples)){                   # Fill correct shape with poster
 
 ### Save Posteriors ----
 
-filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_beta_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -105,7 +105,7 @@ filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
 saveRDS(Beta_posterior,
         filename)
 
-filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_R_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
