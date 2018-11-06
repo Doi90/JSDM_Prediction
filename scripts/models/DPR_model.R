@@ -63,19 +63,18 @@ Beta_extract <- Beta_extract[seq(1,                        # Implement thinning
 n_samples <- ((JSDM$modelList$ng - JSDM$modelList$burnin) / JSDM$modelList$thin)  # determine number of samples in posterior
 
 Beta_posterior <- array(NA,                     # Create empty array of required shape
-                        dim = c(ncol(X),
+                        dim = c(ncol(X) + 1,    # Include intercept
                                 ncol(y),
                                 n_samples))
 
-for(j in seq_len(length(Beta_extract))){        # Fill correct shape with posterior values
+for(j in seq_len(ncol(y))){        # Fill correct shape with posterior values
                                                 #  j = species
-  tmp <- Beta_extract[[j]]                      # Extract single species from list
+  array_id <- (j * (ncol(X) + 1)) - (ncol(X) + 1) + 1
   
-  for(s in seq_len(n_samples)){                 # Extract samples and fill Beta_posterior
-                                                #  s = sample
-    Beta_posterior[ , j, s] <- tmp[s, ]         # Fill Beta_posterior
+  tmp <- Beta_extract[ , array_id:(array_id + ncol(X))]                      # Extract single species from list
+  
+  Beta_posterior[ , j, ] <- t(tmp)          # Fill Beta_posterior
     
-  }
 }
 
 ## R
@@ -85,7 +84,7 @@ R_extract <- JSDM$chains$sgibbs                 # Extract R posterior from model
 R_extract <- R_extract[-(1:JSDM$modelList$burnin), ] # Remove burn-in
 
 R_extract <- R_extract[seq(1, nrow(R_extract),       # Implement thinning
-                           JSDM$modelList$thin)]
+                           JSDM$modelList$thin), ]
 
 R_posterior <- array(NA,                        # Create empty array of required shape
                      dim = c(ncol(y),
@@ -98,7 +97,7 @@ for(s in seq_len(n_samples)){                   # Fill correct shape with poster
                 nrow = ncol(y),
                 ncol = ncol(y))
   
-  tmp[upper.tri(tmp,                            # Fill upper.tri of matrix
+  tmp[lower.tri(tmp,                            # Fill upper.tri of matrix
                 diag = TRUE)] <- R_extract[s, ] #  gjam includes diagonal
   
   tmp_diag <- diag(tmp)                         # Save diag because it gets
@@ -115,7 +114,7 @@ for(s in seq_len(n_samples)){                   # Fill correct shape with poster
 
 ### Save Posteriors ----
 
-filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_beta_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -123,7 +122,7 @@ filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
 saveRDS(Beta_posterior,
         filename)
 
-filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_R_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
