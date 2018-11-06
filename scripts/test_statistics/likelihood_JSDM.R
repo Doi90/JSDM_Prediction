@@ -92,7 +92,10 @@ log_likelihood_estimate <- log_likelihood(Beta = Beta_posterior,
 
 ## Save to file
 
-filename <- sprintf("outputs/likelihood/%s_%s_fold%s_likelihood.rds")
+filename <- sprintf("outputs/likelihood/%s_%s_fold%s_likelihood.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
 
 saveRDS(log_likelihood_estimate,
         filename)
