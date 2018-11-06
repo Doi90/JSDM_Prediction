@@ -69,7 +69,7 @@ model_name <- "JSDM"
 
 set.seed(28041948)          # Creator's birthday
 
-source('scripts/models/fit_JSDM.r')
+source('scripts/models/fit_JSDM.R')
 
 ### Extract posteriors ----
 
@@ -81,13 +81,13 @@ n_samples <- JSDM[[1]]$BUGSoutput$n.keep        # number of samples per chain
 ## Beta
 
 Beta_posterior <- array(NA,                     # Create empty array of required shape
-                        dim = c(ncol(X),
+                        dim = c(ncol(X) + 1,    # Include intercept
                                 ncol(y),
                                 n_samples * n.chains))
 
 for(c in seq_len(n.chains)){                               # For each chain
   
-  Beta_extract <- JSDM[[c]]$Bugsoutput$sims.list$Beta.raw  # Extract Beta posterior in wrong shape
+  Beta_extract <- JSDM[[c]]$BUGSoutput$sims.list$Beta.raw  # Extract Beta posterior in wrong shape
   
   for(k in seq_len(n_env_vars + 1)){                       # For each covariate including intercept
     
@@ -109,7 +109,7 @@ for(c in seq_len(n.chains)){                               # For each chain
 R_posterior <- array(NA,                        # Create empty array of required shape
                      dim = c(ncol(y),
                              ncol(y),
-                             nrow(n_samples * n.chains)))
+                             n_samples * n.chains))
 
 for(c in seq_len(n.chains)){                            # For each chain
   
@@ -119,7 +119,7 @@ for(c in seq_len(n.chains)){                            # For each chain
     
     array_dim3_id <- ((c * n_samples) - n_samples) + s  # Need to define a new array
                                                         # Index so successive chains don't overwrite each other
-    R_posterior[array_dim3_id, , ] <- cov2cor(R_extract[array_dim3_id, , ])
+    R_posterior[ , , array_dim3_id] <- cov2cor(R_extract[s, , ])
     
   }
 }
@@ -127,7 +127,7 @@ for(c in seq_len(n.chains)){                            # For each chain
 
 ### Save Posteriors ----
 
-filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_beta_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -135,7 +135,7 @@ filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
 saveRDS(Beta_posterior,
         filename)
 
-filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_R_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
