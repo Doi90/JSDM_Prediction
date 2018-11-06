@@ -40,7 +40,7 @@ X <- as.matrix(X)                                       # Required format
 
 LF <- as.data.frame(rep("a",                            # Need to define a sampling level
                         nrow(X)))                       #  Here all same level
-
+                   
 ### Run HMSC JSDM ----
 
 ## Set MCMC parameters
@@ -85,14 +85,14 @@ JSDM <- hmsc(data = form_data,                  # Formatted data
 Beta_extract <- JSDM$results$estimation$paramX  # Extract Beta posterior from model (wrong shape)
 
 Beta_posterior <- array(NA,                     # Create empty array of required shape
-                        dim = c(ncol(X),
+                        dim = c(ncol(X) + 1,    # Include intercept
                                 ncol(y),
                                 n_samples))
 
 for(s in seq_len(n_samples)){                        # Extract samples and fill Beta_posterior
-                                                     #  s = sample
-  for(j in seq_len(length(Beta_extract))){           # Fill correct shape with posterior values                 
-                                                     #  j = species
+  #  s = sample
+  for(j in seq_len(ncol(y))){           # Fill correct shape with posterior values                 
+    #  j = species
     Beta_posterior[ , j, s] <- Beta_extract[j, , s]  # Fill Beta_posterior
     
   }
@@ -101,12 +101,12 @@ for(s in seq_len(n_samples)){                        # Extract samples and fill 
 ## R
 
 R_extract <- JSDM$results$estimation$paramLatent # Extract factor loadings posterior
-                                                 #  from model (wrong shape)
+#  from model (wrong shape)
 
 R_posterior <- array(NA,                         # Create empty array of required shape
                      dim = c(ncol(y),
                              ncol(y),
-                             nrow(n_samples)))
+                             n_samples))
 
 for(s in seq_len(n_samples)){              # Fill correct shape with posterior values
   
@@ -119,12 +119,12 @@ for(s in seq_len(n_samples)){              # Fill correct shape with posterior v
   tmp <- cov2cor(tmp)                      # Convert covariance to correlation
   
   R_posterior[ , , s] <- tmp               # Save each full correlation matrix to an 
-                                           #  array slice
+  #  array slice
 }
 
 ### Save Posteriors ----
 
-filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_beta_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -132,7 +132,7 @@ filename <- sprintf("posteriors/%s_beta_%s_fold_%s.rds",
 saveRDS(Beta_posterior,
         filename)
 
-filename <- sprintf("posteriors/%s_R_%s_fold_%s.rds",
+filename <- sprintf("outputs/posteriors/%s_R_%s_fold_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
