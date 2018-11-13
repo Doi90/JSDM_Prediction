@@ -48,7 +48,7 @@ latlon <- eval(parse(text = command))                   # Evaluate command to re
 
 LL <- as.data.frame(latlon)[ ,2:3]
 
-LF_code <- rep("a", nrow(X))
+LF_code <- seq_len(nrow(LL))
 
 LF <- data.frame(level = as.factor(LF_code),
                  LL)

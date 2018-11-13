@@ -38,9 +38,8 @@ X <- as.matrix(X)                                       # Required format
 
 ## Set up latent factors
 
-LF <- as.data.frame(rep("a",                            # Need to define a sampling level
-                        nrow(X)))                       #  Here all same level
-                   
+LF <- data.frame(as.factor(seq_len(nrow(X))))
+
 ### Run HMSC JSDM ----
 
 ## Set MCMC parameters
