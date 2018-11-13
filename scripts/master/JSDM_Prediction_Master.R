@@ -130,15 +130,19 @@ message("Packages loaded")
 ## Define run status. 
 ## Frog data only has two folds so don't run for folds >2
 
-if(dataset_id == "frog" & fold_id > 2){
-  
-  run_status <- FALSE
-  
-} else {
-  
-  run_status <- TRUE
-  
-}
+# if(dataset_id == "frog" & fold_id > 2){
+#   
+#   run_status <- FALSE
+#   
+# } else {
+#   
+#   run_status <- TRUE
+#   
+# }
+
+## Frogs now random five fold so all run_status = TRUE
+
+run_status <- TRUE
 
 message(sprintf("Run status: %s",
                 run_status))
