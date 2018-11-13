@@ -28,11 +28,11 @@ species_richness <- function(observed = NULL,
                         dim = c(nrow(observed),       # sites
                                 3,                    # Observed + Predicted + Difference
                                 dim(predicted)[3]),   # Samples
-                        dimnames = c(NULL,
-                                     c("Observed",
-                                       "Predicted",
-                                       "Difference"),
-                                     NULL))   
+                        dimnames = list(NULL,
+                                        c("Observed",
+                                          "Predicted",
+                                          "Difference"),
+                                        NULL))   
   
   ## Observed richness
   
