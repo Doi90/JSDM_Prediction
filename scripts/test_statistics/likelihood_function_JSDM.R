@@ -70,9 +70,11 @@ log_likelihood <- function(Beta = NULL,
   
   ## Calculate log likelihood values. Fill matrix with values as we go
   
+  approx_counter <- 0
+  
   ### For each slice of array
   
-  for(a in seq_len(n_iter)){
+  for(s in seq_len(n_iter)){
     
     ### For each site
     
@@ -105,12 +107,10 @@ log_likelihood <- function(Beta = NULL,
 
       #### Prediction for species assemblage at site i using values from slice a
       
-      likelihood_tmp <- pmvnorm(mean = colSums(mean_values[ , , a]),
-                                sigma = R[ , , a],
+      likelihood_tmp <- pmvnorm(mean = colSums(mean_values[ , , s]),
+                                sigma = R[ , , s],
                                 lower = lower,
                                 upper = upper)
-      
-      approx_counter <- 0
       
       if(likelihood_tmp[1] != 0){
         
@@ -120,7 +120,7 @@ log_likelihood <- function(Beta = NULL,
       
       if(likelihood_tmp[1] == 0){
         
-        likelihood <- likelihood_tmp[2]
+        likelihood <- attr(likelihood_tmp, "error")
         
         approx_counter <- approx_counter + 1
         
@@ -128,7 +128,7 @@ log_likelihood <- function(Beta = NULL,
       
       #### Fill predictions array with value
       
-      log_lik[i, a] <- log(likelihood)
+      log_lik[i, s] <- log(likelihood)
       
     } 
   } 
@@ -148,7 +148,7 @@ log_likelihood <- function(Beta = NULL,
   ## Generate single output
   
   log_lik_out <- list(likelihood = mean_log_lik,
-                      approximation_rate = approx_counter / n_sites)
+                      approximation_rate = approx_counter / (n_sites * n_iter))
   
   return(log_lik_out)
   
