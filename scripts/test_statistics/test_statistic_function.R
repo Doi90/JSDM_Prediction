@@ -50,7 +50,7 @@ test_statistic <- function(observed = NULL,
       
       ## Extract observed and predicted data
       
-      obs_data <- observed[i, ]
+      obs_data <- unlist(observed[i, ])
       
       pred_data <- predictions[i, , s]
       
