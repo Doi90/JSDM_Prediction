@@ -41,7 +41,7 @@ marg_pred <- readRDS(filename)
 ### Calculate species richness
 
 marg_SR <- species_richness(observed = y_test,
-                            predictions = marg_pred)
+                            predicted = marg_pred)
 
 ### Save To File
 
@@ -72,7 +72,7 @@ cond_LOO_pred <- readRDS(filename)
 ### Calculate species richness
 
 cond_LOO_SR <- species_richness(observed = y_test,
-                                predictions = cond_LOO_pred)
+                                predicted = cond_LOO_pred)
 
 ### Save To File
 
@@ -89,35 +89,35 @@ saveRDS(cond_LOO_SR,
 rm(cond_LOO_pred,
    cond_LOO_SR)
 
-## Conditional - leave one in
-
-### Load Data
-
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-cond_LOI_pred <- readRDS(filename)
-
-### Calculate species richness
-
-# Loop over array 4th dimension, fill new empty array, then average over that?
-
-### Save To File
-
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_ts.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-saveRDS(cond_LOI_ts,
-        filename)
-
-### Memory purge
-
-rm(cond_LOI_pred,
-   cond_LOI_ts)
+# ## Conditional - leave one in
+# 
+# ### Load Data
+# 
+# filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
+#                     model_id,
+#                     dataset_id,
+#                     fold_id)
+# 
+# cond_LOI_pred <- readRDS(filename)
+# 
+# ### Calculate species richness
+# 
+# # Loop over array 4th dimension, fill new empty array, then average over that?
+# 
+# ### Save To File
+# 
+# filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_ts.rds",
+#                     model_id,
+#                     dataset_id,
+#                     fold_id)
+# 
+# saveRDS(cond_LOI_ts,
+#         filename)
+# 
+# ### Memory purge
+# 
+# rm(cond_LOI_pred,
+#    cond_LOI_ts)
 
 ## Joint
 
@@ -133,7 +133,7 @@ joint_pred <- readRDS(filename)
 ### Calculate species richness
 
 joint_SR <- species_richness(observed = y_test,
-                             predictions = joint_pred)
+                             predicted = joint_pred)
 
 ### Save To File
 
