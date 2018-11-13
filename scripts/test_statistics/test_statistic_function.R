@@ -109,7 +109,7 @@ test_statistic <- function(observed = NULL,
       
       TP <- sum(pred_data * obs_data)
       FP <- sum(pred_data * (1 - obs_data))
-      TN <- sum(1 - pred_data) * (1 - obs_data)
+      TN <- sum((1 - pred_data) * (1 - obs_data))
       FN <- sum((1 - pred_data) * obs_data)
       
       #### Calculate metrics
