@@ -339,12 +339,27 @@ predict.conditional.LOO <- function(Beta = NULL,
         
         #### Prediction for species j at site i using values from slice a
         
-        spp_pred <- ptmvnorm(mean = mean_values[ i, , s],
-                             sigma = R[ , , s],
-                             lower = lower,
-                             upper = upper,
-                             lowerx = lowerx,
-                             upperx = upperx)
+        spp_pred <- ptmvtnorm.new(mean = mean_values[ i, , s],
+                                  sigma = R[ , , s],
+                                  lower = lower,
+                                  upper = upper,
+                                  lowerx = lowerx,
+                                  upperx = upperx,
+                                  algorithm = "GenzBretz")
+        
+        ## If default algorithm returns NA, use slower Miwa algorithm
+        
+        if(is.na(spp_pred)){
+          
+          spp_pred <- ptmvtnorm.new(mean = mean_values[ i, , s],
+                                    sigma = R[ , , s],
+                                    lower = lower,
+                                    upper = upper,
+                                    lowerx = lowerx,
+                                    upperx = upperx,
+                                    algorithm = "Miwa")
+          
+        }
         
         #### Fill predictions array with value
         
