@@ -116,6 +116,7 @@ library(tmvtnorm)
 
 ### Test statistics packages
 
+library(TruncatedNormal)
 library(Metrics)
 library(caret)
 library(vegan)
@@ -163,17 +164,17 @@ model_start <- Sys.time()
 
 if(run_status){
   
-command <- sprintf("source('scripts/models/%s_model.R')",
-                   model_id)
-
-eval(parse(text = command))
-
+  command <- sprintf("source('scripts/models/%s_model.R')",
+                     model_id)
+  
+  eval(parse(text = command))
+  
 } 
 
 message(sprintf("Model fitting duration: %s hours",
                 round(difftime(Sys.time(),
-                         model_start,
-                         units = "hours")[[1]],
+                               model_start,
+                               units = "hours")[[1]],
                       digits = 5)))
 
 message(sprintf("Total time elapsed: %s hours",
@@ -200,6 +201,7 @@ if(run_status){
   
   if(model_id != "SSDM"){
     
+    source("scripts/prediction/pmvtnorm_new_function.R")
     source("scripts/prediction/prediction_functions_JSDM.R")
     source("scripts/prediction/prediction_JSDM.R")
     
