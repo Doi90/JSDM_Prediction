@@ -89,35 +89,45 @@ saveRDS(cond_LOO_SR,
 rm(cond_LOO_pred,
    cond_LOO_SR)
 
-# ## Conditional - leave one in
-# 
-# ### Load Data
-# 
-# filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
-#                     model_id,
-#                     dataset_id,
-#                     fold_id)
-# 
-# cond_LOI_pred <- readRDS(filename)
-# 
-# ### Calculate species richness
-# 
-# # Loop over array 4th dimension, fill new empty array, then average over that?
-# 
-# ### Save To File
-# 
-# filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_ts.rds",
-#                     model_id,
-#                     dataset_id,
-#                     fold_id)
-# 
-# saveRDS(cond_LOI_ts,
-#         filename)
-# 
-# ### Memory purge
-# 
-# rm(cond_LOI_pred,
-#    cond_LOI_ts)
+## Conditional - leave one in
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+cond_LOI_pred <- readRDS(filename)
+
+### Calculate species richness
+
+SR_list <- list()
+
+for(i in seq_len(dim(cond_LOI_pred)[4])){
+  
+  SR_list[[i]] <- species_richness(observed = y_test,
+                                   predicted = cond_LOI_pred[ , , , i])
+  
+}
+
+cond_LOI_SR <- abind(SR_list,
+                     along = 4)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_SR.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_LOI_SR,
+        filename)
+
+### Memory purge
+
+rm(cond_LOI_pred,
+   cond_LOI_tSR)
 
 ## Joint
 

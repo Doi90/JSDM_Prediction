@@ -89,48 +89,48 @@ saveRDS(cond_LOO_ts,
 rm(cond_LOO_pred,
    cond_LOO_ts)
 
-# ## Conditional - leave one in ----
-# 
-# ### Load Data
-# 
-# filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
-#                     model_id,
-#                     dataset_id,
-#                     fold_id)
-# 
-# cond_LOI_pred <- readRDS(filename)
-# 
-# ### Calculate Test Statistics
-# 
-# # Loop over array 4th dimension, calculate test statistic separately
-# # Save as list, turn back into 4D array
-# 
-# ts_list <- list()
-# 
-# for(i in seq_len(dim(cond_LOI_pred)[4])){
-#   
-#   ts_list[[i]] <- test_statistic(observed = y_test,
-#                                  predictions = cond_LOO_pred[ , , , i])
-# 
-# }
-# 
-# cond_LOI_ts <- abind(ts_list,
-#                      along = 4)
-# 
-# ### Save To File
-# 
-# filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_ts.rds",
-#                     model_id,
-#                     dataset_id,
-#                     fold_id)
-# 
-# saveRDS(cond_LOI_ts,
-#         filename)
-# 
-# ### Memory purge
-# 
-# rm(cond_LOI_pred,
-#    cond_LOI_ts)
+## Conditional - leave one in ----
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+cond_LOI_pred <- readRDS(filename)
+
+### Calculate Test Statistics
+
+# Loop over array 4th dimension, calculate test statistic separately
+# Save as list, turn back into 4D array
+
+ts_list <- list()
+
+for(i in seq_len(dim(cond_LOI_pred)[4])){
+
+  ts_list[[i]] <- test_statistic(observed = y_test,
+                                 predictions = cond_LOO_pred[ , , , i])
+
+}
+
+cond_LOI_ts <- abind(ts_list,
+                     along = 4)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_LOI_ts,
+        filename)
+
+### Memory purge
+
+rm(cond_LOI_pred,
+   cond_LOI_ts)
 
 ## Joint ----
 
