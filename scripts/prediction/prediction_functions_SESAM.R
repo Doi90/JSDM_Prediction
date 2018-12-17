@@ -53,7 +53,7 @@ SESAM <- function(probabilities,
       
     } else {
       
-      predicted_composition[, ] <- 0
+      predicted_composition <- rep(0, ncol(probabilities))
       
     }
     
