@@ -15,7 +15,7 @@
 
 ## Observed / Testing Data
 
-command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_test_spatial.csv')", 
+command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_test.csv')", 
                    dataset_id,                          # Need to build command to read in
                    fold_id)                             # specific files for this CV fold
 

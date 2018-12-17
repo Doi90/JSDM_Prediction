@@ -48,7 +48,7 @@ R_posterior <- readRDS(R_filename)
 
 ## Pres/Abs data
 
-command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train_spatial.csv')", 
+command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train.csv')", 
                    dataset_id,                          # Need to build command to read in
                    fold_id)                             # specific files for this CV fold
 
@@ -58,7 +58,7 @@ y <- y[ , -1]                                           # Remove rownames
 
 ## Site data
 
-command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train_spatial.csv')", 
+command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train.csv')", 
                    dataset_id,                          # Need to build command to read in
                    fold_id)                             # specific files for this CV fold
 
