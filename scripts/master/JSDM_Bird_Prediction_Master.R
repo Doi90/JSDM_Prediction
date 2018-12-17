@@ -2,21 +2,20 @@
 ###########################################
 ###########################################
 ###                                     ###
-###    JSDM PREDICTION MASTER SCRIPT    ###
+###    BIRD PREDICTION MASTER SCRIPT    ###
 ###                                     ###
-###  This is the script called during   ###
-### sbatch job submission on Spartan.   ###
-### This script reads in command line   ###
-### arguments from the job submission   ###
-### process that serve as indices for   ###
-### model, dataset, and CV fold. This   ###
-### allows the master script to call    ###
-### the appropriate combination of      ###
-### scripts for the analysis            ###
+###  This script is called to split up  ###
+### the prediction/test statistics for  ###
+### the bird dataset into smaller, more ###
+### manageable chunks. Instead of a     ###
+### single job for all 1000 samples it  ###
+### creates 100 sets of 10              ###
 ###                                     ###
 ###########################################
 ###########################################
 ###########################################
+
+message("Bird prediction script only")
 
 start_time <- Sys.time()
 
@@ -35,6 +34,8 @@ command_args <- commandArgs(trailingOnly = TRUE)
 model_index <- as.numeric(command_args[1])
 dataset_index <- as.numeric(command_args[2])
 fold_index <- as.numeric(command_args[3])
+start_sample <- as.numeric(command_args[4])
+end_sample <- as.numeric(command_args[5])
 
 ## Possible ID options
 
@@ -62,10 +63,12 @@ fold_id <- fold_options[fold_index]
 
 message("Command line arguments finished")
 
-message(sprintf("Combination:\nModel: %s \nDataset: %s \nFold: %s",
+message(sprintf("Combination:\nModel: %s \nDataset: %s \nFold: %s \nSamples: %s - %s",
                 model_id,
                 dataset_id,
-                fold_id))
+                fold_id,
+                start_sample,
+                end_sample))
 
 #####################
 ### Load packages ###
@@ -148,121 +151,6 @@ run_status <- TRUE
 message(sprintf("Run status: %s",
                 run_status))
 
-########################
-### Run Model Script ###
-########################
-
-## Purge environment for memory's sake. Need to keep 5 constants.
-
-rm(list = ls()[-which(ls() %in% c("model_id",
-                                  "dataset_id",
-                                  "fold_id",
-                                  "run_status",
-                                  "start_time"))])
-
-model_start <- Sys.time()
-
-if(run_status){
-  
-  command <- sprintf("source('scripts/models/%s_model.R')",
-                     model_id)
-  
-  eval(parse(text = command))
-  
-} 
-
-message(sprintf("Model fitting duration: %s hours",
-                round(difftime(Sys.time(),
-                               model_start,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-message(sprintf("Total time elapsed: %s hours",
-                round(difftime(Sys.time(),
-                               start_time,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-#################################
-### Run Log-Likelihood Script ###
-#################################
-
-## Purge environment for memory's sake. Need to keep 5 constants.
-
-rm(list = ls()[-which(ls() %in% c("model_id",
-                                  "dataset_id",
-                                  "fold_id",
-                                  "run_status",
-                                  "start_time"))])
-
-likelihood_start <- Sys.time()
-
-if(run_status){
-  
-  if(model_id != "SSDM"){
-    
-    source("scripts/test_statistics/likelihood_function_JSDM.R")
-    source("scripts/test_statistics/likelihood_JSDM.R")
-    
-  } else if(model_id == "SSDM"){
-    
-    source("scripts/test_statistics/likelihood_SSDM.R")
-    
-  }
-}
-
-message(sprintf("Likelihood calculation duration: %s hours",
-                round(difftime(Sys.time(),
-                               likelihood_start,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-message(sprintf("Total time elapsed: %s hours",
-                round(difftime(Sys.time(),
-                               start_time,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-########################################
-### Split up the Bird Runs From Here ###
-########################################
-
-## The bird dataset is too computationally intensive to run
-## all 1000 posterior samples sequentially for prediction/
-## species richness/test statistics.
-##
-## Here we submit more jobs to Spartan's queue to tackle
-## the problem in smaller chunks. 100 runs of 10 samples
-
-if(dataset_id == "bird" & model_id != "SSDM"){
-  
-  model_options <- c("MPR",
-                     "HPR",
-                     "LPR",
-                     "DPR",
-                     "HLR_NS",
-                     "HLR_S",
-                     "SSDM")
-  
-  model_command_arg <- which(model_options == model_id)
-  
-  for(i in seq(1, 1000, 10)){
-    
-    start_sample <- i
-    
-    end_sample <- i + 9
-    
-    command <- sprintf("system('sbatch -p physical --cpus-per-task=1 --mem=252280 --time=30:00 --job-name=B_%1$s_%2$s_%3$s --output=B_%1$s_%2$s_%3$s.out scripts/slurm/bird_submission.slurm %1$s 3 %2$s %3$s %4$s')",
-                       model_command_arg,
-                       fold_id,
-                       start_sample,
-                       end_sample)
-    
-    eval(parse(text = command))
-    
-  }
-}
-
 ##############################
 ### Run Prediction Scripts ###
 ##############################
@@ -273,17 +161,19 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "dataset_id",
                                   "fold_id",
                                   "run_status",
-                                  "start_time"))])
+                                  "start_time",
+                                  "start_sample",
+                                  "end_sample"))])
 
 prediction_start <- Sys.time()
 
-if(run_status & dataset_id != "bird"){
+if(run_status){
   
   if(model_id != "SSDM"){
     
     source("scripts/prediction/pmvtnorm_new_function.R")
     source("scripts/prediction/prediction_functions_JSDM.R")
-    source("scripts/prediction/prediction_JSDM.R")
+    source("scripts/prediction/prediction_JSDM_Bird.R")
     
   } else if(model_id == "SSDM"){
     
@@ -291,13 +181,6 @@ if(run_status & dataset_id != "bird"){
     source("scripts/prediction/prediction_SSDM_SESAM.R")
     
   }
-}
-
-if(run_status & dataset_id == "bird" & model_id == "SSDM"){
-  
-  source("scripts/prediction/prediction_functions_SESAM.R")
-  source("scripts/prediction/prediction_SSDM_SESAM.R")
-  
 }
 
 message(sprintf("Total prediction duration: %s hours",
@@ -322,16 +205,18 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "dataset_id",
                                   "fold_id",
                                   "run_status",
-                                  "start_time"))])
+                                  "start_time",
+                                  "start_sample",
+                                  "end_sample"))])
 
 test_start <- Sys.time()
 
-if(run_status & dataset_id != "bird"){
+if(run_status){
   
   if(model_id != "SSDM"){
     
     source("scripts/test_statistics/test_statistic_function.R")
-    source("scripts/test_statistics/test_statistics_JSDM.R")
+    source("scripts/test_statistics/test_statistics_JSDM_Bird.R")
     
   } else if(model_id == "SSDM"){
     
@@ -339,13 +224,6 @@ if(run_status & dataset_id != "bird"){
     source("scripts/test_statistics/test_statistics_SSDM_SESAM.R")
     
   }
-}
-
-if(run_status & dataset_id == "bird" & model_id == "SSDM"){
-  
-  source("scripts/test_statistics/test_statistic_function.R")
-  source("scripts/test_statistics/test_statistics_SSDM_SESAM.R")
-  
 }
 
 message(sprintf("Test statistic calculation duration: %s hours",
@@ -370,16 +248,18 @@ rm(list = ls()[-which(ls() %in% c("model_id",
                                   "dataset_id",
                                   "fold_id",
                                   "run_status",
-                                  "start_time"))])
+                                  "start_time",
+                                  "start_sample",
+                                  "end_sample"))])
 
 richness_start <- Sys.time()
 
-if(run_status & dataset_id != "bird"){
+if(run_status){
   
   if(model_id != "SSDM"){
     
     source("scripts/species_richness/species_richness_function.R")
-    source("scripts/species_richness/species_richness_JSDM.R")
+    source("scripts/species_richness/species_richness_JSDM_Bird.R")
     
   } else if(model_id == "SSDM"){
     
@@ -387,13 +267,6 @@ if(run_status & dataset_id != "bird"){
     source("scripts/species_richness/species_richness_SSDM_SESAM.R")
     
   }
-}
-
-if(run_status & dataset_id == "bird" & model_id == "SSDM"){
-  
-  source("scripts/species_richness/species_richness_function.R")
-  source("scripts/species_richness/species_richness_SSDM_SESAM.R")
-  
 }
 
 message(sprintf("Species richness calculation duration: %s hours",
@@ -437,17 +310,7 @@ saveRDS(meta_data,
 
 message("Metadata saved to file")
 
-if(dataset_id == "bird"){
-  
-  message("Bird analysis master script complete\nSplit up prediction jobs still in progress")
-  
-}
-
-if(dataset_id != "bird"){
-  
-  message("Analysis complete!")
-  
-}
+message("Analysis complete!")
 
 message(sprintf("Total time elapsed: %s hours",
                 round(difftime(meta_data$end_time,
