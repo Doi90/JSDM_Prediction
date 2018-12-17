@@ -98,7 +98,8 @@ predict.conditional.LOI <- function(Beta = NULL,
                                     R = NULL,
                                     n_species = NULL,
                                     n_sites = NULL,
-                                    n_iter = NULL){
+                                    n_iter = NULL,
+                                    dataset_id = NULL){
   
   ## Tests to make sure correct inputs supplied
   
@@ -130,6 +131,10 @@ predict.conditional.LOI <- function(Beta = NULL,
     stop("n_iter not supplied.")
   } 
   
+  if(is.null(dataset_id)){
+    stop("dataset_id not supplied.")
+  }
+  
   ## Create an array of distribution mean values. Beta * X values
   
   mean_values <- array(data = NA,
@@ -151,24 +156,43 @@ predict.conditional.LOI <- function(Beta = NULL,
   
   ## Create a prediction array full of NAs. Unlike other predictions,
   ## this one needs a 4D array for predictions as we need to predict
-  ## all species at a site once for each species left out. Thus,
-  ## J-1 predictions per species per site
+  ## all species at a site once for three different species left in
+  ## scenarios. Thus, 3 predictions per species per site
   
   predictions <- array(NA,
                        dim = c(n_sites,     # Number of sites in test data
                                n_species,
                                n_iter,      # 1:1 Prediction slice:Posterior slice
-                               n_species),  # Need to predict for each species left in   
+                               3),          # Need to predict for each species left in   
                        dimnames = list(rownames(X),
                                        colnames(y),
                                        NULL,
                                        NULL))
   
+  ## Identify the species being left in
+  
+  if(dataset_id == "frog"){
+    
+    species_left_in_IDs <- c(9, 4, 6) # Lit_rani, Lim_tas, Lit_ewing
+    
+  }
+  
+  if(dataset_id == "eucalypt"){
+    
+    species_left_in_IDs <- c(8, 9, 3) # OVA, WIL, BAX
+    
+  }
+  
+  if(dataset_id == "bird"){
+    
+    species_left_in_IDs <- c(16, 19, 289) # Common_Goldeneye, Canada_Goose, American_Robin
+    
+  }
   ## Make predictions. Fill predictions array with values as we go
   
   ### For each 4th dimension/left-in species
   
-  for(j in seq_len(n_species)){
+  for(j in seq_len(species_left_in_IDs)){
     
     ### For each slice of array
     
