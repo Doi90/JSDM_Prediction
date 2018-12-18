@@ -123,36 +123,36 @@ message(sprintf("Marginal prediction duration: %s hours",
 rm(marg_start,
    marg_pred)
 
-## Conditional - Leave One Out
-
-cond_LOO_start <- Sys.time()
-
-cond_LOO_pred <- predict.conditional.LOO(Beta = Beta_posterior,
-                                         X = X_test,
-                                         y = y_test,
-                                         R = R_posterior,
-                                         n_species = n_species,
-                                         n_sites = n_sites,
-                                         n_iter = n_iter)
-
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO_%s_%s.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id,
-                    start_sample,
-                    end_sample)
-
-saveRDS(cond_LOO_pred,
-        filename)
-
-message(sprintf("Conditional LOO prediction duration: %s hours",
-                round(difftime(Sys.time(),
-                               cond_LOO_start,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-rm(cond_LOO_start,
-   cond_LOO_pred)
+# ## Conditional - Leave One Out
+# 
+# cond_LOO_start <- Sys.time()
+# 
+# cond_LOO_pred <- predict.conditional.LOO(Beta = Beta_posterior,
+#                                          X = X_test,
+#                                          y = y_test,
+#                                          R = R_posterior,
+#                                          n_species = n_species,
+#                                          n_sites = n_sites,
+#                                          n_iter = n_iter)
+# 
+# filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO_%s_%s.rds",
+#                     model_id,
+#                     dataset_id,
+#                     fold_id,
+#                     start_sample,
+#                     end_sample)
+# 
+# saveRDS(cond_LOO_pred,
+#         filename)
+# 
+# message(sprintf("Conditional LOO prediction duration: %s hours",
+#                 round(difftime(Sys.time(),
+#                                cond_LOO_start,
+#                                units = "hours")[[1]],
+#                       digits = 5)))
+# 
+# rm(cond_LOO_start,
+#    cond_LOO_pred)
 
 ## Conditional - Leave One In
 

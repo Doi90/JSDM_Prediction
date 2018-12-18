@@ -58,36 +58,36 @@ saveRDS(marg_SR,
 rm(marg_pred,
    marg_SR)
 
-## Conditional - leave one out
-
-### Load data
-
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-cond_LOO_pred <- readRDS(filename)
-
-### Calculate species richness
-
-cond_LOO_SR <- species_richness(observed = y_test,
-                                predicted = cond_LOO_pred)
-
-### Save To File
-
-filename <- sprintf("outputs/species_richness/%s_%s_fold%s_condLOO_SR.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-saveRDS(cond_LOO_SR,
-        filename)
-
-### Memory purge
-
-rm(cond_LOO_pred,
-   cond_LOO_SR)
+# ## Conditional - leave one out
+# 
+# ### Load data
+# 
+# filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
+#                     model_id,
+#                     dataset_id,
+#                     fold_id)
+# 
+# cond_LOO_pred <- readRDS(filename)
+# 
+# ### Calculate species richness
+# 
+# cond_LOO_SR <- species_richness(observed = y_test,
+#                                 predicted = cond_LOO_pred)
+# 
+# ### Save To File
+# 
+# filename <- sprintf("outputs/species_richness/%s_%s_fold%s_condLOO_SR.rds",
+#                     model_id,
+#                     dataset_id,
+#                     fold_id)
+# 
+# saveRDS(cond_LOO_SR,
+#         filename)
+# 
+# ### Memory purge
+# 
+# rm(cond_LOO_pred,
+#    cond_LOO_SR)
 
 ## Conditional - leave one in
 

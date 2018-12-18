@@ -58,36 +58,36 @@ saveRDS(marg_ts,
 rm(marg_pred,
    marg_ts)
 
-## Conditional - leave one out ----
-
-### Load data
-
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-cond_LOO_pred <- readRDS(filename)
-
-### Calculate Test Statistics
-
-cond_LOO_ts <- test_statistic(observed = y_test,
-                              predictions = cond_LOO_pred)
-
-### Save To File
-
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOO_ts.rds",
-                    model_id,
-                    dataset_id,
-                    fold_id)
-
-saveRDS(cond_LOO_ts,
-        filename)
-
-### Memory purge
-
-rm(cond_LOO_pred,
-   cond_LOO_ts)
+# ## Conditional - leave one out ----
+# 
+# ### Load data
+# 
+# filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOO.rds",
+#                     model_id,
+#                     dataset_id,
+#                     fold_id)
+# 
+# cond_LOO_pred <- readRDS(filename)
+# 
+# ### Calculate Test Statistics
+# 
+# cond_LOO_ts <- test_statistic(observed = y_test,
+#                               predictions = cond_LOO_pred)
+# 
+# ### Save To File
+# 
+# filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOO_ts.rds",
+#                     model_id,
+#                     dataset_id,
+#                     fold_id)
+# 
+# saveRDS(cond_LOO_ts,
+#         filename)
+# 
+# ### Memory purge
+# 
+# rm(cond_LOO_pred,
+#    cond_LOO_ts)
 
 ## Conditional - leave one in ----
 
