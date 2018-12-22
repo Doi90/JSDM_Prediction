@@ -169,6 +169,7 @@ predict.conditional.LOI <- function(Beta = NULL,
                                        NULL,
                                        NULL))
   
+  
   ## Identify the species being left in
   
   if(dataset_id == "frog"){
@@ -192,7 +193,9 @@ predict.conditional.LOI <- function(Beta = NULL,
   
   ### For each 4th dimension/left-in species
   
-  for(j in seq_len(species_left_in_IDs)){
+  for(j in species_left_in_IDs){
+    
+    j_array_id <- which(species_left_in_IDs == j)
     
     ### For each slice of array
     
@@ -233,7 +236,7 @@ predict.conditional.LOI <- function(Beta = NULL,
         
         #### Fill predictions array with value
         
-        predictions[i, , s, j] <- spp_pred
+        predictions[i, , s, j_array_id] <- spp_pred
         
       } 
     }
