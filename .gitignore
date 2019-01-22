@@ -9,6 +9,7 @@ Overall_workflow.pdf
 *_skeleton.docx
 paper/**
 data/**
+outputs/**
 **.pdf
 **.xlsx
 **.png
