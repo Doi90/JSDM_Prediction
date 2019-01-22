@@ -13,59 +13,64 @@ do
     do
 	  if [ $dataset = "1" ]
       then
-        MEMORY_LIMIT=51200
+        MEMORY_LIMIT=20480
         PARTITION="cloud"
-        WALLTIME=3	
+        WALLTIME=7	
       fi
       
       if [ $dataset = "2" ]
       then
-        MEMORY_LIMIT=51200
+        MEMORY_LIMIT=20480
         PARTITION="cloud"
-        
-        if [ $model = "6" ]
-        then
-          WALLTIME=10
-        else
-          WALLTIME=6
-        fi
-        
+        WALLTIME=10
       fi
       
       if [ $dataset = "3" ]
       then
-        MEMORY_LIMIT=225280
-        PARTITION="physical"
         
         if [ $model = "1" ]
         then
-          WALLTIME=7
+          MEMORY_LIMIT=51200
+          PARTITION="cloud"
+          WALLTIME=30
         elif [ $model = "2" ]
         then
-          WALLTIME=20
+          MEMORY_LIMIT=51200
+          PARTITION="physical"
+          WALLTIME=30
         elif [ $model = "3" ]
         then
-          WALLTIME=20
+          MEMORY_LIMIT=51200
+          PARTITION="physical"
+          WALLTIME=30
         elif [ $model = "4" ]
         then
-          WALLTIME=10
+          MEMORY_LIMIT=51200
+          PARTITION="physical"
+          WALLTIME=30
         elif [ $model = "5" ]
         then
-          WALLTIME=10
+          MEMORY_LIMIT=51200
+          PARTITION="physical"
+          WALLTIME=30
         elif [ $model = "6" ]
         then
-          WALLTIME=20
+          MEMORY_LIMIT=102400
+          PARTITION="physical"
+          WALLTIME=30
         elif [ $model = "7" ]
         then
-          WALLTIME=6
+          MEMORY_LIMIT=51200
+          PARTITION="cloud"
+          WALLTIME=7
         fi  
       fi
       
         for fold in {1..5}
         do
 		  WALLTIME_FORMAT="$WALLTIME-00"
-		  JOB_NAME="JPred_$model_$dataset_$fold"
-		  OUT_NAME="/data/cephfs/punim0200/JSDM_Prediction/outputs/slurm_outputs/JPred_$model_$dataset_$fold.out"
+		  JOB_NAME="JP_${model}_${dataset}_${fold}"
+		  OUT_NAME="/data/cephfs/punim0200/JSDM_Prediction/outputs/slurm_outputs/JP_${model}_${dataset}_${fold}.out"
 		  
           sbatch -p $PARTITION --cpus-per-task=$nCPU --mem=$MEMORY_LIMIT --time=$WALLTIME_FORMAT --job-name=$JOB_NAME --output=$OUT_NAME /data/cephfs/punim0200/JSDM_Prediction/scripts/slurm/master_slurm.slurm $model $dataset $fold 
         done
