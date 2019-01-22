@@ -228,7 +228,8 @@ predict.conditional.LOI <- function(Beta = NULL,
                              mean = mean_values[ i, , s],
                              sigma = R[ , , s],
                              lower = lower, 
-                             upper = upper)
+                             upper = upper,
+                             algorithm = "gibbs")
         
         #### Convert latent variable draws to pres/abs
         
@@ -499,7 +500,8 @@ predict.joint <- function(Beta = NULL,
                            mean = mean_values[ i, , s],
                            sigma = R[ , , s], 
                            lower = lower, 
-                           upper = upper)
+                           upper = upper,
+                           algorithm = "gibbs")
       
       #### Convert latent variable draws to pres/abs
       
