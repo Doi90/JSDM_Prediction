@@ -121,6 +121,7 @@ library(Metrics)
 library(caret)
 library(vegan)
 library(psych)
+library(abind)
 
 message("Packages loaded")
 
@@ -174,46 +175,6 @@ if(run_status){
 message(sprintf("Model fitting duration: %s hours",
                 round(difftime(Sys.time(),
                                model_start,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-message(sprintf("Total time elapsed: %s hours",
-                round(difftime(Sys.time(),
-                               start_time,
-                               units = "hours")[[1]],
-                      digits = 5)))
-
-#################################
-### Run Log-Likelihood Script ###
-#################################
-
-## Purge environment for memory's sake. Need to keep 5 constants.
-
-rm(list = ls()[-which(ls() %in% c("model_id",
-                                  "dataset_id",
-                                  "fold_id",
-                                  "run_status",
-                                  "start_time"))])
-
-likelihood_start <- Sys.time()
-
-if(run_status){
-  
-  if(model_id != "SSDM"){
-    
-    source("scripts/test_statistics/likelihood_function_JSDM.R")
-    source("scripts/test_statistics/likelihood_JSDM.R")
-    
-  } else if(model_id == "SSDM"){
-    
-    source("scripts/test_statistics/likelihood_SSDM.R")
-    
-  }
-}
-
-message(sprintf("Likelihood calculation duration: %s hours",
-                round(difftime(Sys.time(),
-                               likelihood_start,
                                units = "hours")[[1]],
                       digits = 5)))
 
@@ -293,16 +254,49 @@ if(run_status & dataset_id != "bird"){
   }
 }
 
-if(run_status & dataset_id == "bird" & model_id == "SSDM"){
-  
-  source("scripts/prediction/prediction_functions_SESAM.R")
-  source("scripts/prediction/prediction_SSDM_SESAM.R")
-  
-}
-
 message(sprintf("Total prediction duration: %s hours",
                 round(difftime(Sys.time(),
                                prediction_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+message(sprintf("Total time elapsed: %s hours",
+                round(difftime(Sys.time(),
+                               start_time,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+#################################
+### Run Log-Likelihood Script ###
+#################################
+
+## Purge environment for memory's sake. Need to keep 5 constants.
+
+rm(list = ls()[-which(ls() %in% c("model_id",
+                                  "dataset_id",
+                                  "fold_id",
+                                  "run_status",
+                                  "start_time"))])
+
+likelihood_start <- Sys.time()
+
+if(run_status){
+  
+  if(model_id != "SSDM"){
+    
+    source("scripts/test_statistics/likelihood_function_JSDM.R")
+    source("scripts/test_statistics/likelihood_JSDM.R")
+    
+  } else if(model_id == "SSDM"){
+    
+    source("scripts/test_statistics/likelihood_SSDM.R")
+    
+  }
+}
+
+message(sprintf("Likelihood calculation duration: %s hours",
+                round(difftime(Sys.time(),
+                               likelihood_start,
                                units = "hours")[[1]],
                       digits = 5)))
 

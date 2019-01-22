@@ -82,14 +82,14 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 ### Calculate Log-Likelihood ###
 ################################
 
-log_likelihood_estimate <- log_likelihood(Beta = Beta_posterior,
-                                          X = X,
-                                          y = y,
-                                          R = R_posterior,
-                                          n_species = n_species,
-                                          n_sites = n_sites,
-                                          n_iter = n_iter)
-
+log_likelihood_estimate <- tryCatch(expr = log_likelihood(Beta = Beta_posterior,
+                                                          X = X,
+                                                          y = y,
+                                                          R = R_posterior,
+                                                          n_species = n_species,
+                                                          n_sites = n_sites,
+                                                          n_iter = n_iter),
+                                    error = function(e){ return(NA) })
 ## Save to file
 
 filename <- sprintf("outputs/likelihood/%s_%s_fold%s_likelihood.rds",

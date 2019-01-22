@@ -122,12 +122,11 @@ ts_list <- list()
 for(i in seq_len(dim(cond_LOI_pred)[4])){
   
   ts_list[[i]] <- test_statistic(observed = y_test,
-                                 predictions = cond_LOO_pred[ , , , i])
+                                 predictions = cond_LOI_pred[ , , , i])
   
 }
 
-cond_LOI_ts <- abind(ts_list,
-                     along = 4)
+cond_LOI_ts <- ts_list
 
 ### Save To File
 

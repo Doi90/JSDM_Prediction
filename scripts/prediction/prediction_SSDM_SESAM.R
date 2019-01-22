@@ -141,7 +141,7 @@ saveRDS(pred_array,
 
 ## SESAM
 
-filename <- sprintf("outputs/prediction/SESAM_%s_fold%s.rds",
+filename <- sprintf("outputs/predictions/SESAM_%s_fold%s.rds",
                     dataset_id,
                     fold_id)
 

@@ -141,7 +141,7 @@ saveRDS(cond_LOI_SR,
 ### Memory purge
 
 rm(cond_LOI_pred,
-   cond_LOI_tSR)
+   cond_LOI_SR)
 
 ## Joint
 
