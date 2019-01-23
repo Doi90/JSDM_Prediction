@@ -31,27 +31,27 @@ do
         if [ $model = "1" ]
         then
           MEMORY_LIMIT=51200
-          PARTITION="cloud"
+          PARTITION="cloud,physical"
           WALLTIME=30
         elif [ $model = "2" ]
         then
           MEMORY_LIMIT=51200
-          PARTITION="physical"
+          PARTITION="cloud,physical"
           WALLTIME=30
         elif [ $model = "3" ]
         then
           MEMORY_LIMIT=51200
-          PARTITION="physical"
+          PARTITION="cloud,physical"
           WALLTIME=30
         elif [ $model = "4" ]
         then
           MEMORY_LIMIT=51200
-          PARTITION="physical"
+          PARTITION="cloud,physical"
           WALLTIME=30
         elif [ $model = "5" ]
         then
           MEMORY_LIMIT=51200
-          PARTITION="physical"
+          PARTITION="cloud,physical"
           WALLTIME=30
         elif [ $model = "6" ]
         then
@@ -61,7 +61,7 @@ do
         elif [ $model = "7" ]
         then
           MEMORY_LIMIT=51200
-          PARTITION="cloud"
+          PARTITION="cloud,physical"
           WALLTIME=7
         fi  
       fi
