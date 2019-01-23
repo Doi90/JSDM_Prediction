@@ -45,8 +45,8 @@ do
           WALLTIME=30
         elif [ $model = "4" ]
         then
-          MEMORY_LIMIT=51200
-          PARTITION="cloud,physical"
+          MEMORY_LIMIT=102400
+          PARTITION="physical"
           WALLTIME=30
         elif [ $model = "5" ]
         then
