@@ -116,7 +116,7 @@ cond_LOI_SR <- abind(SR_list,
 
 ### Save To File
 
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_SR.rds",
+filename <- sprintf("outputs/species_richness/%s_%s_fold%s_condLOI_SR.rds",
                     model_id,
                     dataset_id,
                     fold_id)
