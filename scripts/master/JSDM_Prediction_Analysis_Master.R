@@ -969,3 +969,307 @@ saveRDS(ts_summary_joint,
         filename)
 
 #----
+
+##################################
+### Summarise Species Richness ###
+##################################
+
+## Model names
+
+model_names <- c("MPR", "HPR", "LPR",
+                 "DPR", "HLR_NS", "HLR_S",
+                 "SSDM", "SESAM")
+
+## Marginal ----
+
+### Build empty array
+
+sr_summary_marg <- matrix(NA,
+                          nrow = 4,
+                          ncol = length(model_names),
+                          dimnames = list(c("mean",
+                                            "median",
+                                            "CI_95_lower",
+                                            "CI_95_upper"),
+                                          model_names))
+
+for(model in model_names){
+  
+  ## Load test statistics for all folds
+  
+  sr_1 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold1_marginal_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_2 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold2_marginal_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_3 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold3_marginal_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_4 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold4_marginal_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_5 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold5_marginal_SR.rds",
+                          model,
+                          dataset_id))
+  
+  ## Merge folds
+  
+  sr_all <- abind(sr_1,
+                  sr_2,
+                  sr_3,
+                  sr_4,
+                  sr_5,
+                  along = 1)
+  
+  ## Fill array of difference values
+  
+  sr_summary_marg["mean", model] <- mean(sr_all[ , "Difference", ],
+                                         na.rm = TRUE)
+  
+  sr_summary_marg["median", model] <- median(sr_all[ , "Difference", ],
+                                         na.rm = TRUE)
+  
+  sr_summary_marg["CI_95_lower", model] <- quantile(sr_all[ , "Difference", ],
+                                                    probs = 0.025,
+                                         na.rm = TRUE)[[1]]
+  
+  sr_summary_marg["CI_95_upper", model] <- quantile(sr_all[ , "Difference", ],
+                                                    probs = 0.975,
+                                                    na.rm = TRUE)[[1]]
+  
+  ## save to file
+  
+  filename <- sprintf("outputs/species_richness/SR_summary_JSDM_%s_marginal.rds",
+                      dataset_id)
+  
+  saveRDS(sr_summary_marg,
+          filename)
+  
+}
+
+#----
+
+## Conditional LOI ----
+
+### Build empty array
+
+sr_summary_condLOI_low <- matrix(NA,
+                          nrow = 4,
+                          ncol = length(model_names),
+                          dimnames = list(c("mean",
+                                            "median",
+                                            "CI_95_lower",
+                                            "CI_95_upper"),
+                                          model_names))
+
+sr_summary_condLOI_med <- matrix(NA,
+                                 nrow = 4,
+                                 ncol = length(model_names),
+                                 dimnames = list(c("mean",
+                                                   "median",
+                                                   "CI_95_lower",
+                                                   "CI_95_upper"),
+                                                 model_names))
+
+sr_summary_condLOI_high <- matrix(NA,
+                                 nrow = 4,
+                                 ncol = length(model_names),
+                                 dimnames = list(c("mean",
+                                                   "median",
+                                                   "CI_95_lower",
+                                                   "CI_95_upper"),
+                                                 model_names))
+
+for(model in model_names){
+  
+  ## Load test statistics for all folds
+  
+  sr_1 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold1_condLOI_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_2 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold2_condLOI_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_3 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold3_condLOI_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_4 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold4_condLOI_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_5 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold5_condLOI_SR.rds",
+                          model,
+                          dataset_id))
+  
+  ## Merge folds
+  
+  sr_all_low <- abind(sr_1[ , , , 1],
+                      sr_2[ , , , 1],
+                      sr_3[ , , , 1],
+                      sr_4[ , , , 1],
+                      sr_5[ , , , 1],
+                      along = 1)
+  
+  sr_all_med <- abind(sr_1[ , , , 2],
+                      sr_2[ , , , 2],
+                      sr_3[ , , , 2],
+                      sr_4[ , , , 2],
+                      sr_5[ , , , 2],
+                      along = 1)
+  
+  sr_all_high <- abind(sr_1[ , , , 3],
+                      sr_2[ , , , 3],
+                      sr_3[ , , , 3],
+                      sr_4[ , , , 3],
+                      sr_5[ , , , 3],
+                      along = 1)
+  
+  ## Fill array of difference values
+  
+  sr_summary_condLOI_low["mean", model] <- mean(sr_all_low[ , "Difference", ],
+                                         na.rm = TRUE)
+  
+  sr_summary_condLOI_med["mean", model] <- mean(sr_all_med[ , "Difference", ],
+                                                na.rm = TRUE)
+  
+  sr_summary_condLOI_high["mean", model] <- mean(sr_all_high[ , "Difference", ],
+                                                na.rm = TRUE)
+  
+  sr_summary_condLOI_low["median", model] <- median(sr_all_low[ , "Difference", ],
+                                             na.rm = TRUE)
+  
+  sr_summary_condLOI_med["median", model] <- median(sr_all_med[ , "Difference", ],
+                                                    na.rm = TRUE)
+  
+  sr_summary_condLOI_high["median", model] <- median(sr_all_high[ , "Difference", ],
+                                                    na.rm = TRUE)
+  
+  sr_summary_condLOI_low["CI_95_lower", model] <- quantile(sr_all_low[ , "Difference", ],
+                                                    probs = 0.025,
+                                                    na.rm = TRUE)[[1]]
+  
+  sr_summary_condLOI_med["CI_95_lower", model] <- quantile(sr_all_med[ , "Difference", ],
+                                                           probs = 0.025,
+                                                           na.rm = TRUE)[[1]]
+  
+  sr_summary_condLOI_high["CI_95_lower", model] <- quantile(sr_all_high[ , "Difference", ],
+                                                           probs = 0.025,
+                                                           na.rm = TRUE)[[1]]
+  
+  sr_summary_condLOI_low["CI_95_upper", model] <- quantile(sr_all_low[ , "Difference", ],
+                                                    probs = 0.975,
+                                                    na.rm = TRUE)[[1]]
+  
+  sr_summary_condLOI_med["CI_95_upper", model] <- quantile(sr_all_med[ , "Difference", ],
+                                                           probs = 0.975,
+                                                           na.rm = TRUE)[[1]]
+  
+  sr_summary_condLOI_high["CI_95_upper", model] <- quantile(sr_all_high[ , "Difference", ],
+                                                           probs = 0.975,
+                                                           na.rm = TRUE)[[1]]
+  
+  ## save to file
+  
+  filename <- sprintf("outputs/species_richness/SR_summary_JSDM_%s_condLOI_low.rds",
+                      dataset_id)
+  
+  saveRDS(sr_summary_condLOI_low,
+          filename)
+  
+  filename <- sprintf("outputs/species_richness/SR_summary_JSDM_%s_condLOI_med.rds",
+                      dataset_id)
+  
+  saveRDS(sr_summary_condLOI_med,
+          filename)
+  
+  filename <- sprintf("outputs/species_richness/SR_summary_JSDM_%s_condLOI_high.rds",
+                      dataset_id)
+  
+  saveRDS(sr_summary_condLOI_high,
+          filename)
+  
+}
+
+#----
+
+## Joint ----
+
+### Build empty array
+
+sr_summary_joint <- matrix(NA,
+                          nrow = 4,
+                          ncol = length(model_names),
+                          dimnames = list(c("mean",
+                                            "median",
+                                            "CI_95_lower",
+                                            "CI_95_upper"),
+                                          model_names))
+
+for(model in model_names){
+  
+  ## Load test statistics for all folds
+  
+  sr_1 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold1_joint_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_2 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold2_joint_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_3 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold3_joint_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_4 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold4_joint_SR.rds",
+                          model,
+                          dataset_id))
+  
+  sr_5 <- readRDS(sprintf("outputs/species_richness/%s_%s_fold5_joint_SR.rds",
+                          model,
+                          dataset_id))
+  
+  ## Merge folds
+  
+  sr_all <- abind(sr_1,
+                  sr_2,
+                  sr_3,
+                  sr_4,
+                  sr_5,
+                  along = 1)
+  
+  ## Fill array of difference values
+  
+  sr_summary_joint["mean", model] <- mean(sr_all[ , "Difference", ],
+                                         na.rm = TRUE)
+  
+  sr_summary_joint["median", model] <- median(sr_all[ , "Difference", ],
+                                             na.rm = TRUE)
+  
+  sr_summary_joint["CI_95_lower", model] <- quantile(sr_all[ , "Difference", ],
+                                                    probs = 0.025,
+                                                    na.rm = TRUE)[[1]]
+  
+  sr_summary_joint["CI_95_upper", model] <- quantile(sr_all[ , "Difference", ],
+                                                    probs = 0.975,
+                                                    na.rm = TRUE)[[1]]
+  
+  ## save to file
+  
+  filename <- sprintf("outputs/species_richness/SR_summary_JSDM_%s_joint.rds",
+                      dataset_id)
+  
+  saveRDS(sr_summary_joint,
+          filename)
+  
+}
+
+#----
