@@ -61,6 +61,11 @@ SESAM <- function(probabilities,
     
   }
   
-  return(new_prediction)
+  out_array <- array(NA,
+                     dim = c(dim(new_prediction), 1))
+  
+  out_array[ , , 1] <- as.matrix(new_prediction)
+  
+  return(out_array)
   
 }

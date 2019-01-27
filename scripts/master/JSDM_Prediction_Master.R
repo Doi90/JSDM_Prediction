@@ -254,6 +254,13 @@ if(run_status & dataset_id != "bird"){
   }
 }
 
+if(run_status & dataset_id == "bird" & model_id == "SSDM"){
+  
+  source("scripts/prediction/prediction_functions_SESAM.R")
+  source("scripts/prediction/prediction_SSDM_SESAM.R")
+  
+}
+
 message(sprintf("Total prediction duration: %s hours",
                 round(difftime(Sys.time(),
                                prediction_start,
@@ -431,13 +438,11 @@ saveRDS(meta_data,
 
 message("Metadata saved to file")
 
-if(dataset_id == "bird"){
+if(dataset_id == "bird" & model_id != "SSDM"){
   
   message("Bird analysis master script complete\nSplit up prediction jobs still in progress")
   
-}
-
-if(dataset_id != "bird"){
+} else {
   
   message("Analysis complete!")
   

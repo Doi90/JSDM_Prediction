@@ -109,7 +109,7 @@ for(i in seq_len(dim(SESAM_predictions)[1])){
   
   ## Get predicted species probabilities for site
   
-  pred_probs <- SESAM_predictions[i, ]
+  pred_probs <- SESAM_predictions[i, , 1]
   
   ## Get observed species state for site
   

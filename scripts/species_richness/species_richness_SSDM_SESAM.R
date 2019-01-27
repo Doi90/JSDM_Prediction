@@ -41,7 +41,7 @@ SSDM_pred <- readRDS(filename)
 ### Calculate Species Richness
 
 SSDM_SR <- species_richness(observed = y_test,
-                            predictions = SSDM_pred)
+                            predicted = SSDM_pred)
 
 ### Save To File
 
@@ -71,7 +71,7 @@ SESAM_pred <- readRDS(filename)
 ### Calculate Species Richness
 
 SESAM_SR <- species_richness(observed = y_test,
-                             predictions = SESAM_pred)
+                             predicted = SESAM_pred)
 
 ### Save To File
 
