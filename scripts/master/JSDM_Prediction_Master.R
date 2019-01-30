@@ -213,7 +213,7 @@ if(dataset_id == "bird" & model_id != "SSDM"){
     
     end_sample <- i + 9
     
-    command <- sprintf("system('sbatch -p cloud,physical --cpus-per-task=1 --mem=51200 --time=30-00 --job-name=B_%1$s_%2$s_%3$s --output=outputs/slurm_outputs/B_%1$s_%2$s_%3$s.out scripts/slurm/bird_submission.slurm %1$s 3 %2$s %3$s %4$s')",
+    command <- sprintf("system('sbatch -p cloud,physical --cpus-per-task=1 --mem=51200 --time=10-00 --job-name=B_%1$s_%2$s_%3$s --output=outputs/slurm_outputs/B_%1$s_%2$s_%3$s.out scripts/slurm/bird_submission.slurm %1$s 3 %2$s %3$s %4$s')",
                        model_command_arg,
                        fold_id,
                        start_sample,

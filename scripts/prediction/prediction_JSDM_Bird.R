@@ -98,20 +98,40 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 
 marg_start <- Sys.time()
 
-marg_pred <- predict.marginal(Beta = Beta_posterior,
-                              X = X_test,
-                              n_species = n_species,
-                              n_sites = n_sites,
-                              n_iter = n_iter)
+## Probabilities
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_%s_%s.rds",
+marg_pred_prob <- predict.marginal.probability(Beta = Beta_posterior,
+                                               X = X_test,
+                                               n_species = n_species,
+                                               n_sites = n_sites,
+                                               n_iter = n_iter)
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_prob_%s_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id,
                     start_sample,
                     end_sample)
 
-saveRDS(marg_pred,
+saveRDS(marg_pred_prob,
+        filename)
+
+## Binary
+
+marg_pred_bin <- predict.marginal.binary(Beta = Beta_posterior,
+                                         X = X_test,
+                                         n_species = n_species,
+                                         n_sites = n_sites,
+                                         n_iter = n_iter)
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_bin_%s_%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id,
+                    start_sample,
+                    end_sample)
+
+saveRDS(marg_pred_bin,
         filename)
 
 message(sprintf("Marginal prediction duration: %s hours",
@@ -121,7 +141,8 @@ message(sprintf("Marginal prediction duration: %s hours",
                       digits = 5)))
 
 rm(marg_start,
-   marg_pred)
+   marg_pred_prob,
+   marg_pred_bin)
 
 # ## Conditional - Leave One Out
 # 

@@ -69,7 +69,7 @@ X_test <- X_test[ , -1]                                 # Remove rownames
 Intercept <- rep(1, nrow(X_test))                       # Create an intercept column
 
 X_test <- cbind(Intercept, X_test)                      # Add intercept column to front of dataset
-  
+
 #----
 
 ########################
@@ -77,13 +77,13 @@ X_test <- cbind(Intercept, X_test)                      # Add intercept column t
 ########################
 
 n_species <- ncol(y_test)
-  
+
 n_sites <- nrow(y_test)
-  
+
 n_covar <- ncol(X_test) # includes intercept
 
 n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chains. Post thinning
-  
+
 ##################
 ### Prediction ###
 ##################
@@ -92,18 +92,36 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 
 marg_start <- Sys.time()
 
-marg_pred <- predict.marginal(Beta = Beta_posterior,
-                              X = X_test,
-                              n_species = n_species,
-                              n_sites = n_sites,
-                              n_iter = n_iter)
+## Probabilities
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal.rds",
+marg_pred_prob <- predict.marginal.probability(Beta = Beta_posterior,
+                                               X = X_test,
+                                               n_species = n_species,
+                                               n_sites = n_sites,
+                                               n_iter = n_iter)
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_prob.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-saveRDS(marg_pred,
+saveRDS(marg_pred_prob,
+        filename)
+
+## Binary
+
+marg_pred_bin <- predict.marginal.binary(Beta = Beta_posterior,
+                                         X = X_test,
+                                         n_species = n_species,
+                                         n_sites = n_sites,
+                                         n_iter = n_iter)
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_bin.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(marg_pred_bin,
         filename)
 
 message(sprintf("Marginal prediction duration: %s hours",
@@ -113,7 +131,8 @@ message(sprintf("Marginal prediction duration: %s hours",
                       digits = 5)))
 
 rm(marg_start,
-   marg_pred)
+   marg_pred_prob,
+   marg_pred_bin)
 
 # ## Conditional - Leave One Out
 # 
@@ -149,30 +168,30 @@ rm(marg_start,
 cond_LOI_start <- Sys.time()
 
 cond_LOI_pred <- predict.conditional.LOI(Beta = Beta_posterior,
-                                        X = X_test,
-                                        y = y_test,
-                                        R = R_posterior,
-                                        n_species = n_species,
-                                        n_sites = n_sites,
-                                        n_iter = n_iter,
-                                        dataset_id = dataset_id)
+                                         X = X_test,
+                                         y = y_test,
+                                         R = R_posterior,
+                                         n_species = n_species,
+                                         n_sites = n_sites,
+                                         n_iter = n_iter,
+                                         dataset_id = dataset_id)
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
-                   model_id,
-                   dataset_id,
-                   fold_id)
+                    model_id,
+                    dataset_id,
+                    fold_id)
 
 saveRDS(cond_LOI_pred,
-       filename)
+        filename)
 
 message(sprintf("Conditional LOI prediction duration: %s hours",
-               round(difftime(Sys.time(),
-                              cond_LOI_start,
-                              units = "hours")[[1]],
-                     digits = 5)))
+                round(difftime(Sys.time(),
+                               cond_LOI_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
 
 rm(cond_LOI_start,
-  cond_LOI_pred)
+   cond_LOI_pred)
 
 ## Joint
 

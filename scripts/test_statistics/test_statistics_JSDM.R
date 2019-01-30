@@ -27,36 +27,67 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Calculate Test Statistics ###
 #################################
 
-## Marginal ----
+## Marginal - probabilities ----
 
 ### Load Data
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal.rds",
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_prob.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-marg_pred <- readRDS(filename)
+marg_pred_prob <- readRDS(filename)
 
 ### Calculate Test Statistics
 
-marg_ts <- test_statistic(observed = y_test,
-                          predictions = marg_pred)
+marg_ts_prob <- test_statistic(observed = y_test,
+                               predictions = marg_pred_prob)
 
 ### Save To File
 
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_marginal_ts.rds",
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_marginal_prob_ts.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-saveRDS(marg_ts,
+saveRDS(marg_ts_prob,
         filename)
 
 ### Memory purge
 
-rm(marg_pred,
-   marg_ts)
+rm(marg_pred_prob,
+   marg_ts_prob)
+
+## Marginal - binary ----
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_bin.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+marg_pred_bin <- readRDS(filename)
+
+### Calculate Test Statistics
+
+marg_ts_bin <- test_statistic(observed = y_test,
+                              predictions = marg_pred_bin)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_marginal_bin_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(marg_ts_bin,
+        filename)
+
+### Memory purge
+
+rm(marg_pred_bin,
+   marg_ts_bin)
 
 # ## Conditional - leave one out ----
 # 
@@ -108,10 +139,10 @@ cond_LOI_pred <- readRDS(filename)
 ts_list <- list()
 
 for(i in seq_len(dim(cond_LOI_pred)[4])){
-
+  
   ts_list[[i]] <- test_statistic(observed = y_test,
                                  predictions = cond_LOI_pred[ , , , i])
-
+  
 }
 
 cond_LOI_ts <- ts_list

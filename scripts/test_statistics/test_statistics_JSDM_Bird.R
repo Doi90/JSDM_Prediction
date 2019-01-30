@@ -29,40 +29,75 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Calculate Test Statistics ###
 #################################
 
-## Marginal ----
+## Marginal - probabilities ----
 
 ### Load Data
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_%s_%s.rds",
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_prob_%s_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id,
                     start_sample,
                     end_sample)
 
-marg_pred <- readRDS(filename)
+marg_pred_prob <- readRDS(filename)
 
 ### Calculate Test Statistics
 
-marg_ts <- test_statistic(observed = y_test,
-                          predictions = marg_pred)
+marg_ts_prob <- test_statistic(observed = y_test,
+                               predictions = marg_pred_prob)
 
 ### Save To File
 
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_marginal_ts_%s_%s.rds",
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_marginal_prob_ts_%s_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id,
                     start_sample,
                     end_sample)
 
-saveRDS(marg_ts,
+saveRDS(marg_ts_prob,
         filename)
 
 ### Memory purge
 
-rm(marg_pred,
-   marg_ts)
+rm(marg_pred_prob,
+   marg_ts_prob)
+
+## Marginal - binary ----
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_bin_%s_%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id,
+                    start_sample,
+                    end_sample)
+
+marg_pred_bin <- readRDS(filename)
+
+### Calculate Test Statistics
+
+marg_ts_bin <- test_statistic(observed = y_test,
+                              predictions = marg_pred_bin)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_marginal_bin_ts_%s_%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id,
+                    start_sample,
+                    end_sample)
+
+saveRDS(marg_ts_bin,
+        filename)
+
+### Memory purge
+
+rm(marg_pred_bin,
+   marg_ts_bin)
 
 # ## Conditional - leave one out ----
 # 

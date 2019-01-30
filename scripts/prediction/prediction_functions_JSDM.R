@@ -15,12 +15,15 @@
 # of occurrence of a species WITHOUT reference to the
 # other target species.
 # Environment-only prediction. Ignores species interactions.
+# TWO MARGINAL PROBABILITY FUNCTIONS
+# predict.marginal.probability returns probabilities. Integrates over distribution
+# predict.marginal.binary returns 1/0s. Samples distribution
 
-predict.marginal <- function(Beta = NULL,
-                             X = NULL,
-                             n_species = NULL,
-                             n_sites = NULL,
-                             n_iter = NULL){
+predict.marginal.probability <- function(Beta = NULL,
+                                         X = NULL,
+                                         n_species = NULL,
+                                         n_sites = NULL,
+                                         n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
   
@@ -63,6 +66,71 @@ predict.marginal <- function(Beta = NULL,
       for(s in seq_len(n_iter)){
         
         predictions[i, j, s] <- pnorm(sum(X[i, ] * Beta[ , j, s]))
+        
+      }
+    }
+  }
+  
+  
+  if(any(is.na(predictions))){
+    warning("Some predictions returned NAs")
+  }
+  
+  return(predictions)
+  
+}
+
+predict.marginal.binary <- function(Beta = NULL,
+                                    X = NULL,
+                                    n_species = NULL,
+                                    n_sites = NULL,
+                                    n_iter = NULL){
+  
+  ## Tests to make sure correct inputs supplied
+  
+  if(is.null(Beta)){
+    stop("Beta not supplied.")
+  }
+  
+  if(is.null(X)){
+    stop("X not supplied.")
+  }
+  
+  if(is.null(n_species)){
+    stop("n_species not supplied.")
+  }
+  
+  if(is.null(n_sites)){
+    stop("n_sites not supplied.")
+  }
+  
+  if(is.null(n_iter)){
+    stop("n_iter not supplied.")
+  }
+  
+  ## Create a prediction array full of NAs
+  
+  predictions <- array(NA,
+                       dim = c(n_sites,     # Number of sites in test data
+                               n_species,   
+                               n_iter),     # 1:1 Prediction slice:Posterior slice
+                       dimnames = list(rownames(X),
+                                       colnames(Beta),
+                                       NULL))
+  
+  ## Make predictions. Fill predictions array with values as we go
+  
+  for(i in seq_len(n_sites)){
+    
+    for(j in seq_len(n_species)){
+      
+      for(s in seq_len(n_iter)){
+        
+        predictions[i, j, s] <- ifelse(rnorm(n = 1,
+                                             mean = sum(X[i, ] * Beta[ , j, s]),
+                                             sd = 1) > 0,
+                                       yes = 1,
+                                       no = 0)
         
       }
     }
