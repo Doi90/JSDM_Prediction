@@ -27,36 +27,67 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Calculate Species Richness ###
 ##################################
 
-## SSDM
+## SSDM - probabilities
 
 ### Load Data
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
+filename <- sprintf("outputs/predictions/%s_prob_%s_fold%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-SSDM_pred <- readRDS(filename)
+SSDM_pred_prob <- readRDS(filename)
 
 ### Calculate Species Richness
 
-SSDM_SR <- species_richness(observed = y_test,
-                            predicted = SSDM_pred)
+SSDM_SR_prob <- species_richness(observed = y_test,
+                            predicted = SSDM_pred_prob)
 
 ### Save To File
 
-filename <- sprintf("outputs/species_richness/%s_%s_fold%s_SR.rds",
+filename <- sprintf("outputs/species_richness/%s_prob_%s_fold%s_SR.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-saveRDS(SSDM_SR,
+saveRDS(SSDM_SR_prob,
         filename)
 
 ### Memory purge
 
-rm(SSDM_pred,
-   SSDM_SR)
+rm(SSDM_pred_prob,
+   SSDM_SR_prob)
+
+## SSDM - binary
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_bin_%s_fold%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+SSDM_pred_bin <- readRDS(filename)
+
+### Calculate Species Richness
+
+SSDM_SR_bin <- species_richness(observed = y_test,
+                                 predicted = SSDM_pred_bin)
+
+### Save To File
+
+filename <- sprintf("outputs/species_richness/%s_bin_%s_fold%s_SR.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(SSDM_SR_bin,
+        filename)
+
+### Memory purge
+
+rm(SSDM_pred_bin,
+   SSDM_SR_bin)
 
 ## SESAM
 

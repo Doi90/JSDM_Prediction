@@ -31,14 +31,23 @@ y <- y[ , -1]                                           # Remove rownames
 ### Load Predictions ###
 ########################
 
-## SSDM
+## SSDM - probabilities
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
+filename <- sprintf("outputs/predictions/%s_prob_%s_fold%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-SSDM_predictions <- readRDS(filename)
+SSDM_predictions_prob <- readRDS(filename)
+
+## SSDM - binary
+
+filename <- sprintf("outputs/predictions/%s_bin_%s_fold%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+SSDM_predictions_bin <- readRDS(filename)
 
 ## SESAM
 
@@ -52,19 +61,19 @@ SESAM_predictions <- readRDS(filename)
 ### Calculate Log-Likelihood ###
 ################################ 
 
-# SSDM 
+# SSDM - probabilities
 
 ## Vector to store likelihoods
 
-SSDM_log_lik_vector <- vector(length = dim(SSDM_predictions)[1])
+SSDM_log_lik_vector <- vector(length = dim(SSDM_predictions_prob)[1])
 
 ## Calculate likelihoods
 
-for(i in seq_len(dim(SSDM_predictions)[1])){
+for(i in seq_len(dim(SSDM_predictions_prob)[1])){
   
   ## Get predicted species probabilities for site
   
-  pred_probs <- SSDM_predictions[i, , 1]
+  pred_probs <- SSDM_predictions_prob[i, , 1]
   
   ## Get observed species state for site
   
@@ -90,7 +99,57 @@ SSDM_log_likelihood_estimate <- sum(SSDM_log_lik_vector,
 
 ## Save to file
 
-filename <- sprintf("outputs/likelihood/SSDM_%s_fold%s_likelihood.rds",
+filename <- sprintf("outputs/likelihood/SSDM_prob_%s_fold%s_likelihood.rds",
+                    dataset_id,
+                    fold_id)
+
+saveRDS(SSDM_log_likelihood_estimate,
+        filename)
+
+# SSDM - binary
+
+## Vector to store likelihoods
+
+SSDM_log_lik_array <- array(NA,
+                             dim = c(dim(SSDM_predictions_bin)[1],
+                                     dim(SSDM_predictions_bin)[3]))
+
+## Calculate likelihoods
+
+for(i in seq_len(dim(SSDM_predictions_bin)[1])){
+  
+  for(j in seq_len(dim(SSDM_predictions_bin)[3])){
+    
+  ## Get predicted species probabilities for site
+  
+  pred_probs <- SSDM_predictions_prob[i, , j]
+  
+  ## Get observed species state for site
+  
+  obs_spp <- y[i, ]
+  
+  ## Calculate log likelihood for site
+  
+  log_lik <- sum(dbinom(x = unlist(obs_spp),
+                        size = 1,
+                        prob = pred_probs,
+                        log = TRUE))
+  
+  ## Add value to vector
+  
+  SSDM_log_lik_array[i, j] <- log_lik
+  
+  }
+}
+
+## Obtain single likelihood value for whole model
+
+SSDM_log_likelihood_estimate <- sum(SSDM_log_lik_array,
+                                    na.rm = TRUE)
+
+## Save to file
+
+filename <- sprintf("outputs/likelihood/SSDM_bin_%s_fold%s_likelihood.rds",
                     dataset_id,
                     fold_id)
 

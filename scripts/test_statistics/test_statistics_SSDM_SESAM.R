@@ -27,36 +27,67 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Calculate Test Statistics ###
 #################################
 
-## SSDM
+## SSDM - probabilities
 
 ### Load Data
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
+filename <- sprintf("outputs/predictions/%s_prob_%s_fold%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-SSDM_pred <- readRDS(filename)
+SSDM_pred_prob <- readRDS(filename)
 
 ### Calculate Test Statistics
 
-SSDM_ts <- test_statistic(observed = y_test,
-                          predictions = SSDM_pred)
+SSDM_ts_prob <- test_statistic(observed = y_test,
+                          predictions = SSDM_pred_prob)
 
 ### Save To File
 
-filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_ts.rds",
+filename <- sprintf("outputs/test_statistics/%s_prob_%s_fold%s_ts.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-saveRDS(SSDM_ts,
+saveRDS(SSDM_ts_prob,
         filename)
 
 ### Memory purge
 
-rm(SSDM_pred,
-   SSDM_ts)
+rm(SSDM_pred_prob,
+   SSDM_ts_prob)
+
+## SSDM - binary
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_bin_%s_fold%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+SSDM_pred_bin <- readRDS(filename)
+
+### Calculate Test Statistics
+
+SSDM_ts_bin <- test_statistic(observed = y_test,
+                               predictions = SSDM_pred_bin)
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_bin_%s_fold%s_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(SSDM_ts_bin,
+        filename)
+
+### Memory purge
+
+rm(SSDM_pred_bin,
+   SSDM_ts_bin)
 
 ## SESAM
 

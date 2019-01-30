@@ -98,6 +98,24 @@ for(j in seq_len(n_species)){
   
 }
 
+## SSDM - binary
+
+binary_pred_array <- array(NA,
+                           dim = c(n_sites,
+                                   n_species,
+                                   1000))
+
+for(i in seq_len(n_sites)){
+  
+  for(j in seq_len(n_species)){
+    
+    binary_pred_array[i, j, ] <- rbinom(n = 1000,
+                                        size = 1,
+                                        prob = pred_array[i, j, 1])
+    
+  }
+}
+
 message(sprintf("SSDM prediction duration: %s hours",
                 round(difftime(Sys.time(),
                                SSDM_start,
@@ -131,12 +149,22 @@ message(sprintf("SESAM prediction duration: %s hours",
 
 ## SSDM
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s.rds",
+filename <- sprintf("outputs/predictions/%s_prob_%s_fold%s.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
 saveRDS(pred_array,
+        filename)
+
+### SSDM - binary
+
+filename <- sprintf("outputs/predictions/%s_bin_%s_fold%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(binary_pred_array,
         filename)
 
 ## SESAM
