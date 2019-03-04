@@ -54,14 +54,24 @@ library(abind)
 
 message("Packages loaded")
 
+#############################
+### Load Function Scripts ###
+#############################
+
+source("scripts/analysis/proportionNA_function.R")
+
 ########################################
 ### Summarise Test Statistic Metrics ###
 ########################################
 
 ## Model names
 
-model_names <- c("MPR", "HPR", "LPR",
-                 "DPR", "HLR_NS", "HLR_S")
+JSDM_model_names <- c("MPR", "HPR", "LPR",
+                      "DPR", "HLR_NS", "HLR_S")
+
+SSDM_model_names <- c("SSDM", "SESAM")
+
+model_names <- c(JSDM_model_names, SSDM_model_names)
 
 ## Test statistic names
 
@@ -78,57 +88,61 @@ ts_site_names <- c("Binomial", "Bray", "Canberra",
 
 ts_all_names <- c(ts_spp_names, ts_site_names)
 
+###
+### BINARY PREDICTIONS
+###
+
 ## Marginal Prediction ----
 
 ### Create empty storage
 
-ts_summary_marg <- list(NA_proportion = matrix(data = NA,    # Placeholder
-                                               nrow = 42,    # Number of test statistics
-                                               ncol = 6),    # Number of JSDM models
-                        mean = matrix(data = NA,
-                                      nrow = 42,
-                                      ncol = 6),
-                        median = matrix(data = NA,
-                                        nrow = 42,
-                                        ncol = 6),
-                        CI_95_lower = matrix(data = NA,
-                                             nrow = 42,
-                                             ncol = 6),
-                        CI_95_upper = matrix(data = NA,
-                                             nrow = 42,
-                                             ncol = 6))
+ts_summary_marg_bin <- list(NA_proportion = matrix(data = NA,
+                                                   nrow = length(ts_all_names),
+                                                   ncol = length(JSDM_model_names)),
+                            mean = matrix(data = NA,
+                                          nrow = length(ts_all_names),
+                                          ncol = length(JSDM_model_names)),
+                            median = matrix(data = NA,
+                                            nrow = length(ts_all_names),
+                                            ncol = length(JSDM_model_names)),
+                            CI_95_lower = matrix(data = NA,
+                                                 nrow = length(ts_all_names),
+                                                 ncol = length(JSDM_model_names)),
+                            CI_95_upper = matrix(data = NA,
+                                                 nrow = length(ts_all_names),
+                                                 ncol = length(JSDM_model_names)))
 
-for(i in seq_len(length(ts_summary_marg))){
+for(i in seq_len(length(ts_summary_marg_bin))){
   
-  rownames(ts_summary_marg[[i]]) <- ts_all_names
+  rownames(ts_summary_marg_bin[[i]]) <- ts_all_names
   
-  colnames(ts_summary_marg[[i]]) <- model_names
+  colnames(ts_summary_marg_bin[[i]]) <- JSDM_model_names
 
 }
 
 ### Fill values
 
-for(model in model_names){
+for(model in JSDM_model_names){
   
   ## Load test statistics for all folds
   
-  ts_1 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold1_marginal_ts.rds",
+  ts_1 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold1_marginal_bin_ts.rds",
                           model,
                           dataset_id))
   
-  ts_2 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold2_marginal_ts.rds",
+  ts_2 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold2_marginal_bin_ts.rds",
                           model,
                           dataset_id))
   
-  ts_3 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold3_marginal_ts.rds",
+  ts_3 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold3_marginal_bin_ts.rds",
                           model,
                           dataset_id))
   
-  ts_4 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold4_marginal_ts.rds",
+  ts_4 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold4_marginal_bin_ts.rds",
                           model,
                           dataset_id))
   
-  ts_5 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold5_marginal_ts.rds",
+  ts_5 <- readRDS(sprintf("outputs/test_statistics/%s_%s_fold5_marginal_bin_ts.rds",
                           model,
                           dataset_id))
   
@@ -152,13 +166,13 @@ for(model in model_names){
   
   for(ts in ts_spp_names){
     
-    ts_summary_marg$NA_proportion[ts, model] <- proportionNA(ts_all_spp[ , ts, ])
+    ts_summary_marg_bin$NA_proportion[ts, model] <- proportionNA(ts_all_spp[ , ts, ])
     
   }
   
   for(ts in ts_site_names){
     
-    ts_summary_marg$NA_proportion[ts, model] <- proportionNA(ts_all_site[ , ts, ])
+    ts_summary_marg_bin$NA_proportion[ts, model] <- proportionNA(ts_all_site[ , ts, ])
     
   }
   
@@ -166,14 +180,14 @@ for(model in model_names){
   
   for(ts in ts_spp_names){
     
-    ts_summary_marg$mean[ts, model] <- mean(ts_all_spp[ , ts, ],
+    ts_summary_marg_bin$mean[ts, model] <- mean(ts_all_spp[ , ts, ],
                                             na.rm = TRUE)
     
   }
   
   for(ts in ts_site_names){
     
-    ts_summary_marg$mean[ts, model] <- mean(ts_all_site[ , ts, ],
+    ts_summary_marg_bin$mean[ts, model] <- mean(ts_all_site[ , ts, ],
                                             na.rm = TRUE)
     
   }
@@ -182,14 +196,14 @@ for(model in model_names){
   
   for(ts in ts_spp_names){
     
-    ts_summary_marg$median[ts, model] <- median(ts_all_spp[ , ts, ],
+    ts_summary_marg_bin$median[ts, model] <- median(ts_all_spp[ , ts, ],
                                                 na.rm = TRUE)
     
   }
   
   for(ts in ts_site_names){
     
-    ts_summary_marg$median[ts, model] <- median(ts_all_site[ , ts, ],
+    ts_summary_marg_bin$median[ts, model] <- median(ts_all_site[ , ts, ],
                                                 na.rm = TRUE)
     
   }
@@ -198,7 +212,7 @@ for(model in model_names){
   
   for(ts in ts_spp_names){
     
-    ts_summary_marg$CI_95_lower[ts, model] <- quantile(ts_all_spp[ , ts, ],
+    ts_summary_marg_bin$CI_95_lower[ts, model] <- quantile(ts_all_spp[ , ts, ],
                                                        probs = 0.025,
                                                        na.rm = TRUE)[[1]]
     
@@ -206,7 +220,7 @@ for(model in model_names){
   
   for(ts in ts_site_names){
     
-    ts_summary_marg$CI_95_lower[ts, model] <- quantile(ts_all_site[ , ts, ],
+    ts_summary_marg_bin$CI_95_lower[ts, model] <- quantile(ts_all_site[ , ts, ],
                                                        probs = 0.025,
                                                        na.rm = TRUE)[[1]]
     
@@ -216,7 +230,7 @@ for(model in model_names){
   
   for(ts in ts_spp_names){
     
-    ts_summary_marg$CI_95_upper[ts, model] <- quantile(ts_all_spp[ , ts, ],
+    ts_summary_marg_bin$CI_95_upper[ts, model] <- quantile(ts_all_spp[ , ts, ],
                                                        probs = 0.975,
                                                        na.rm = TRUE)[[1]]
     
@@ -224,21 +238,20 @@ for(model in model_names){
   
   for(ts in ts_site_names){
     
-    ts_summary_marg$CI_95_upper[ts, model] <- quantile(ts_all_site[ , ts, ],
+    ts_summary_marg_bin$CI_95_upper[ts, model] <- quantile(ts_all_site[ , ts, ],
                                                        probs = 0.975,
                                                        na.rm = TRUE)[[1]]
     
   }
   
-  
 }
 
 ## Save to file
 
-filename <- sprintf("outputs/test_statistics/ts_summary_JSDM_%s_marginal.rds",
+filename <- sprintf("outputs/test_statistics/ts_summary_JSDM_%s_marginal_bin.rds",
                     dataset_id)
 
-saveRDS(ts_summary_marg,
+saveRDS(ts_summary_marg_bin,
         filename)
 
 #----
@@ -247,59 +260,59 @@ saveRDS(ts_summary_marg,
 
 ### Create empty storage
 
-ts_summary_condLOI_low <- list(NA_proportion = matrix(data = NA,    # Placeholder
-                                                      nrow = 42,    # Number of test statistics
-                                                      ncol = 6),    # Number of JSDM models
+ts_summary_condLOI_low <- list(NA_proportion = matrix(data = NA,
+                                                      nrow = length(ts_all_names),
+                                                      ncol = length(JSDM_model_names)),
                                mean = matrix(data = NA,
-                                             nrow = 42,
-                                             ncol = 6),
+                                             nrow = length(ts_all_names),
+                                             ncol = length(JSDM_model_names)),
                                median = matrix(data = NA,
-                                               nrow = 42,
-                                               ncol = 6),
+                                               nrow = length(ts_all_names),
+                                               ncol = length(JSDM_model_names)),
                                CI_95_lower = matrix(data = NA,
-                                                    nrow = 42,
-                                                    ncol = 6),
+                                                    nrow = length(ts_all_names),
+                                                    ncol = length(JSDM_model_names)),
                                CI_95_upper = matrix(data = NA,
-                                                    nrow = 42,
-                                                    ncol = 6))
+                                                    nrow = length(ts_all_names),
+                                                    ncol = length(JSDM_model_names)))
 
-ts_summary_condLOI_med <- list(NA_proportion = matrix(data = NA,    # Placeholder
-                                                      nrow = 42,    # Number of test statistics
-                                                      ncol = 6),    # Number of JSDM models
+ts_summary_condLOI_med <- list(NA_proportion = matrix(data = NA,
+                                                      nrow = length(ts_all_names),
+                                                      ncol = length(JSDM_model_names)),
                                mean = matrix(data = NA,
-                                             nrow = 42,
-                                             ncol = 6),
+                                             nrow = length(ts_all_names),
+                                             ncol = length(JSDM_model_names)),
                                median = matrix(data = NA,
-                                               nrow = 42,
-                                               ncol = 6),
+                                               nrow = length(ts_all_names),
+                                               ncol = length(JSDM_model_names)),
                                CI_95_lower = matrix(data = NA,
-                                                    nrow = 42,
-                                                    ncol = 6),
+                                                    nrow = length(ts_all_names),
+                                                    ncol = length(JSDM_model_names)),
                                CI_95_upper = matrix(data = NA,
-                                                    nrow = 42,
-                                                    ncol = 6))
+                                                    nrow = length(ts_all_names),
+                                                    ncol = length(JSDM_model_names)))
 
-ts_summary_condLOI_high <- list(NA_proportion = matrix(data = NA,    # Placeholder
-                                                       nrow = 42,    # Number of test statistics
-                                                       ncol = 6),    # Number of JSDM models
+ts_summary_condLOI_high <- list(NA_proportion = matrix(data = NA,
+                                                       nrow = length(ts_all_names),
+                                                       ncol = length(JSDM_model_names)),
                                 mean = matrix(data = NA,
-                                              nrow = 42,
-                                              ncol = 6),
+                                              nrow = length(ts_all_names),
+                                              ncol = length(JSDM_model_names)),
                                 median = matrix(data = NA,
-                                                nrow = 42,
-                                                ncol = 6),
+                                                nrow = length(ts_all_names),
+                                                ncol = length(JSDM_model_names)),
                                 CI_95_lower = matrix(data = NA,
-                                                     nrow = 42,
-                                                     ncol = 6),
+                                                     nrow = length(ts_all_names),
+                                                     ncol = length(JSDM_model_names)),
                                 CI_95_upper = matrix(data = NA,
-                                                     nrow = 42,
-                                                     ncol = 6))
+                                                     nrow = length(ts_all_names),
+                                                     ncol = length(JSDM_model_names)))
 
 for(i in seq_len(length(ts_summary_condLOI_low))){
   
   rownames(ts_summary_condLOI_low[[i]]) <- ts_all_names
   
-  colnames(ts_summary_condLOI_low[[i]]) <- model_names
+  colnames(ts_summary_condLOI_low[[i]]) <- JSDM_model_names
   
 }
 
@@ -307,7 +320,7 @@ for(i in seq_len(length(ts_summary_condLOI_med))){
   
   rownames(ts_summary_condLOI_med[[i]]) <- ts_all_names
   
-  colnames(ts_summary_condLOI_med[[i]]) <- model_names
+  colnames(ts_summary_condLOI_med[[i]]) <- JSDM_model_names
   
 }
 
@@ -315,13 +328,13 @@ for(i in seq_len(length(ts_summary_condLOI_high))){
   
   rownames(ts_summary_condLOI_high[[i]]) <- ts_all_names
   
-  colnames(ts_summary_condLOI_high[[i]]) <- model_names
+  colnames(ts_summary_condLOI_high[[i]]) <- JSDM_model_names
   
 }
 
 ### Fill values
 
-for(model in model_names){
+for(model in JSDM_model_names){
   
   ## Load test statistics for all folds
   
@@ -615,7 +628,6 @@ for(model in model_names){
     
   }
   
-  
 }
 
 ## Save to file
@@ -809,27 +821,27 @@ saveRDS(ts_summary_condLOI_high,
 
 ### Create empty storage
 
-ts_summary_joint <- list(NA_proportion = matrix(data = NA,    # Placeholder
-                                                  nrow = 42,    # Number of test statistics
-                                                  ncol = 6),    # Number of JSDM models
+ts_summary_joint <- list(NA_proportion = matrix(data = NA,
+                                                nrow = length(ts_all_names),
+                                                ncol = length(JSDM_model_names)),
                            mean = matrix(data = NA,
-                                         nrow = 42,
-                                         ncol = 6),
+                                         nrow = length(ts_all_names),
+                                         ncol = length(JSDM_model_names)),
                            median = matrix(data = NA,
-                                           nrow = 42,
-                                           ncol = 6),
+                                           nrow = length(ts_all_names),
+                                           ncol = length(JSDM_model_names)),
                            CI_95_lower = matrix(data = NA,
-                                                nrow = 42,
-                                                ncol = 6),
+                                                nrow = length(ts_all_names),
+                                                ncol = length(JSDM_model_names)),
                            CI_95_upper = matrix(data = NA,
-                                                nrow = 42,
-                                                ncol = 6))
+                                                nrow = length(ts_all_names),
+                                                ncol = length(JSDM_model_names)))
 
 for(i in seq_len(length(ts_summary_joint))){
   
   rownames(ts_summary_joint[[i]]) <- ts_all_names
   
-  colnames(ts_summary_joint[[i]]) <- model_names
+  colnames(ts_summary_joint[[i]]) <- JSDM_model_names
   
 }
 
@@ -966,6 +978,188 @@ filename <- sprintf("outputs/test_statistics/ts_summary_JSDM_%s_joint.rds",
                     dataset_id)
 
 saveRDS(ts_summary_joint,
+        filename)
+
+#----
+
+## SSDM/SESAM Prediction ----
+
+### Create empty storage
+
+ts_summary_SSDM_bin <- list(NA_proportion = matrix(data = NA,
+                                                   nrow = length(ts_all_names),
+                                                   ncol = length(SSDM_model_names)),
+                            mean = matrix(data = NA,
+                                          nrow = length(ts_all_names),
+                                          ncol = length(SSDM_model_names)),
+                            median = matrix(data = NA,
+                                            nrow = length(ts_all_names),
+                                            ncol = length(SSDM_model_names)),
+                            CI_95_lower = matrix(data = NA,
+                                                 nrow = length(ts_all_names),
+                                                 ncol = length(SSDM_model_names)),
+                            CI_95_upper = matrix(data = NA,
+                                                 nrow = length(ts_all_names),
+                                                 ncol = length(SSDM_model_names)))
+
+for(i in seq_len(length(ts_summary_SSDM_bin))){
+  
+  rownames(ts_summary_SSDM_bin[[i]]) <- ts_all_names
+  
+  colnames(ts_summary_SSDM_bin[[i]]) <- SSDM_model_names
+  
+}
+
+### Fill values
+
+for(model in SSDM_model_names){
+  
+  ## Load test statistics for all folds
+  
+  if(model == "SSDM"){
+    
+    ts_1 <- readRDS(sprintf("outputs/test_statistics/SSDM_bin_%s_fold1_ts.rds",
+                            dataset_id))
+    
+    ts_2 <- readRDS(sprintf("outputs/test_statistics/SSDM_bin_%s_fold2_ts.rds",
+                            dataset_id))
+    
+    ts_3 <- readRDS(sprintf("outputs/test_statistics/SSDM_bin_%s_fold3_ts.rds",
+                            dataset_id))
+    
+    ts_4 <- readRDS(sprintf("outputs/test_statistics/SSDM_bin_%s_fold4_ts.rds",
+                            dataset_id))
+    
+    ts_5 <- readRDS(sprintf("outputs/test_statistics/SSDM_bin_%s_fold5_ts.rds",
+                            dataset_id))
+    
+  }
+  
+  if(model == "SESAM"){
+    
+    ts_1 <- readRDS(sprintf("outputs/test_statistics/SESAM_%s_fold1_ts.rds",
+                            dataset_id))
+    
+    ts_2 <- readRDS(sprintf("outputs/test_statistics/SESAM_%s_fold2_ts.rds",
+                            dataset_id))
+    
+    ts_3 <- readRDS(sprintf("outputs/test_statistics/SESAM_%s_fold3_ts.rds",
+                            dataset_id))
+    
+    ts_4 <- readRDS(sprintf("outputs/test_statistics/SESAM_%s_fold4_ts.rds",
+                            dataset_id))
+    
+    ts_5 <- readRDS(sprintf("outputs/test_statistics/SESAM_%s_fold5_ts.rds",
+                            dataset_id))
+    
+  }
+  
+  ## Merge folds
+  
+  ts_all_spp <- abind(ts_1$test_statistics_species,
+                      ts_2$test_statistics_species,
+                      ts_3$test_statistics_species,
+                      ts_4$test_statistics_species,
+                      ts_5$test_statistics_species,
+                      along = 1)
+  
+  ts_all_site <- abind(ts_1$test_statistics_site,
+                       ts_2$test_statistics_site,
+                       ts_3$test_statistics_site,
+                       ts_4$test_statistics_site,
+                       ts_5$test_statistics_site,
+                       along = 1)
+  
+  ## NA_percentage
+  
+  for(ts in ts_spp_names){
+    
+    ts_summary_SSDM_bin$NA_proportion[ts, model] <- proportionNA(ts_all_spp[ , ts, ])
+    
+  }
+  
+  for(ts in ts_site_names){
+    
+    ts_summary_SSDM_bin$NA_proportion[ts, model] <- proportionNA(ts_all_site[ , ts, ])
+    
+  }
+  
+  ## Mean
+  
+  for(ts in ts_spp_names){
+    
+    ts_summary_SSDM_bin$mean[ts, model] <- mean(ts_all_spp[ , ts, ],
+                                                na.rm = TRUE)
+    
+  }
+  
+  for(ts in ts_site_names){
+    
+    ts_summary_SSDM_bin$mean[ts, model] <- mean(ts_all_site[ , ts, ],
+                                                na.rm = TRUE)
+    
+  }
+  
+  ## Median
+  
+  for(ts in ts_spp_names){
+    
+    ts_summary_SSDM_bin$median[ts, model] <- median(ts_all_spp[ , ts, ],
+                                                    na.rm = TRUE)
+    
+  }
+  
+  for(ts in ts_site_names){
+    
+    ts_summary_SSDM_bin$median[ts, model] <- median(ts_all_site[ , ts, ],
+                                                    na.rm = TRUE)
+    
+  }
+  
+  ## CI_95_lower
+  
+  for(ts in ts_spp_names){
+    
+    ts_summary_SSDM_bin$CI_95_lower[ts, model] <- quantile(ts_all_spp[ , ts, ],
+                                                           probs = 0.025,
+                                                           na.rm = TRUE)[[1]]
+    
+  }
+  
+  for(ts in ts_site_names){
+    
+    ts_summary_SSDM_bin$CI_95_lower[ts, model] <- quantile(ts_all_site[ , ts, ],
+                                                           probs = 0.025,
+                                                           na.rm = TRUE)[[1]]
+    
+  }
+  
+  ## CI_95_upper
+  
+  for(ts in ts_spp_names){
+    
+    ts_summary_SSDM_bin$CI_95_upper[ts, model] <- quantile(ts_all_spp[ , ts, ],
+                                                           probs = 0.975,
+                                                           na.rm = TRUE)[[1]]
+    
+  }
+  
+  for(ts in ts_site_names){
+    
+    ts_summary_SSDM_bin$CI_95_upper[ts, model] <- quantile(ts_all_site[ , ts, ],
+                                                           probs = 0.975,
+                                                           na.rm = TRUE)[[1]]
+    
+  }
+  
+}
+
+## Save to file
+
+filename <- sprintf("outputs/test_statistics/ts_summary_SSDM_%s_bin.rds",
+                    dataset_id)
+
+saveRDS(ts_summary_SSDM_bin,
         filename)
 
 #----
