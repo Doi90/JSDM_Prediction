@@ -25,7 +25,7 @@ message(sprintf("Job started at %s",
 ### Load packages ###
 #####################
 
-.libPaths("/home/davidpw/R/lib/3.5")
+#.libPaths("/home/davidpw/R/lib/3.5")
 
 library(abind)
 
@@ -38,43 +38,43 @@ message("Packages loaded")
 ## Models
 
 model_options <- c("MPR",
-                   "HPR",
-                   "LPR",
-                   "DPR",
-                   "HLR_NS",
-                   "HLR_S",
-                   "SSDM",
-                   "SESAM")
+                   #"HPR",
+                   #"LPR",
+                   #"DPR",
+                   #"HLR_NS",
+                   #"HLR_S",
+                   "SSDM")#,
+#"SESAM")
 
-JSDM_models <- model_options[1:6]
+JSDM_models <- model_options[1]
 
-SSDM_models <- model_options[7:8]
+SSDM_models <- model_options[7]
 
 ## Datasets
 
-dataset_options <- c("frog",
-                     "eucalypt",
-                     "bird",
-                     "sim1random",
-                     "sim2random",
-                     "sim3random",
-                     "sim4random",
-                     "sim5random",
-                     "sim6random",
-                     "sim7random",
-                     "sim8random",
-                     "sim9random",
-                     "sim10random",
-                     "sim1spatial",
-                     "sim2spatial",
-                     "sim3spatial",
-                     "sim4spatial",
-                     "sim5spatial",
-                     "sim6spatial",
-                     "sim7spatial",
-                     "sim8spatial",
-                     "sim9spatial",
-                     "sim10spatial")
+dataset_options <- c("frog")#,
+# "eucalypt",
+# "bird",
+# "sim1random",
+# "sim2random",
+# "sim3random",
+# "sim4random",
+# "sim5random",
+# "sim6random",
+# "sim7random",
+# "sim8random",
+# "sim9random",
+# "sim10random",
+# "sim1spatial",
+# "sim2spatial",
+# "sim3spatial",
+# "sim4spatial",
+# "sim5spatial",
+# "sim6spatial",
+# "sim7spatial",
+# "sim8spatial",
+# "sim9spatial",
+# "sim10spatial")
 
 ## Folds
 
@@ -214,7 +214,7 @@ for(model in model_options){
         
         ### SESAM
         
-        if(model == "SSDM" & pred_type != "SESAM"){
+        if(model == "SESAM" & pred_type != "SESAM"){
           
           next()
           
@@ -577,7 +577,7 @@ for(model in model_options){
         
         ### SESAM
         
-        if(model == "SSDM" & pred_type != "SESAM"){
+        if(model == "SESAM" & pred_type != "SESAM"){
           
           next()
           
@@ -721,27 +721,27 @@ for(model in model_options){
         
         if(pred_type == "condLOI"){
           
-          for(i in seq_len(length(sr_array))){
+          for(i in seq_len(dim(sr_array)[4])){
             
-            tmp_array <- sr_array[[i]]
+            tmp_array <- sr_array[ , , , i]
             
             #### Calculate summaries
             
-            sr_mean <- mean(sr_array[ , "Difference", ],
+            sr_mean <- mean(tmp_array[ , "Difference", ],
                             na.rm = TRUE)
             
-            sr_median <- median(sr_array[ , "Difference", ],
+            sr_median <- median(tmp_array[ , "Difference", ],
                                 na.rm = TRUE)
             
-            sr_lower <- quantile(sr_array[ , "Difference", ],
+            sr_lower <- quantile(tmp_array[ , "Difference", ],
                                  probs = 0.025,
                                  na.rm = TRUE)[[1]]
             
-            sr_upper <- quantile(sr_array[ , "Difference", ],
+            sr_upper <- quantile(tmp_array[ , "Difference", ],
                                  probs = 0.975,
                                  na.rm = TRUE)[[1]]
             
-            sr_NA <- proportionNA(sr_array[ , "Difference", ])
+            sr_NA <- proportionNA(tmp_array[ , "Difference", ])
             
             #### Write to dataframe
             
@@ -776,4 +776,37 @@ for(model in model_options){
 saveRDS(object = sr_df,
         file = "outputs/species_richness/species_richness_summary.rds")
 
+################
+################
+### PLOTTING ###
+################
+################
 
+############################
+##### Set Colour Scale #####
+############################
+
+model <- unique(df$Model)
+col_palette <- brewer.pal(6, "Dark2")
+colour <- c()
+
+if("MPR" %in% model){
+  colour <- c(colour, col_palette[6])
+}
+if("HPR" %in% model){
+  colour <- c(colour, col_palette[5])
+}
+if("LPR" %in% model){
+  colour <- c(colour, col_palette[4])
+}
+if("DPR" %in% model){
+  colour <- c(colour, col_palette[3])
+}
+if("HLR-S" %in% model){
+  colour <- c(colour, col_palette[2])
+}
+if("HLR-NS" %in% model){
+  colour <- c(colour, col_palette[1])
+}
+
+colour_inverse <- rev(colour)   # because coord_flip() 
