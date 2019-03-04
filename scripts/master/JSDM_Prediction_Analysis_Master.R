@@ -504,6 +504,13 @@ for(model in model_options){
   }
 }
 
+###################################################
+### Save Test Statistics Summary Output To File ###
+###################################################
+
+saveRDS(object = ts_df,
+        file = "outputs/test_statistics/test_statistics_summary.rds")
+
 ########################
 ########################
 ### SPECIES RICHNESS ###
@@ -761,3 +768,12 @@ for(model in model_options){
     }
   }
 }
+
+####################################################
+### Save Species Richness Summary Output To File ###
+####################################################
+
+saveRDS(object = sr_df,
+        file = "outputs/species_richness/species_richness_summary.rds")
+
+
