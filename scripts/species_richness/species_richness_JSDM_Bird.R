@@ -29,11 +29,11 @@ y_test <- y_test[ , -1]                                 # Remove rownames
 ### Calculate Species Richness ###
 ##################################
 
-## Marginal 
+## Marginal - probabilities
 
 ### Load Data
 
-filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_%s_%s.rds",
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_prob_%s_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id,
@@ -49,7 +49,42 @@ marg_SR <- species_richness(observed = y_test,
 
 ### Save To File
 
-filename <- sprintf("outputs/species_richness/%s_%s_fold%s_marginal_SR_%s_%s.rds",
+filename <- sprintf("outputs/species_richness/%s_%s_fold%s_marginal_prob_SR_%s_%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id,
+                    start_sample,
+                    end_sample)
+
+saveRDS(marg_SR,
+        filename)
+
+### Memory purge
+
+rm(marg_pred,
+   marg_SR)
+
+## Marginal - binary
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_bin_%s_%s.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id,
+                    start_sample,
+                    end_sample)
+
+marg_pred <- readRDS(filename)
+
+### Calculate species richness
+
+marg_SR <- species_richness(observed = y_test,
+                            predicted = marg_pred)
+
+### Save To File
+
+filename <- sprintf("outputs/species_richness/%s_%s_fold%s_marginal_bin_SR_%s_%s.rds",
                     model_id,
                     dataset_id,
                     fold_id,
