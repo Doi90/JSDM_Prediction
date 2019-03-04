@@ -122,7 +122,7 @@ for(i in seq_len(dim(SSDM_predictions_bin)[1])){
     
   ## Get predicted species probabilities for site
   
-  pred_probs <- SSDM_predictions_prob[i, , j]
+  pred_probs <- SSDM_predictions_bin[i, , j]
   
   ## Get observed species state for site
   
