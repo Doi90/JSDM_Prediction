@@ -147,9 +147,15 @@ ts_site <- c("Binomial",
 source("scripts/analysis/proportionNA_function.R")
 source("scripts/analysis/notin_function.R")
 
-##############################################
-### Create empty dataframe to store output ###
-##############################################
+#######################
+#######################
+### TEST STATISTICS ###
+#######################
+#######################
+
+#############################################################
+### Create empty dataframe to store test statistic output ###
+#############################################################
 
 n_row <- length(model_options) * length(dataset_options) * 
   length(fold_options) * (length(prediction_options) + 2) * # +2 for extra condLOI low/med/high
@@ -308,7 +314,7 @@ for(model in model_options){
           }
           
         }
-          
+        
         ####################################################
         ### Summarise Test Statistics And Fill Dataframe ###
         ####################################################
@@ -498,3 +504,260 @@ for(model in model_options){
   }
 }
 
+########################
+########################
+### SPECIES RICHNESS ###
+########################
+########################
+
+###############################################################
+### Create empty dataframe to store species richness output ###
+###############################################################
+
+n_row <- length(model_options) * length(dataset_options) * 
+  length(fold_options) * (length(prediction_options) + 2) # +2 for extra condLOI low/med/high
+
+sr_df <- data.frame(model = character(n_row),
+                    dataset = character(n_row),
+                    fold = numeric(n_row),
+                    prediction_type = character(n_row),
+                    test_statistic = character(n_row),
+                    mean = numeric(n_row),
+                    median = numeric(n_row),
+                    lower = numeric(n_row),
+                    upper = numeric(n_row),
+                    porportion_NA = numeric(n_row),
+                    stringsAsFactors = FALSE)
+
+##########################################
+### Summarise Species Richness Metrics ###
+##########################################
+
+## Set up a row index counter
+## Increase AFTER usage
+
+row_index <- 1
+
+## Loop over model
+
+for(model in model_options){
+  
+  ## Loop over datasets
+  
+  for(dataset in dataset_options){
+    
+    ## Loop over fold
+    
+    for(fold in fold_options){
+      
+      ## Loop over prediction type
+      
+      for(pred_type in prediction_options){
+        
+        ########################################
+        ### Combination Compatibility Checks ###
+        ########################################
+        
+        ## Skip combinations of loop iterators that are non-compatible
+        
+        ### SSDM
+        
+        if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
+          
+          next()
+          
+        }
+        
+        ### SESAM
+        
+        if(model == "SSDM" & pred_type != "SESAM"){
+          
+          next()
+          
+        }
+        
+        ### JSDMs
+        
+        if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
+                                                        "marginal_prob",
+                                                        "condLOI",
+                                                        "joint")){
+          
+          next()
+          
+        }
+        
+        #################
+        ### Load Data ###
+        #################
+        
+        ## SSDM
+        
+        if(model == "SSDM"){
+          
+          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_SR.rds",
+                              pred_type,
+                              dataset,
+                              fold)
+          
+          sr_array <- readRDS(filename)
+          
+        }
+        
+        ## SESAM
+        
+        if(model == "SESAM"){
+          
+          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_SR.rds",
+                              model,
+                              dataset,
+                              fold)
+          
+          sr_array <- readRDS(filename)
+          
+        }
+        
+        ## JSDMs
+        
+        ### Any dataset EXCEPT birds
+        
+        if(model %in% JSDM_models & dataset != "birds"){
+          
+          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_%4$s_SR.rds",
+                              model,
+                              dataset,
+                              fold,
+                              pred_type)
+          
+          sr_array <- readRDS(filename)
+          
+        }
+        
+        ### Bird dataset
+        
+        if(model %in% JSDM_models & dataset == "birds"){
+          
+          #### Find all files that match pattern
+          
+          partial_filename <- sprintf("%1$s_%2$s_fold%3$s_%4$s",
+                                      model,
+                                      dataset,
+                                      fold,
+                                      pred_type)
+          
+          file_list <- list.files(path = "outputs/species_richness",
+                                  pattern = partial_filename,
+                                  full.names = TRUE)
+          
+          #### Read in first file to start array list
+          
+          sr_array <- readRDS(file_list[1])
+          
+          #### Read in other files and abind together
+          
+          for(extra_file in 2:length(file_list)){
+            
+            tmp_file <- readRDS(file_list[extra_file])
+            
+            sr_array <- abind(sr_array,
+                              tmp_file,
+                              along = 3)
+            
+          }
+          
+        }
+        
+        #####################################################
+        ### Summarise Species Richness And Fill Dataframe ###
+        #####################################################
+        
+        ## All prediction types that aren't condLOI
+        
+        if(pred_type != "condLOI"){
+          
+          ### Calculate summaries
+          
+          sr_mean <- mean(sr_array[ , "Difference", ],
+                          na.rm = TRUE)
+          
+          sr_median <- median(sr_array[ , "Difference", ],
+                              na.rm = TRUE)
+          
+          sr_lower <- quantile(sr_array[ , "Difference", ],
+                               probs = 0.025,
+                               na.rm = TRUE)[[1]]
+          
+          sr_upper <- quantile(sr_array[ , "Difference", ],
+                               probs = 0.975,
+                               na.rm = TRUE)[[1]]
+          
+          sr_NA <- proportionNA(sr_array[ , "Difference", ])
+          
+          #### Write to dataframe
+          
+          sr_df[row_index, ] <- list(model,
+                                     dataset,
+                                     fold,
+                                     pred_type,
+                                     "species_richness_difference",
+                                     sr_mean,
+                                     sr_median,
+                                     sr_lower,
+                                     sr_upper,
+                                     sr_NA)
+          
+          #### Increase row index counter
+          
+          row_index <- row_index + 1
+          
+        }
+        
+        if(pred_type == "condLOI"){
+          
+          for(i in seq_len(length(sr_array))){
+            
+            tmp_array <- sr_array[[i]]
+            
+            #### Calculate summaries
+            
+            sr_mean <- mean(sr_array[ , "Difference", ],
+                            na.rm = TRUE)
+            
+            sr_median <- median(sr_array[ , "Difference", ],
+                                na.rm = TRUE)
+            
+            sr_lower <- quantile(sr_array[ , "Difference", ],
+                                 probs = 0.025,
+                                 na.rm = TRUE)[[1]]
+            
+            sr_upper <- quantile(sr_array[ , "Difference", ],
+                                 probs = 0.975,
+                                 na.rm = TRUE)[[1]]
+            
+            sr_NA <- proportionNA(sr_array[ , "Difference", ])
+            
+            #### Write to dataframe
+            
+            cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
+            
+            sr_df[row_index, ] <- list(model,
+                                       dataset,
+                                       fold,
+                                       cond_pred_type,
+                                       "species_richness_difference",
+                                       sr_mean,
+                                       sr_median,
+                                       sr_lower,
+                                       sr_upper,
+                                       sr_NA)
+            
+            #### Increase row index counter
+            
+            row_index <- row_index + 1
+            
+          }
+        }
+      }
+    }
+  }
+}
