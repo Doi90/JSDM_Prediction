@@ -257,6 +257,33 @@ predict.conditional.LOI <- function(Beta = NULL,
     species_left_in_IDs <- c(16, 19, 289) # Common_Goldeneye, Canada_Goose, American_Robin
     
   }
+  
+  if(dataset_id %in% c("sim1random",
+                       "sim2random",
+                       "sim3random",
+                       "sim4random",
+                       "sim5random",
+                       "sim6random",
+                       "sim7random",
+                       "sim8random",
+                       "sim9random",
+                       "sim10random",
+                       "sim1spatial",
+                       "sim2spatial",
+                       "sim3spatial",
+                       "sim4spatial",
+                       "sim5spatial",
+                       "sim6spatial",
+                       "sim7spatial",
+                       "sim8spatial",
+                       "sim9spatial",
+                       "sim10spatial")){
+    
+    spp_LOI <- readRDS("data/simulated_datasets_species_left_in.rds")
+    
+    species_left_in_IDs <- as.numeric(spp_LOI[dataset_id, ])
+    
+  }
   ## Make predictions. Fill predictions array with values as we go
   
   ### For each 4th dimension/left-in species
