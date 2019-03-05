@@ -38,43 +38,43 @@ message("Packages loaded")
 ## Models
 
 model_options <- c("MPR",
-                   "HPR",
-                   "LPR",
-                   "DPR",
-                   "HLR_NS",
-                   "HLR_S",
-                   "SSDM",
-                   "SESAM")
+                   # "HPR",
+                   # "LPR",
+                   # "DPR",
+                   # "HLR_NS",
+                   # "HLR_S",
+                   "SSDM")#,
+                   #"SESAM")
 
-JSDM_models <- model_options[1:6]
+JSDM_models <- model_options[1]
 
-SSDM_models <- model_options[7:8]
+SSDM_models <- model_options[2]
 
 ## Datasets
 
-dataset_options <- c("frog",
-                     "eucalypt",
-                     "bird",
-                     "sim1random",
-                     "sim2random",
-                     "sim3random",
-                     "sim4random",
-                     "sim5random",
-                     "sim6random",
-                     "sim7random",
-                     "sim8random",
-                     "sim9random",
-                     "sim10random",
-                     "sim1spatial",
-                     "sim2spatial",
-                     "sim3spatial",
-                     "sim4spatial",
-                     "sim5spatial",
-                     "sim6spatial",
-                     "sim7spatial",
-                     "sim8spatial",
-                     "sim9spatial",
-                     "sim10spatial")
+dataset_options <- c("frog")#,
+                     # "eucalypt",
+                     # "bird",
+                     # "sim1random",
+                     # "sim2random",
+                     # "sim3random",
+                     # "sim4random",
+                     # "sim5random",
+                     # "sim6random",
+                     # "sim7random",
+                     # "sim8random",
+                     # "sim9random",
+                     # "sim10random",
+                     # "sim1spatial",
+                     # "sim2spatial",
+                     # "sim3spatial",
+                     # "sim4spatial",
+                     # "sim5spatial",
+                     # "sim6spatial",
+                     # "sim7spatial",
+                     # "sim8spatial",
+                     # "sim9spatial",
+                     # "sim10spatial")
 
 ## Folds
 
