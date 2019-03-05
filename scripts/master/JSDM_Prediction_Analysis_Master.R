@@ -514,17 +514,17 @@ ts_df <- ts_df[-(row_index:nrow(ts_df)), ]
 
 ## Replace "incorrect" prediction types
 
-ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
-                               pattern = "SSDM_bin",
-                               replacement = "marginal_bin")
-
-ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
-                               pattern = "SSDM_prob",
-                               replacement = "marginal_prob")
-
-ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
-                               pattern = "SESAM",
-                               replacement = "marginal_bin")
+# ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
+#                                pattern = "SSDM_bin",
+#                                replacement = "marginal_bin")
+# 
+# ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
+#                                pattern = "SSDM_prob",
+#                                replacement = "marginal_prob")
+# 
+# ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
+#                                pattern = "SESAM",
+#                                replacement = "marginal_bin")
 
 ###################################################
 ### Save Test Statistics Summary Output To File ###
@@ -800,18 +800,18 @@ for(model in model_options){
 sr_df <- sr_df[-(row_index:nrow(sr_df)), ]
 
 ## Replace "incorrect" prediction types
-
-sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
-                               pattern = "SSDM_bin",
-                               replacement = "marginal_bin")
-
-sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
-                               pattern = "SSDM_prob",
-                               replacement = "marginal_prob")
-
-sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
-                               pattern = "SESAM",
-                               replacement = "marginal_bin")
+# 
+# sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
+#                                pattern = "SSDM_bin",
+#                                replacement = "marginal_bin")
+# 
+# sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
+#                                pattern = "SSDM_prob",
+#                                replacement = "marginal_prob")
+# 
+# sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
+#                                pattern = "SESAM",
+#                                replacement = "marginal_bin")
 
 ####################################################
 ### Save Species Richness Summary Output To File ###
