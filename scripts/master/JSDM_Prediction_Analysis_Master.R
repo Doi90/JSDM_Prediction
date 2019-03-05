@@ -504,6 +504,28 @@ for(model in model_options){
   }
 }
 
+##################################################
+### Final Test Statistic Summary Modifications ###
+##################################################
+
+## Remove excess rows
+
+ts_df <- ts_df[-(row_index:nrow(ts_df)), ]
+
+## Replace "incorrect" prediction types
+
+ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
+                               pattern = "SSDM_bin",
+                               replacement = "marginal_bin")
+
+ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
+                               pattern = "SSDM_prob",
+                               replacement = "marginal_prob")
+
+ts_df$prediction_type <-  gsub(x = ts_df$prediction_type,
+                               pattern = "SESAM",
+                               replacement = "marginal_bin")
+
 ###################################################
 ### Save Test Statistics Summary Output To File ###
 ###################################################
@@ -770,6 +792,28 @@ for(model in model_options){
 }
 
 ####################################################
+### Final Species Richness Summary Modifications ###
+####################################################
+
+## Remove excess rows
+
+sr_df <- sr_df[-(row_index:nrow(sr_df)), ]
+
+## Replace "incorrect" prediction types
+
+sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
+                               pattern = "SSDM_bin",
+                               replacement = "marginal_bin")
+
+sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
+                               pattern = "SSDM_prob",
+                               replacement = "marginal_prob")
+
+sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
+                               pattern = "SESAM",
+                               replacement = "marginal_bin")
+
+####################################################
 ### Save Species Richness Summary Output To File ###
 ####################################################
 
@@ -810,3 +854,34 @@ if("HLR-NS" %in% model){
 }
 
 colour_inverse <- rev(colour)   # because coord_flip() 
+
+
+############################
+######## Make JPEGs ########
+############################
+
+dodge <- position_dodge(width=0.5)  
+
+for(i in unique(df$Species)){
+  
+  # Create blank PNG file
+  
+  file.name <- paste("Beta_", i, ".pdf", sep = "")
+  
+  # Create plot
+  
+  ggplot(df[df$Species == i,],aes(x = Coefficient, y = Posterior.Mean,
+                                  colour = Model)) + 
+    geom_point(position=dodge) +
+    geom_errorbar(aes(ymax=Upper,ymin=Lower),position = dodge) +
+    theme(legend.position = "right") +
+    ylab("Posterior Mean") + 
+    xlab("Variable") +
+    coord_flip() +
+    ggtitle(i) +
+    scale_colour_manual(values = colour_inverse, breaks = rev(levels(df$Model))) +
+    scale_x_discrete(name = "", limits = rev(levels(df$Coefficient))) +
+    theme_bw()
+  
+  ggsave(file.name, units = "in", width = 7, height = 7)
+}
