@@ -380,19 +380,44 @@ for(model in model_options){
         
         tmp4 <- readRDS(filename5)
         
-        ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
-                                                  tmp1$test_statistics_species,
-                                                  tmp2$test_statistics_species,
-                                                  tmp3$test_statistics_species,
-                                                  tmp4$test_statistics_species,
-                                                  along = 1)
+        if(pred_type != "condLOI"){
+          
+          ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
+                                                    tmp1$test_statistics_species,
+                                                    tmp2$test_statistics_species,
+                                                    tmp3$test_statistics_species,
+                                                    tmp4$test_statistics_species,
+                                                    along = 1)
+          
+          ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
+                                                 tmp1$test_statistics_site,
+                                                 tmp2$test_statistics_site,
+                                                 tmp3$test_statistics_site,
+                                                 tmp4$test_statistics_site,
+                                                 along = 1)
+        }
         
-        ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
-                                               tmp1$test_statistics_site,
-                                               tmp2$test_statistics_site,
-                                               tmp3$test_statistics_site,
-                                               tmp4$test_statistics_site,
-                                               along = 1)
+        if(pred_type == "condLOI"){
+          
+          for(i in seq_len(length(ts_array))){
+            
+            ts_array[[i]]$test_statistics_species <- abind(ts_array[[i]]$test_statistics_species,
+                                                           tmp1[[i]]$test_statistics_species,
+                                                           tmp2[[i]]$test_statistics_species,
+                                                           tmp3[[i]]$test_statistics_species,
+                                                           tmp4[[i]]$test_statistics_species,
+                                                           along = 1)
+            
+            ts_array[[i]]$test_statistics_site <- abind(ts_array[[i]]$test_statistics_site,
+                                                        tmp1[[i]]$test_statistics_site,
+                                                        tmp2[[i]]$test_statistics_site,
+                                                        tmp3[[i]]$test_statistics_site,
+                                                        tmp4[[i]]$test_statistics_site,
+                                                        along = 1)
+          }
+          
+          
+        }
         
       }
       
@@ -417,18 +442,41 @@ for(model in model_options){
         
         #### Read in other files and abind together
         
-        for(extra_file in 2:length(file_list)){
+        if(pred_type != "condLOI"){
           
-          tmp_file <- readRDS(file_list[extra_file])
+          for(extra_file in 2:length(file_list)){
+            
+            tmp_file <- readRDS(file_list[extra_file])
+            
+            ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
+                                                      tmp_file$test_statistics_species,
+                                                      along = 1)
+            
+            ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
+                                                   tmp_file$test_statistics_site,
+                                                   along = 1)
+            
+          }
+        }
+        
+        if(pred_type == "condLOI"){
           
-          ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
-                                                    tmp_file$test_statistics_species,
-                                                    along = 1)
-          
-          ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
-                                                 tmp_file$test_statistics_site,
-                                                 along = 1)
-          
+          for(extra_file in 2:length(file_list)){
+            
+            tmp_file <- readRDS(file_list[extra_file])
+            
+            for(i in seq_len(length(tmp_file))){
+              
+              ts_array[[i]]$test_statistics_species <- abind(ts_array[[i]]$test_statistics_species,
+                                                             tmp_file[[i]]$test_statistics_species,
+                                                             along = 1)
+              
+              ts_array[[i]]$test_statistics_site <- abind(ts_array[[i]]$test_statistics_site,
+                                                          tmp_file[[i]]$test_statistics_site,
+                                                          along = 1)
+              
+            }
+          }
         }
         
       }
