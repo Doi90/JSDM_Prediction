@@ -44,7 +44,16 @@ model_options <- c("MPR",
                    # "HLR_NS",
                    # "HLR_S",
                    "SSDM")#,
-                   #"SESAM")
+#"SESAM")
+
+model_order <- c("SSDM",
+                 "SESAM",
+                 "MPR",
+                 "HPR",
+                 "LPR",
+                 "DPR",
+                 "HLR_NS",
+                 "HLR_S")
 
 JSDM_models <- model_options[1]
 
@@ -53,32 +62,28 @@ SSDM_models <- model_options[2]
 ## Datasets
 
 dataset_options <- c("frog")#,
-                     # "eucalypt",
-                     # "bird",
-                     # "sim1random",
-                     # "sim2random",
-                     # "sim3random",
-                     # "sim4random",
-                     # "sim5random",
-                     # "sim6random",
-                     # "sim7random",
-                     # "sim8random",
-                     # "sim9random",
-                     # "sim10random",
-                     # "sim1spatial",
-                     # "sim2spatial",
-                     # "sim3spatial",
-                     # "sim4spatial",
-                     # "sim5spatial",
-                     # "sim6spatial",
-                     # "sim7spatial",
-                     # "sim8spatial",
-                     # "sim9spatial",
-                     # "sim10spatial")
-
-## Folds
-
-fold_options <- 1:5
+# "eucalypt",
+# "bird",
+# "sim1random",
+# "sim2random",
+# "sim3random",
+# "sim4random",
+# "sim5random",
+# "sim6random",
+# "sim7random",
+# "sim8random",
+# "sim9random",
+# "sim10random",
+# "sim1spatial",
+# "sim2spatial",
+# "sim3spatial",
+# "sim4spatial",
+# "sim5spatial",
+# "sim6spatial",
+# "sim7spatial",
+# "sim8spatial",
+# "sim9spatial",
+# "sim10spatial")
 
 ## Prediction types
 
@@ -158,20 +163,23 @@ source("scripts/analysis/notin_function.R")
 #############################################################
 
 n_row <- length(model_options) * length(dataset_options) * 
-  length(fold_options) * (length(prediction_options) + 2) * # +2 for extra condLOI low/med/high
+  (length(prediction_options) + 2) *                        # +2 for extra condLOI low/med/high
   (length(ts_site) + length(ts_species))                    # add number of ts together
 
-ts_df <- data.frame(model = character(n_row),
-                    dataset = character(n_row),
-                    fold = numeric(n_row),
-                    prediction_type = character(n_row),
-                    test_statistic = character(n_row),
+ts_df <- data.frame(model = factor(character(n_row),
+                                   levels = model_order[model_order %in% model_options]),
+                    dataset = factor(character(n_row),
+                                     levels = dataset_options),
+                    prediction_type = factor(character(n_row),
+                                             levels = prediction_options),
+                    test_statistic = factor(character(n_row),
+                                            levels = c(ts_species,
+                                                       ts_site)),
                     mean = numeric(n_row),
                     median = numeric(n_row),
                     lower = numeric(n_row),
                     upper = numeric(n_row),
-                    porportion_NA = numeric(n_row),
-                    stringsAsFactors = FALSE)
+                    porportion_NA = numeric(n_row))
 
 ########################################
 ### Summarise Test Statistic Metrics ###
@@ -190,167 +198,365 @@ for(model in model_options){
   
   for(dataset in dataset_options){
     
-    ## Loop over fold
+    ## Loop over prediction type
     
-    for(fold in fold_options){
+    for(pred_type in prediction_options){
       
-      ## Loop over prediction type
+      ########################################
+      ### Combination Compatibility Checks ###
+      ########################################
       
-      for(pred_type in prediction_options){
+      ## Skip combinations of loop iterators that are non-compatible
+      
+      ### SSDM
+      
+      if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
         
-        ########################################
-        ### Combination Compatibility Checks ###
-        ########################################
+        next()
         
-        ## Skip combinations of loop iterators that are non-compatible
+      }
+      
+      ### SESAM
+      
+      if(model == "SESAM" & pred_type != "SESAM"){
         
-        ### SSDM
+        next()
         
-        if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
+      }
+      
+      ### JSDMs
+      
+      if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
+                                                      "marginal_prob",
+                                                      "condLOI",
+                                                      "joint")){
+        
+        next()
+        
+      }
+      
+      #################
+      ### Load Data ###
+      #################
+      
+      ## SSDM
+      
+      if(model == "SSDM"){
+        
+        filename1 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold1_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename2 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold2_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename3 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold3_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename4 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold4_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename5 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold5_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        ts_array <- readRDS(filename1)
+        
+        tmp1 <- readRDS(filename2)
+        
+        tmp2 <- readRDS(filename3)
+        
+        tmp3 <- readRDS(filename4)
+        
+        tmp4 <- readRDS(filename5)
+        
+        ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
+                                                  tmp1$test_statistics_species,
+                                                  tmp2$test_statistics_species,
+                                                  tmp3$test_statistics_species,
+                                                  tmp4$test_statistics_species,
+                                                  along = 1)
+        
+        ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
+                                               tmp1$test_statistics_site,
+                                               tmp2$test_statistics_site,
+                                               tmp3$test_statistics_site,
+                                               tmp4$test_statistics_site,
+                                               along = 1)
+        
+      }
+      
+      ## SESAM
+      
+      if(model == "SESAM"){
+        
+        filename1 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold1_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename2 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold2_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename3 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold3_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename4 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold4_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        filename5 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold5_ts.rds",
+                             pred_type,
+                             dataset)
+        
+        ts_array <- readRDS(filename1)
+        
+        tmp1 <- readRDS(filename2)
+        
+        tmp2 <- readRDS(filename3)
+        
+        tmp3 <- readRDS(filename4)
+        
+        tmp4 <- readRDS(filename5)
+        
+        ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
+                                                  tmp1$test_statistics_species,
+                                                  tmp2$test_statistics_species,
+                                                  tmp3$test_statistics_species,
+                                                  tmp4$test_statistics_species,
+                                                  along = 1)
+        
+        ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
+                                               tmp1$test_statistics_site,
+                                               tmp2$test_statistics_site,
+                                               tmp3$test_statistics_site,
+                                               tmp4$test_statistics_site,
+                                               along = 1)
+        
+      }
+      
+      ## JSDMs
+      
+      ### Any dataset EXCEPT birds
+      
+      if(model %in% JSDM_models & dataset != "birds"){
+        
+        filename1 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold1_%3$s_ts.rds",
+                             model,
+                             dataset,
+                             pred_type)
+        
+        filename2 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold2_%3$s_ts.rds",
+                             model,
+                             dataset,
+                             pred_type)
+        
+        filename3 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold3_%3$s_ts.rds",
+                             model,
+                             dataset,
+                             pred_type)
+        
+        filename4 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold4_%3$s_ts.rds",
+                             model,
+                             dataset,
+                             pred_type)
+        
+        filename5 <- sprintf("outputs/test_statistics/%1$s_%2$s_fold5_%3$s_ts.rds",
+                             model,
+                             dataset,
+                             pred_type)
+        
+        ts_array <- readRDS(filename1)
+        
+        tmp1 <- readRDS(filename2)
+        
+        tmp2 <- readRDS(filename3)
+        
+        tmp3 <- readRDS(filename4)
+        
+        tmp4 <- readRDS(filename5)
+        
+        ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
+                                                  tmp1$test_statistics_species,
+                                                  tmp2$test_statistics_species,
+                                                  tmp3$test_statistics_species,
+                                                  tmp4$test_statistics_species,
+                                                  along = 1)
+        
+        ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
+                                               tmp1$test_statistics_site,
+                                               tmp2$test_statistics_site,
+                                               tmp3$test_statistics_site,
+                                               tmp4$test_statistics_site,
+                                               along = 1)
+        
+      }
+      
+      ### Bird dataset
+      
+      if(model %in% JSDM_models & dataset == "birds"){
+        
+        #### Find all files that match pattern
+        
+        file_list <- intersect(list.files(path = "outputs/test_statistics",
+                                          pattern = sprintf("%1$s_%2$s_fold",
+                                                            model,
+                                                            dataset),
+                                          full.names = TRUE),
+                               list.files(path = "outputs/test_statistics",
+                                          pattern = pred_type,
+                                          full.names = TRUE))
+        
+        #### Read in first file to start array list
+        
+        ts_array <- readRDS(file_list[1])
+        
+        #### Read in other files and abind together
+        
+        for(extra_file in 2:length(file_list)){
           
-          next()
+          tmp_file <- readRDS(file_list[extra_file])
+          
+          ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
+                                                    tmp_file$test_statistics_species,
+                                                    along = 1)
+          
+          ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
+                                                 tmp_file$test_statistics_site,
+                                                 along = 1)
           
         }
         
-        ### SESAM
+      }
+      
+      ####################################################
+      ### Summarise Test Statistics And Fill Dataframe ###
+      ####################################################
+      
+      ## All prediction types that aren't condLOI
+      
+      if(pred_type != "condLOI"){
         
-        if(model == "SESAM" & pred_type != "SESAM"){
+        ### Test statistics by species
+        
+        for(ts in dimnames(ts_array$test_statistics_species)[[2]]){
           
-          next()
+          #### Calculate summaries
+          
+          ts_mean <- mean(ts_array$test_statistics_species[ , ts, ],
+                          na.rm = TRUE)
+          
+          ts_median <- median(ts_array$test_statistics_species[ , ts, ],
+                              na.rm = TRUE)
+          
+          ts_lower <- quantile(ts_array$test_statistics_species[ , ts, ],
+                               probs = 0.025,
+                               na.rm = TRUE)[[1]]
+          
+          ts_upper <- quantile(ts_array$test_statistics_species[ , ts, ],
+                               probs = 0.975,
+                               na.rm = TRUE)[[1]]
+          
+          ts_NA <- proportionNA(ts_array$test_statistics_species[ , ts, ])
+          
+          #### Write to dataframe
+          
+          ts_df[row_index, ] <- list(model,
+                                     dataset,
+                                     pred_type,
+                                     ts,
+                                     ts_mean,
+                                     ts_median,
+                                     ts_lower,
+                                     ts_upper,
+                                     ts_NA)
+          
+          #### Increase row index counter
+          
+          row_index <- row_index + 1
           
         }
         
-        ### JSDMs
+        ### Test statistics by site
         
-        if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
-                                                        "marginal_prob",
-                                                        "condLOI",
-                                                        "joint")){
+        for(ts in dimnames(ts_array$test_statistics_site)[[2]]){
           
-          next()
+          #### Calculate summaries
+          
+          ts_mean <- mean(ts_array$test_statistics_site[ , ts, ],
+                          na.rm = TRUE)
+          
+          ts_median <- median(ts_array$test_statistics_site[ , ts, ],
+                              na.rm = TRUE)
+          
+          ts_lower <- quantile(ts_array$test_statistics_site[ , ts, ],
+                               probs = 0.025,
+                               na.rm = TRUE)[[1]]
+          
+          ts_upper <- quantile(ts_array$test_statistics_site[ , ts, ],
+                               probs = 0.975,
+                               na.rm = TRUE)[[1]]
+          
+          ts_NA <- proportionNA(ts_array$test_statistics_site[ , ts, ])
+          
+          #### Write to dataframe
+          
+          ts_df[row_index, ] <- list(model,
+                                     dataset,
+                                     pred_type,
+                                     ts,
+                                     ts_mean,
+                                     ts_median,
+                                     ts_lower,
+                                     ts_upper,
+                                     ts_NA)
+          
+          #### Increase row index counter
+          
+          row_index <- row_index + 1
           
         }
+      }
+      
+      if(pred_type == "condLOI"){
         
-        #################
-        ### Load Data ###
-        #################
-        
-        ## SSDM
-        
-        if(model == "SSDM"){
+        for(i in seq_len(length(ts_array))){
           
-          filename <- sprintf("outputs/test_statistics/%1$s_%2$s_fold%3$s_ts.rds",
-                              pred_type,
-                              dataset,
-                              fold)
-          
-          ts_array <- readRDS(filename)
-          
-        }
-        
-        ## SESAM
-        
-        if(model == "SESAM"){
-          
-          filename <- sprintf("outputs/test_statistics/%1$s_%2$s_fold%3$s_ts.rds",
-                              model,
-                              dataset,
-                              fold)
-          
-          ts_array <- readRDS(filename)
-          
-        }
-        
-        ## JSDMs
-        
-        ### Any dataset EXCEPT birds
-        
-        if(model %in% JSDM_models & dataset != "birds"){
-          
-          filename <- sprintf("outputs/test_statistics/%1$s_%2$s_fold%3$s_%4$s_ts.rds",
-                              model,
-                              dataset,
-                              fold,
-                              pred_type)
-          
-          ts_array <- readRDS(filename)
-          
-        }
-        
-        ### Bird dataset
-        
-        if(model %in% JSDM_models & dataset == "birds"){
-          
-          #### Find all files that match pattern
-          
-          partial_filename <- sprintf("%1$s_%2$s_fold%3$s_%4$s",
-                                      model,
-                                      dataset,
-                                      fold,
-                                      pred_type)
-          
-          file_list <- list.files(path = "outputs/test_statistics",
-                                  pattern = partial_filename,
-                                  full.names = TRUE)
-          
-          #### Read in first file to start array list
-          
-          ts_array <- readRDS(file_list[1])
-          
-          #### Read in other files and abind together
-          
-          for(extra_file in 2:length(file_list)){
-            
-            tmp_file <- readRDS(file_list[extra_file])
-            
-            ts_array$test_statistics_species <- abind(ts_array$test_statistics_species,
-                                                      tmp_file$test_statistics_species,
-                                                      along = 3)
-            
-            ts_array$test_statistics_site <- abind(ts_array$test_statistics_site,
-                                                   tmp_file$test_statistics_site,
-                                                   along = 3)
-            
-          }
-          
-        }
-        
-        ####################################################
-        ### Summarise Test Statistics And Fill Dataframe ###
-        ####################################################
-        
-        ## All prediction types that aren't condLOI
-        
-        if(pred_type != "condLOI"){
+          tmp_array <- ts_array[[i]]
           
           ### Test statistics by species
           
-          for(ts in dimnames(ts_array$test_statistics_species)[[2]]){
+          for(ts in dimnames(tmp_array$test_statistics_species)[[2]]){
             
             #### Calculate summaries
             
-            ts_mean <- mean(ts_array$test_statistics_species[ , ts, ],
+            ts_mean <- mean(tmp_array$test_statistics_species[ , ts, ],
                             na.rm = TRUE)
             
-            ts_median <- median(ts_array$test_statistics_species[ , ts, ],
+            ts_median <- median(tmp_array$test_statistics_species[ , ts, ],
                                 na.rm = TRUE)
             
-            ts_lower <- quantile(ts_array$test_statistics_species[ , ts, ],
+            ts_lower <- quantile(tmp_array$test_statistics_species[ , ts, ],
                                  probs = 0.025,
                                  na.rm = TRUE)[[1]]
             
-            ts_upper <- quantile(ts_array$test_statistics_species[ , ts, ],
+            ts_upper <- quantile(tmp_array$test_statistics_species[ , ts, ],
                                  probs = 0.975,
                                  na.rm = TRUE)[[1]]
             
-            ts_NA <- proportionNA(ts_array$test_statistics_species[ , ts, ])
+            ts_NA <- proportionNA(tmp_array$test_statistics_species[ , ts, ])
             
             #### Write to dataframe
             
+            cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
+            
             ts_df[row_index, ] <- list(model,
                                        dataset,
-                                       fold,
-                                       pred_type,
+                                       cond_pred_type,
                                        ts,
                                        ts_mean,
                                        ts_median,
@@ -366,32 +572,33 @@ for(model in model_options){
           
           ### Test statistics by site
           
-          for(ts in dimnames(ts_array$test_statistics_site)[[2]]){
+          for(ts in dimnames(tmp_array$test_statistics_site)[[2]]){
             
             #### Calculate summaries
             
-            ts_mean <- mean(ts_array$test_statistics_site[ , ts, ],
+            ts_mean <- mean(tmp_array$test_statistics_site[ , ts, ],
                             na.rm = TRUE)
             
-            ts_median <- median(ts_array$test_statistics_site[ , ts, ],
+            ts_median <- median(tmp_array$test_statistics_site[ , ts, ],
                                 na.rm = TRUE)
             
-            ts_lower <- quantile(ts_array$test_statistics_site[ , ts, ],
+            ts_lower <- quantile(tmp_array$test_statistics_site[ , ts, ],
                                  probs = 0.025,
                                  na.rm = TRUE)[[1]]
             
-            ts_upper <- quantile(ts_array$test_statistics_site[ , ts, ],
+            ts_upper <- quantile(tmp_array$test_statistics_site[ , ts, ],
                                  probs = 0.975,
                                  na.rm = TRUE)[[1]]
             
-            ts_NA <- proportionNA(ts_array$test_statistics_site[ , ts, ])
+            ts_NA <- proportionNA(tmp_array$test_statistics_site[ , ts, ])
             
             #### Write to dataframe
             
+            cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
+            
             ts_df[row_index, ] <- list(model,
                                        dataset,
-                                       fold,
-                                       pred_type,
+                                       cond_pred_type,
                                        ts,
                                        ts_mean,
                                        ts_median,
@@ -405,102 +612,9 @@ for(model in model_options){
             
           }
         }
-        
-        if(pred_type == "condLOI"){
-          
-          for(i in seq_len(length(ts_array))){
-            
-            tmp_array <- ts_array[[i]]
-            
-            ### Test statistics by species
-            
-            for(ts in dimnames(tmp_array$test_statistics_species)[[2]]){
-              
-              #### Calculate summaries
-              
-              ts_mean <- mean(tmp_array$test_statistics_species[ , ts, ],
-                              na.rm = TRUE)
-              
-              ts_median <- median(tmp_array$test_statistics_species[ , ts, ],
-                                  na.rm = TRUE)
-              
-              ts_lower <- quantile(tmp_array$test_statistics_species[ , ts, ],
-                                   probs = 0.025,
-                                   na.rm = TRUE)[[1]]
-              
-              ts_upper <- quantile(tmp_array$test_statistics_species[ , ts, ],
-                                   probs = 0.975,
-                                   na.rm = TRUE)[[1]]
-              
-              ts_NA <- proportionNA(tmp_array$test_statistics_species[ , ts, ])
-              
-              #### Write to dataframe
-              
-              cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
-              
-              ts_df[row_index, ] <- list(model,
-                                         dataset,
-                                         fold,
-                                         cond_pred_type,
-                                         ts,
-                                         ts_mean,
-                                         ts_median,
-                                         ts_lower,
-                                         ts_upper,
-                                         ts_NA)
-              
-              #### Increase row index counter
-              
-              row_index <- row_index + 1
-              
-            }
-            
-            ### Test statistics by site
-            
-            for(ts in dimnames(tmp_array$test_statistics_site)[[2]]){
-              
-              #### Calculate summaries
-              
-              ts_mean <- mean(tmp_array$test_statistics_site[ , ts, ],
-                              na.rm = TRUE)
-              
-              ts_median <- median(tmp_array$test_statistics_site[ , ts, ],
-                                  na.rm = TRUE)
-              
-              ts_lower <- quantile(tmp_array$test_statistics_site[ , ts, ],
-                                   probs = 0.025,
-                                   na.rm = TRUE)[[1]]
-              
-              ts_upper <- quantile(tmp_array$test_statistics_site[ , ts, ],
-                                   probs = 0.975,
-                                   na.rm = TRUE)[[1]]
-              
-              ts_NA <- proportionNA(tmp_array$test_statistics_site[ , ts, ])
-              
-              #### Write to dataframe
-              
-              cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
-              
-              ts_df[row_index, ] <- list(model,
-                                         dataset,
-                                         fold,
-                                         cond_pred_type,
-                                         ts,
-                                         ts_mean,
-                                         ts_median,
-                                         ts_lower,
-                                         ts_upper,
-                                         ts_NA)
-              
-              #### Increase row index counter
-              
-              row_index <- row_index + 1
-              
-            }
-          }
-        }
       }
     }
+    
   }
 }
 
@@ -544,19 +658,21 @@ saveRDS(object = ts_df,
 ###############################################################
 
 n_row <- length(model_options) * length(dataset_options) * 
-  length(fold_options) * (length(prediction_options) + 2) # +2 for extra condLOI low/med/high
+  (length(prediction_options) + 2) # +2 for extra condLOI low/med/high
 
-sr_df <- data.frame(model = character(n_row),
-                    dataset = character(n_row),
-                    fold = numeric(n_row),
-                    prediction_type = character(n_row),
-                    test_statistic = character(n_row),
+sr_df <- data.frame(model = factor(character(n_row),
+                                   levels = model_order[model_order %in% model_options]),
+                    dataset = factor(character(n_row),
+                                     levels = dataset_options),
+                    prediction_type = factor(character(n_row),
+                                             levels = prediction_options),
+                    test_statistic = factor(character(n_row),
+                                            levels = c(ts_species, ts_site)),
                     mean = numeric(n_row),
                     median = numeric(n_row),
                     lower = numeric(n_row),
                     upper = numeric(n_row),
-                    porportion_NA = numeric(n_row),
-                    stringsAsFactors = FALSE)
+                    porportion_NA = numeric(n_row))
 
 ##########################################
 ### Summarise Species Richness Metrics ###
@@ -575,159 +691,291 @@ for(model in model_options){
   
   for(dataset in dataset_options){
     
-    ## Loop over fold
+    ## Loop over prediction type
     
-    for(fold in fold_options){
+    for(pred_type in prediction_options){
       
-      ## Loop over prediction type
+      ########################################
+      ### Combination Compatibility Checks ###
+      ########################################
       
-      for(pred_type in prediction_options){
+      ## Skip combinations of loop iterators that are non-compatible
+      
+      ### SSDM
+      
+      if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
         
-        ########################################
-        ### Combination Compatibility Checks ###
-        ########################################
+        next()
         
-        ## Skip combinations of loop iterators that are non-compatible
+      }
+      
+      ### SESAM
+      
+      if(model == "SESAM" & pred_type != "SESAM"){
         
-        ### SSDM
+        next()
         
-        if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
+      }
+      
+      ### JSDMs
+      
+      if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
+                                                      "marginal_prob",
+                                                      "condLOI",
+                                                      "joint")){
+        
+        next()
+        
+      }
+      
+      #################
+      ### Load Data ###
+      #################
+      
+      ## SSDM
+      
+      if(model == "SSDM"){
+        
+        filename1 <- sprintf("outputs/species_richness/%1$s_%2$s_fold1_SR.rds",
+                             pred_type,
+                             dataset)
+        
+        filename2 <- sprintf("outputs/species_richness/%1$s_%2$s_fold2_SR.rds",
+                             pred_type,
+                             dataset)
+        
+        filename3 <- sprintf("outputs/species_richness/%1$s_%2$s_fold3_SR.rds",
+                             pred_type,
+                             dataset)
+        
+        filename4 <- sprintf("outputs/species_richness/%1$s_%2$s_fold4_SR.rds",
+                             pred_type,
+                             dataset)
+        
+        filename5 <- sprintf("outputs/species_richness/%1$s_%2$s_fold5_SR.rds",
+                             pred_type,
+                             dataset)
+        
+        sr_array <- readRDS(filename1)
+        
+        tmp1 <- readRDS(filename2)
+        
+        tmp2 <- readRDS(filename3)
+        
+        tmp3 <- readRDS(filename4)
+        
+        tmp4 <- readRDS(filename5)
+        
+        sr_array <- abind(sr_array,
+                          tmp1,
+                          tmp2,
+                          tmp3,
+                          tmp4,
+                          along = 1)
+        
+      }
+      
+      ## SESAM
+      
+      if(model == "SESAM"){
+        
+        filename1 <- sprintf("outputs/species_richness/%1$s_%2$s_fold1_SR.rds",
+                             model,
+                             dataset)
+        
+        filename2 <- sprintf("outputs/species_richness/%1$s_%2$s_fold2_SR.rds",
+                             model,
+                             dataset)
+        
+        filename3 <- sprintf("outputs/species_richness/%1$s_%2$s_fold3_SR.rds",
+                             model,
+                             dataset)
+        
+        filename4 <- sprintf("outputs/species_richness/%1$s_%2$s_fold4_SR.rds",
+                             model,
+                             dataset)
+        
+        filename5 <- sprintf("outputs/species_richness/%1$s_%2$s_fold5_SR.rds",
+                             model,
+                             dataset)
+        
+        sr_array <- readRDS(filename1)
+        
+        tmp1 <- readRDS(filename2)
+        
+        tmp2 <- readRDS(filename3)
+        
+        tmp3 <- readRDS(filename4)
+        
+        tmp4 <- readRDS(filename5)
+        
+        sr_array <- abind(sr_array,
+                          tmp1,
+                          tmp2,
+                          tmp3,
+                          tmp4,
+                          along = 1)
+        
+      }
+      
+      ## JSDMs
+      
+      ### Any dataset EXCEPT birds
+      
+      if(model %in% JSDM_models & dataset != "birds"){
+        
+        filename1 <- sprintf("outputs/species_richness/%1$s_%2$s_fold1_%3$s_SR.rds",
+                             model,
+                             dataset,
+                             pred_type)
+
+        filename2 <- sprintf("outputs/species_richness/%1$s_%2$s_fold2_%3$s_SR.rds",
+                             model,
+                             dataset,
+                             pred_type)
+
+        filename3 <- sprintf("outputs/species_richness/%1$s_%2$s_fold3_%3$s_SR.rds",
+                             model,
+                             dataset,
+                             pred_type)
+
+        filename4 <- sprintf("outputs/species_richness/%1$s_%2$s_fold4_%3$s_SR.rds",
+                             model,
+                             dataset,
+                             pred_type)
+
+        filename5 <- sprintf("outputs/species_richness/%1$s_%2$s_fold5_%3$s_SR.rds",
+                             model,
+                             dataset,
+                             pred_type)
+        
+        sr_array <- readRDS(filename1)
+        
+        tmp1 <- readRDS(filename2)
+        
+        tmp2 <- readRDS(filename3)
+        
+        tmp3 <- readRDS(filename4)
+        
+        tmp4 <- readRDS(filename5)
+        
+        sr_array <- abind(sr_array,
+                          tmp1,
+                          tmp2,
+                          tmp3,
+                          tmp4,
+                          along = 1)
+        
+      }
+      
+      ### Bird dataset
+      
+      if(model %in% JSDM_models & dataset == "birds"){
+        
+        #### Find all files that match pattern
+        
+        file_list <- intersect(list.files(path = "outputs/species_richness",
+                                          pattern = sprintf("%1$s_%2$s_fold",
+                                                            model,
+                                                            dataset),
+                                          full.names = TRUE),
+                               list.files(path = "outputs/species_richness",
+                                          pattern = pred_type,
+                                          full.names = TRUE))
+        
+        #### Read in first file to start array list
+        
+        sr_array <- readRDS(file_list[1])
+        
+        #### Read in other files and abind together
+        
+        for(extra_file in 2:length(file_list)){
           
-          next()
+          tmp_file <- readRDS(file_list[extra_file])
+          
+          sr_array <- abind(sr_array,
+                            tmp_file,
+                            along = 1)
           
         }
         
-        ### SESAM
+      }
+      
+      #####################################################
+      ### Summarise Species Richness And Fill Dataframe ###
+      #####################################################
+      
+      ## All prediction types that aren't condLOI
+      
+      if(pred_type != "condLOI"){
         
-        if(model == "SESAM" & pred_type != "SESAM"){
-          
-          next()
-          
-        }
+        ### Calculate summaries
         
-        ### JSDMs
+        sr_mean <- mean(sr_array[ , "Difference", ],
+                        na.rm = TRUE)
         
-        if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
-                                                        "marginal_prob",
-                                                        "condLOI",
-                                                        "joint")){
-          
-          next()
-          
-        }
+        sr_median <- median(sr_array[ , "Difference", ],
+                            na.rm = TRUE)
         
-        #################
-        ### Load Data ###
-        #################
+        sr_lower <- quantile(sr_array[ , "Difference", ],
+                             probs = 0.025,
+                             na.rm = TRUE)[[1]]
         
-        ## SSDM
+        sr_upper <- quantile(sr_array[ , "Difference", ],
+                             probs = 0.975,
+                             na.rm = TRUE)[[1]]
         
-        if(model == "SSDM"){
-          
-          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_SR.rds",
-                              pred_type,
-                              dataset,
-                              fold)
-          
-          sr_array <- readRDS(filename)
-          
-        }
+        sr_NA <- proportionNA(sr_array[ , "Difference", ])
         
-        ## SESAM
+        #### Write to dataframe
         
-        if(model == "SESAM"){
-          
-          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_SR.rds",
-                              model,
-                              dataset,
-                              fold)
-          
-          sr_array <- readRDS(filename)
-          
-        }
+        sr_df[row_index, ] <- list(model,
+                                   dataset,
+                                   pred_type,
+                                   "species_richness_difference",
+                                   sr_mean,
+                                   sr_median,
+                                   sr_lower,
+                                   sr_upper,
+                                   sr_NA)
         
-        ## JSDMs
+        #### Increase row index counter
         
-        ### Any dataset EXCEPT birds
+        row_index <- row_index + 1
         
-        if(model %in% JSDM_models & dataset != "birds"){
-          
-          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_%4$s_SR.rds",
-                              model,
-                              dataset,
-                              fold,
-                              pred_type)
-          
-          sr_array <- readRDS(filename)
-          
-        }
+      }
+      
+      if(pred_type == "condLOI"){
         
-        ### Bird dataset
-        
-        if(model %in% JSDM_models & dataset == "birds"){
+        for(i in seq_len(dim(sr_array)[4])){
           
-          #### Find all files that match pattern
+          tmp_array <- sr_array[ , , , i]
           
-          partial_filename <- sprintf("%1$s_%2$s_fold%3$s_%4$s",
-                                      model,
-                                      dataset,
-                                      fold,
-                                      pred_type)
+          #### Calculate summaries
           
-          file_list <- list.files(path = "outputs/species_richness",
-                                  pattern = partial_filename,
-                                  full.names = TRUE)
-          
-          #### Read in first file to start array list
-          
-          sr_array <- readRDS(file_list[1])
-          
-          #### Read in other files and abind together
-          
-          for(extra_file in 2:length(file_list)){
-            
-            tmp_file <- readRDS(file_list[extra_file])
-            
-            sr_array <- abind(sr_array,
-                              tmp_file,
-                              along = 3)
-            
-          }
-          
-        }
-        
-        #####################################################
-        ### Summarise Species Richness And Fill Dataframe ###
-        #####################################################
-        
-        ## All prediction types that aren't condLOI
-        
-        if(pred_type != "condLOI"){
-          
-          ### Calculate summaries
-          
-          sr_mean <- mean(sr_array[ , "Difference", ],
+          sr_mean <- mean(tmp_array[ , "Difference", ],
                           na.rm = TRUE)
           
-          sr_median <- median(sr_array[ , "Difference", ],
+          sr_median <- median(tmp_array[ , "Difference", ],
                               na.rm = TRUE)
           
-          sr_lower <- quantile(sr_array[ , "Difference", ],
+          sr_lower <- quantile(tmp_array[ , "Difference", ],
                                probs = 0.025,
                                na.rm = TRUE)[[1]]
           
-          sr_upper <- quantile(sr_array[ , "Difference", ],
+          sr_upper <- quantile(tmp_array[ , "Difference", ],
                                probs = 0.975,
                                na.rm = TRUE)[[1]]
           
-          sr_NA <- proportionNA(sr_array[ , "Difference", ])
+          sr_NA <- proportionNA(tmp_array[ , "Difference", ])
           
           #### Write to dataframe
           
+          cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
+          
           sr_df[row_index, ] <- list(model,
                                      dataset,
-                                     fold,
-                                     pred_type,
+                                     cond_pred_type,
                                      "species_richness_difference",
                                      sr_mean,
                                      sr_median,
@@ -740,54 +988,9 @@ for(model in model_options){
           row_index <- row_index + 1
           
         }
-        
-        if(pred_type == "condLOI"){
-          
-          for(i in seq_len(dim(sr_array)[4])){
-            
-            tmp_array <- sr_array[ , , , i]
-            
-            #### Calculate summaries
-            
-            sr_mean <- mean(tmp_array[ , "Difference", ],
-                            na.rm = TRUE)
-            
-            sr_median <- median(tmp_array[ , "Difference", ],
-                                na.rm = TRUE)
-            
-            sr_lower <- quantile(tmp_array[ , "Difference", ],
-                                 probs = 0.025,
-                                 na.rm = TRUE)[[1]]
-            
-            sr_upper <- quantile(tmp_array[ , "Difference", ],
-                                 probs = 0.975,
-                                 na.rm = TRUE)[[1]]
-            
-            sr_NA <- proportionNA(tmp_array[ , "Difference", ])
-            
-            #### Write to dataframe
-            
-            cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
-            
-            sr_df[row_index, ] <- list(model,
-                                       dataset,
-                                       fold,
-                                       cond_pred_type,
-                                       "species_richness_difference",
-                                       sr_mean,
-                                       sr_median,
-                                       sr_lower,
-                                       sr_upper,
-                                       sr_NA)
-            
-            #### Increase row index counter
-            
-            row_index <- row_index + 1
-            
-          }
-        }
       }
     }
+    
   }
 }
 
@@ -830,26 +1033,32 @@ saveRDS(object = sr_df,
 ##### Set Colour Scale #####
 ############################
 
-model <- unique(df$Model)
-col_palette <- brewer.pal(6, "Dark2")
+col_palette <- brewer.pal(8, "Dark2")
+
 colour <- c()
 
-if("MPR" %in% model){
+if("SSDM" %in% model_options){
+  colour <- c(colour, col_palette[8])
+}
+if("SESAM" %in% model_options){
+  colour <- c(colour, col_palette[7])
+}
+if("MPR" %in% model_options){
   colour <- c(colour, col_palette[6])
 }
-if("HPR" %in% model){
+if("HPR" %in% model_options){
   colour <- c(colour, col_palette[5])
 }
-if("LPR" %in% model){
+if("LPR" %in% model_options){
   colour <- c(colour, col_palette[4])
 }
-if("DPR" %in% model){
+if("DPR" %in% model_options){
   colour <- c(colour, col_palette[3])
 }
-if("HLR-S" %in% model){
+if("HLR-S" %in% model_options){
   colour <- c(colour, col_palette[2])
 }
-if("HLR-NS" %in% model){
+if("HLR-NS" %in% model_options){
   colour <- c(colour, col_palette[1])
 }
 
@@ -860,7 +1069,7 @@ colour_inverse <- rev(colour)   # because coord_flip()
 ######## Make JPEGs ########
 ############################
 
-dodge <- position_dodge(width=0.5)  
+dodge <- position_dodge(width = 0.5)  
 
 for(i in unique(df$Species)){
   
