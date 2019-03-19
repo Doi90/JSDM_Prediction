@@ -7,7 +7,7 @@ library(Rcpp)
 data <- list(
   Y = y, # Matrix: columns = taxa, rows = sites
   X = cbind(1, X), # Matrix: column 1 = 1s, column 2--N = scaled site variables e.g., cbind(1, scale(X))
-  covx = cov(X), # Covariance matrix of X, e.g., cov(X)
+  covx = cov(cbind(1, X)), # Covariance matrix of X, e.g., cov(X)
   K = 1 + n_env_vars, # Integer: 1 + number of site variables
   J = n_species, # Integer: number of taxa
   n = nrow(X), # Integer: number of sites
