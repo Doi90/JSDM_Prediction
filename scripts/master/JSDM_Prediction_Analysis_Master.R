@@ -28,6 +28,8 @@ message(sprintf("Job started at %s",
 .libPaths("/home/davidpw/R/lib/3.5")
 
 library(abind)
+library(ggplot2)
+library(RColorBrewer)
 
 message("Packages loaded")
 
@@ -38,13 +40,13 @@ message("Packages loaded")
 ## Models
 
 model_options <- c("MPR",
-                   # "HPR",
-                   # "LPR",
-                   # "DPR",
-                   # "HLR_NS",
-                   # "HLR_S",
-                   "SSDM")#,
-#"SESAM")
+                   "HPR",
+                   "LPR",
+                   "DPR",
+                   "HLR_NS",
+                   "HLR_S",
+                   "SSDM",
+                   "SESAM")
 
 model_order <- c("SSDM",
                  "SESAM",
@@ -55,14 +57,14 @@ model_order <- c("SSDM",
                  "HLR_NS",
                  "HLR_S")
 
-JSDM_models <- model_options[1]
+JSDM_models <- model_options[1:6]
 
-SSDM_models <- model_options[2]
+SSDM_models <- model_options[7:8]
 
 ## Datasets
 
-dataset_options <- c("frog")#,
-# "eucalypt",
+dataset_options <- c(#"frog",
+"eucalypt")#,
 # "bird",
 # "sim1random",
 # "sim2random",
@@ -94,6 +96,27 @@ prediction_options <- c("marginal_bin",
                         "SESAM",
                         "SSDM_bin",
                         "SSDM_prob")
+
+prediction_levels <- c("marginal_bin",
+                       "marginal_prob",
+                       "condLOI_low",
+                       "condLOI_med",
+                       "condLOI_high",
+                       "joint",
+                       "SESAM",
+                       "SSDM_bin",
+                       "SSDM_prob")
+
+binary_predictions <- c("marginal_bin",
+                        "condLOI_low",
+                        "condLOI_med",
+                        "condLOI_high",
+                        "joint",
+                        "SESAM",
+                        "SSDM_bin")
+
+probability_predictions <- c("marginal_prob",
+                             "SSDM_prob")
 
 ## Test statistics
 
@@ -171,7 +194,10 @@ ts_df <- data.frame(model = factor(character(n_row),
                     dataset = factor(character(n_row),
                                      levels = dataset_options),
                     prediction_type = factor(character(n_row),
-                                             levels = prediction_options),
+                                             levels = prediction_levels),
+                    prediction_class = factor(character(n_row),
+                                              levels = c("binary",
+                                                         "probability")),
                     test_statistic = factor(character(n_row),
                                             levels = c(ts_species,
                                                        ts_site)),
@@ -516,6 +542,9 @@ for(model in model_options){
           ts_df[row_index, ] <- list(model,
                                      dataset,
                                      pred_type,
+                                     ifelse(pred_type %in% binary_predictions,
+                                            "binary",
+                                            "probability"),
                                      ts,
                                      ts_mean,
                                      ts_median,
@@ -556,6 +585,9 @@ for(model in model_options){
           ts_df[row_index, ] <- list(model,
                                      dataset,
                                      pred_type,
+                                     ifelse(pred_type %in% binary_predictions,
+                                            "binary",
+                                            "probability"),
                                      ts,
                                      ts_mean,
                                      ts_median,
@@ -605,6 +637,9 @@ for(model in model_options){
             ts_df[row_index, ] <- list(model,
                                        dataset,
                                        cond_pred_type,
+                                       ifelse(cond_pred_type %in% binary_predictions,
+                                              "binary",
+                                              "probability"),
                                        ts,
                                        ts_mean,
                                        ts_median,
@@ -647,6 +682,9 @@ for(model in model_options){
             ts_df[row_index, ] <- list(model,
                                        dataset,
                                        cond_pred_type,
+                                       ifelse(cond_pred_type %in% binary_predictions,
+                                              "binary",
+                                              "probability"),
                                        ts,
                                        ts_mean,
                                        ts_median,
@@ -713,9 +751,12 @@ sr_df <- data.frame(model = factor(character(n_row),
                     dataset = factor(character(n_row),
                                      levels = dataset_options),
                     prediction_type = factor(character(n_row),
-                                             levels = prediction_options),
+                                             levels = prediction_levels),
+                    prediction_class = factor(character(n_row),
+                                              levels = c("binary",
+                                                         "probability")),
                     test_statistic = factor(character(n_row),
-                                            levels = c(ts_species, ts_site)),
+                                            levels = "species_richness_difference"),
                     mean = numeric(n_row),
                     median = numeric(n_row),
                     lower = numeric(n_row),
@@ -980,6 +1021,9 @@ for(model in model_options){
         sr_df[row_index, ] <- list(model,
                                    dataset,
                                    pred_type,
+                                   ifelse(pred_type %in% binary_predictions,
+                                          "binary",
+                                          "probability"),
                                    "species_richness_difference",
                                    sr_mean,
                                    sr_median,
@@ -1024,6 +1068,9 @@ for(model in model_options){
           sr_df[row_index, ] <- list(model,
                                      dataset,
                                      cond_pred_type,
+                                     ifelse(cond_pred_type %in% binary_predictions,
+                                            "binary",
+                                            "probability"),
                                      "species_richness_difference",
                                      sr_mean,
                                      sr_median,
@@ -1103,15 +1150,33 @@ if("LPR" %in% model_options){
 if("DPR" %in% model_options){
   colour <- c(colour, col_palette[3])
 }
-if("HLR-S" %in% model_options){
+if("HLR_S" %in% model_options){
   colour <- c(colour, col_palette[2])
 }
-if("HLR-NS" %in% model_options){
+if("HLR_NS" %in% model_options){
   colour <- c(colour, col_palette[1])
 }
 
 colour_inverse <- rev(colour)   # because coord_flip() 
 
+###########################################
+### Test Statistic-Specific Axis Limits ###
+###########################################
+
+graph_customisation <- read.csv("scripts/analysis/test_statistic_axis_limits.csv",
+                                stringsAsFactors = FALSE)
+
+#####################################################
+### Set Prediction "Pairs" to put JSDMs and SSDMs ###
+###       on same plot where applicable           ###
+#####################################################
+
+pred_pairs <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Marginal"),
+                   marginal_prob = c("marginal_prob", "SSDM_prob", "", "Probabilistic predictions", "JSDM prediction: Marginal"),
+                   condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Conditional (low)"),
+                   condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Conditional (med)"),
+                   condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Conditional (high)"),
+                   joint = c("joint", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Joint"))
 
 ############################
 ######## Make JPEGs ########
@@ -1119,26 +1184,55 @@ colour_inverse <- rev(colour)   # because coord_flip()
 
 dodge <- position_dodge(width = 0.5)  
 
-for(i in unique(df$Species)){
+for(dataset in dataset_options){
   
-  # Create blank PNG file
-  
-  file.name <- paste("Beta_", i, ".pdf", sep = "")
-  
-  # Create plot
-  
-  ggplot(df[df$Species == i,],aes(x = Coefficient, y = Posterior.Mean,
-                                  colour = Model)) + 
-    geom_point(position=dodge) +
-    geom_errorbar(aes(ymax=Upper,ymin=Lower),position = dodge) +
-    theme(legend.position = "right") +
-    ylab("Posterior Mean") + 
-    xlab("Variable") +
-    coord_flip() +
-    ggtitle(i) +
-    scale_colour_manual(values = colour_inverse, breaks = rev(levels(df$Model))) +
-    scale_x_discrete(name = "", limits = rev(levels(df$Coefficient))) +
-    theme_bw()
-  
-  ggsave(file.name, units = "in", width = 7, height = 7)
+  for(pair in seq_len(length(pred_pairs))){
+    
+    for(ts in c(ts_species, ts_site)){
+      
+      ## Open PDF for editing
+      
+      pdf(file = sprintf("outputs/test_statistics/plots/test_statistic_plot_%1$s_%2$s_%3$s.pdf",
+                         dataset,
+                         names(pred_pairs[pair]),
+                         ts))
+      
+      ## Create plot
+      
+      print(ggplot(ts_df[ts_df$dataset == dataset & 
+                           ts_df$test_statistic == ts &
+                           ts_df$prediction_type %in% pred_pairs[[pair]][1:3], ],
+                   aes(x = model,
+                       y = mean,
+                       colour = model)) +
+              geom_point(position = dodge,
+                         size = 2) + 
+              geom_errorbar(aes(ymax = upper,
+                                ymin = lower,),
+                            position = dodge,
+                            width = 0.2) +
+              ylim(c(graph_customisation[graph_customisation$test_statistic == ts, "y_min"],
+                     graph_customisation[graph_customisation$test_statistic == ts, "y_max"])) +
+              xlab("Model") +
+              ylab(eval(parse(text = graph_customisation[graph_customisation$test_statistic == ts, "graph_label"]))) +
+              scale_colour_manual(values = colour,
+                                  breaks = levels(ts_df$model)) +
+              theme_bw() +
+              theme(legend.position = "none",
+                    panel.grid.minor = element_blank(),
+                    panel.grid.major = element_blank()) +
+              ggtitle(label = pred_pairs[[pair]][4],
+                      subtitle = pred_pairs[[pair]][5]) +
+              geom_vline(xintercept = 2.5))
+        
+      
+      ## Close PDF and save
+      
+      dev.off()
+      
+    }
+  }
 }
+
+
+
