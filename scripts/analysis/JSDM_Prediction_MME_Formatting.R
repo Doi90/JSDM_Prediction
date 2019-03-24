@@ -41,52 +41,52 @@ message("Packages loaded")
 ## Models
 
 model_options <- c("MPR",
-                   "HPR",
-                   "LPR",
-                   "DPR",
-                   "HLR_NS",
-                   "HLR_S",
-                   "SSDM",
-                   "SESAM")
+                   # "HPR",
+                   # "LPR",
+                   # "DPR",
+                   # "HLR_NS",
+                   # "HLR_S",
+                   "SSDM")#,
+                   #"SESAM")
 
 model_order <- c("SSDM",
-                 "SESAM",
-                 "MPR",
-                 "HPR",
-                 "LPR",
-                 "DPR",
-                 "HLR_NS",
-                 "HLR_S")
+                 #"SESAM",
+                 "MPR")#,
+                 # "HPR",
+                 # "LPR",
+                 # "DPR",
+                 # "HLR_NS",
+                 # "HLR_S")
 
-JSDM_models <- model_options[1:6]
+JSDM_models <- model_options[1]#:6]
 
-SSDM_models <- model_options[7:8]
+SSDM_models <- model_options[2]#7:8]
 
 ## Datasets
 
-dataset_options <- c("frog",
-                     "eucalypt",
-                     "bird",
-                     "sim1random",
-                     "sim2random",
-                     "sim3random",
-                     "sim4random",
-                     "sim5random",
-                     "sim6random",
-                     "sim7random",
-                     "sim8random",
-                     "sim9random",
-                     "sim10random",
-                     "sim1spatial",
-                     "sim2spatial",
-                     "sim3spatial",
-                     "sim4spatial",
-                     "sim5spatial",
-                     "sim6spatial",
-                     "sim7spatial",
-                     "sim8spatial",
-                     "sim9spatial",
-                     "sim10spatial")
+dataset_options <- c("frog")#,
+                     #"eucalypt",
+                     # "bird",
+                     # "sim1random",
+                     # "sim2random",
+                     # "sim3random",
+                     # "sim4random",
+                     # "sim5random",
+                     # "sim6random",
+                     # "sim7random",
+                     # "sim8random",
+                     # "sim9random",
+                     # "sim10random",
+                     # "sim1spatial",
+                     # "sim2spatial",
+                     # "sim3spatial",
+                     # "sim4spatial",
+                     # "sim5spatial",
+                     # "sim6spatial",
+                     # "sim7spatial",
+                     # "sim8spatial",
+                     # "sim9spatial",
+                     # "sim10spatial")
 
 ## Folds
 
@@ -203,7 +203,8 @@ ts_df_species <- data.frame(model = factor(character(),
                                                                  "probability")),
                             test_statistic = factor(character(),
                                                     levels = ts_species),
-                            mean = numeric())
+                            mean = numeric(),
+                            stringsAsFactors = FALSE)
 
 ts_df_site <- data.frame(model = factor(character(),
                                         levels = model_order[model_order %in% model_options]),
@@ -218,7 +219,8 @@ ts_df_site <- data.frame(model = factor(character(),
                                                               "probability")),
                          test_statistic = factor(character(),
                                                  levels = ts_species),
-                         mean = numeric())
+                         mean = numeric(),
+                         stringsAsFactors = FALSE)
 
 ## Loop over datasets
 
@@ -244,7 +246,7 @@ for(dataset in dataset_options){
         
         ### SSDM
         
-        if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
+        if(model == "SSDM" & pred_type %nin% c("SSDM_bin", "SSDM_prob")){
           
           next()
           
@@ -260,10 +262,10 @@ for(dataset in dataset_options){
         
         ### JSDMs
         
-        if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
-                                                        "marginal_prob",
-                                                        "condLOI",
-                                                        "joint")){
+        if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
+                                                      "marginal_prob",
+                                                      "condLOI",
+                                                      "joint")){
           
           next()
           
@@ -305,13 +307,13 @@ for(dataset in dataset_options){
         
         if(model %in% JSDM_models & dataset != "birds"){
           
-        filename <- sprintf("outputs/test_statistics/%1$s_%2$s_fold%3$s_%4$s_ts.rds",
-                            model,
-                            dataset,
-                            fold,
-                            pred_type)
-        
-        ts_array <- readRDS(filename)
+          filename <- sprintf("outputs/test_statistics/%1$s_%2$s_fold%3$s_%4$s_ts.rds",
+                              model,
+                              dataset,
+                              fold,
+                              pred_type)
+          
+          ts_array <- readRDS(filename)
         
         }
         
@@ -380,39 +382,53 @@ for(dataset in dataset_options){
         ### Create temporary dataframes to store ouputs ###
         ###################################################
         
-        n_species <- dim(ts_array$test_statistics_species)[1]
+        if(pred_type != "condLOI"){
+          
+          n_species <- dim(ts_array$test_statistics_species)[1]
+          
+          n_site <- dim(ts_array$test_statistics_site)[1]
+          
+        }
         
-        n_site <- dim(ts_array$test_statistics_site)[1]
+        if(pred_type == "condLOI"){
+          
+          n_species <- dim(ts_array[[1]]$test_statistics_species)[1]
+          
+          n_site <- dim(ts_array[[1]]$test_statistics_site)[1]
+          
+        }
         
-        tmp_species <- data.frame(model = factor(character(n_species * length(ts_spp_names)),
+        tmp_species <- data.frame(model = factor(character(n_species * length(ts_species)),
                                                  levels = model_order[model_order %in% model_options]),
-                                  dataset = factor(character(n_species * length(ts_spp_names)),
+                                  dataset = factor(character(n_species * length(ts_species)),
                                                    levels = dataset_options),
-                                  fold = numeric(n_species * length(ts_spp_names)),
-                                  species = character(n_species * length(ts_spp_names)),
-                                  prediction_type = factor(character(n_species * length(ts_spp_names)),
+                                  fold = numeric(n_species * length(ts_species)),
+                                  species = character(n_species * length(ts_species)),
+                                  prediction_type = factor(character(n_species * length(ts_species)),
                                                            levels = prediction_levels),
-                                  prediction_class = factor(character(n_species * length(ts_spp_names)),
+                                  prediction_class = factor(character(n_species * length(ts_species)),
                                                             levels = c("binary",
                                                                        "probability")),
-                                  test_statistic = factor(character(n_species * length(ts_spp_names)),
+                                  test_statistic = factor(character(n_species * length(ts_species)),
                                                           levels = ts_species),
-                                  mean = numeric(n_species * length(ts_spp_names)))
+                                  mean = numeric(n_species * length(ts_species)),
+                                  stringsAsFactors = FALSE)
         
-        tmp_site <- data.frame(model = factor(character(n_site * length(ts_site_names)),
+        tmp_site <- data.frame(model = factor(character(n_site * length(ts_site)),
                                               levels = model_order[model_order %in% model_options]),
-                               dataset = factor(character(n_site * length(ts_site_names)),
+                               dataset = factor(character(n_site * length(ts_site)),
                                                 levels = dataset_options),
-                               fold = numeric(n_site * length(ts_site_names)),
-                               site = character(n_site * length(ts_site_names)),
-                               prediction_type = factor(character(n_site * length(ts_site_names)),
+                               fold = numeric(n_site * length(ts_site)),
+                               site = character(n_site * length(ts_site)),
+                               prediction_type = factor(character(n_site * length(ts_site)),
                                                         levels = prediction_levels),
-                               prediction_class = factor(character(n_site * length(ts_site_names)),
+                               prediction_class = factor(character(n_site * length(ts_site)),
                                                          levels = c("binary",
                                                                     "probability")),
-                               test_statistic = factor(character(n_site * length(ts_site_names)),
-                                                       levels = ts_species),
-                               mean = numeric(n_site * length(ts_site_names)))
+                               test_statistic = factor(character(n_site * length(ts_site)),
+                                                       levels = ts_site),
+                               mean = numeric(n_site * length(ts_site)),
+                               stringsAsFactors = FALSE)
         
         #########################
         ### Extract Summaries ###
@@ -437,7 +453,7 @@ for(dataset in dataset_options){
                                                           "binary",
                                                           "probability"),
                                                    ts,
-                                                   mean(ts_array$test_statistics_species[spp, ts, ],
+                                                   mean(ts_array$test_statistics_species[spp, ts, ][is.finite(ts_array$test_statistics_species[spp, ts, ])],
                                                         na.rm = TRUE))
               
               row_index_spp <- row_index_spp + 1
@@ -463,7 +479,7 @@ for(dataset in dataset_options){
                                                         "binary",
                                                         "probability"),
                                                  ts,
-                                                 mean(ts_array$test_statistics_site[site, ts, ],
+                                                 mean(ts_array$test_statistics_site[site, ts, ][is.finite(ts_array$test_statistics_site[site, ts, ])],
                                                       na.rm = TRUE))
               
               row_index_site <- row_index_site + 1
@@ -502,14 +518,14 @@ for(dataset in dataset_options){
                                                                  dataset,
                                                                  spp),
                                                          cond_pred_type[cond],
-                                                         ifelse(pred_type %in% binary_predictions,
+                                                         ifelse(cond_pred_type[cond] %in% binary_predictions,
                                                                 "binary",
                                                                 "probability"),
                                                          ts,
-                                                         mean(ts_array[[cond]]$test_statistics_species[spp, ts, ],
+                                                         mean(ts_array[[cond]]$test_statistics_species[spp, ts, ][is.finite(ts_array[[cond]]$test_statistics_species[spp, ts, ])],
                                                               na.rm = TRUE))
                 
-                row_index_species <- 1
+                row_index_species <- row_index_species + 1
                 
               }
               
@@ -532,14 +548,14 @@ for(dataset in dataset_options){
                                                            fold,
                                                            site),
                                                    cond_pred_type[cond],
-                                                   ifelse(pred_type %in% binary_predictions,
+                                                   ifelse(cond_pred_type[cond] %in% binary_predictions,
                                                           "binary",
                                                           "probability"),
                                                    ts,
-                                                   mean(ts_array[[cond]]$test_statistics_site[site, ts, ],
+                                                   mean(ts_array[[cond]]$test_statistics_site[site, ts, ][is.finite(ts_array[[cond]]$test_statistics_site[site, ts, ])],
                                                         na.rm = TRUE))
                 
-                row_index_site <- 1
+                row_index_site <- row_index_site + 1
                 
               }
               
@@ -652,7 +668,7 @@ for(model in model_options){
       
       ### SSDM
       
-      if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
+      if(model == "SSDM" & pred_type %nin% c("SSDM_bin", "SSDM_prob")){
         
         next()
         
@@ -668,7 +684,7 @@ for(model in model_options){
       
       ### JSDMs
       
-      if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
+      if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
                                                       "marginal_prob",
                                                       "condLOI",
                                                       "joint")){
