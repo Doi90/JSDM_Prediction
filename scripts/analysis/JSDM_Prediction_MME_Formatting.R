@@ -32,6 +32,7 @@ library(abind)
 library(ggplot2)
 library(RColorBrewer)
 library(PassButter)
+library(stringr)
 
 message("Packages loaded")
 
@@ -48,16 +49,16 @@ model_options <- c("MPR",
                    # "HLR_NS",
                    # "HLR_S",
                    "SSDM")#,
-                   #"SESAM")
+#"SESAM")
 
 model_order <- c("SSDM",
                  #"SESAM",
                  "MPR")#,
-                 # "HPR",
-                 # "LPR",
-                 # "DPR",
-                 # "HLR_NS",
-                 # "HLR_S")
+# "HPR",
+# "LPR",
+# "DPR",
+# "HLR_NS",
+# "HLR_S")
 
 JSDM_models <- model_options[1]#:6]
 
@@ -66,28 +67,28 @@ SSDM_models <- model_options[2]#7:8]
 ## Datasets
 
 dataset_options <- c("frog")#,
-                     #"eucalypt",
-                     # "bird",
-                     # "sim1random",
-                     # "sim2random",
-                     # "sim3random",
-                     # "sim4random",
-                     # "sim5random",
-                     # "sim6random",
-                     # "sim7random",
-                     # "sim8random",
-                     # "sim9random",
-                     # "sim10random",
-                     # "sim1spatial",
-                     # "sim2spatial",
-                     # "sim3spatial",
-                     # "sim4spatial",
-                     # "sim5spatial",
-                     # "sim6spatial",
-                     # "sim7spatial",
-                     # "sim8spatial",
-                     # "sim9spatial",
-                     # "sim10spatial")
+#"eucalypt",
+# "bird",
+# "sim1random",
+# "sim2random",
+# "sim3random",
+# "sim4random",
+# "sim5random",
+# "sim6random",
+# "sim7random",
+# "sim8random",
+# "sim9random",
+# "sim10random",
+# "sim1spatial",
+# "sim2spatial",
+# "sim3spatial",
+# "sim4spatial",
+# "sim5spatial",
+# "sim6spatial",
+# "sim7spatial",
+# "sim8spatial",
+# "sim9spatial",
+# "sim10spatial")
 
 ## Folds
 
@@ -315,7 +316,7 @@ for(dataset in dataset_options){
                               pred_type)
           
           ts_array <- readRDS(filename)
-        
+          
         }
         
         ## For the bird dataset
@@ -575,7 +576,7 @@ for(dataset in dataset_options){
         ts_df_site <- rbind(ts_df_site,
                             tmp_site)
         
-          
+        
       }
     }
   }
@@ -650,359 +651,281 @@ saveRDS(object = ts_df_site,
 ### Create empty dataframe to store species richness output ###
 ###############################################################
 
-n_row <- length(model_options) * length(dataset_options) * 
-  (length(prediction_options) + 2) # +2 for extra condLOI low/med/high
-
-sr_df <- data.frame(model = factor(character(n_row),
+sr_df <- data.frame(model = factor(character(),
                                    levels = model_order[model_order %in% model_options]),
-                    dataset = factor(character(n_row),
+                    dataset = factor(character(),
                                      levels = dataset_options),
-                    prediction_type = factor(character(n_row),
+                    fold = numeric(),
+                    site = character(),
+                    prediction_type = factor(character(),
                                              levels = prediction_levels),
-                    prediction_class = factor(character(n_row),
+                    prediction_class = factor(character(),
                                               levels = c("binary",
                                                          "probability")),
-                    test_statistic = factor(character(n_row),
-                                            levels = "species_richness_difference"),
-                    mean = numeric(n_row),
-                    median = numeric(n_row),
-                    lower = numeric(n_row),
-                    upper = numeric(n_row),
-                    porportion_NA = numeric(n_row))
+                    test_statistic = factor(character(),
+                                            levels = ts_species),
+                    mean = numeric(),
+                    stringsAsFactors = FALSE)
 
 ##########################################
 ### Summarise Species Richness Metrics ###
 ##########################################
 
-## Set up a row index counter
-## Increase AFTER usage
-
-row_index <- 1
-
 ## Loop over model
 
 for(model in model_options){
   
-  ## Loop over datasets
+  ## Loop over fold
   
-  for(dataset in dataset_options){
+  for(fold in fold_options){
     
-    ## Loop over prediction type
+    ## Loop over datasets
     
-    for(pred_type in prediction_options){
+    for(dataset in dataset_options){
       
-      ########################################
-      ### Combination Compatibility Checks ###
-      ########################################
+      ## Loop over prediction type
       
-      ## Skip combinations of loop iterators that are non-compatible
-      
-      ### SSDM
-      
-      if(model == "SSDM" & pred_type %nin% c("SSDM_bin", "SSDM_prob")){
+      for(pred_type in prediction_options){
         
-        next()
+        ########################################
+        ### Combination Compatibility Checks ###
+        ########################################
         
-      }
-      
-      ### SESAM
-      
-      if(model == "SESAM" & pred_type != "SESAM"){
+        ## Skip combinations of loop iterators that are non-compatible
         
-        next()
+        ### SSDM
         
-      }
-      
-      ### JSDMs
-      
-      if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
+        if(model == "SSDM" & pred_type %nin% c("SSDM_bin", "SSDM_prob")){
+          
+          next()
+          
+        }
+        
+        ### SESAM
+        
+        if(model == "SESAM" & pred_type != "SESAM"){
+          
+          next()
+          
+        }
+        
+        ### JSDMs
+        
+        if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
                                                       "marginal_prob",
                                                       "condLOI",
                                                       "joint")){
-        
-        next()
-        
-      }
-      
-      #################
-      ### Load Data ###
-      #################
-      
-      ## SSDM
-      
-      if(model == "SSDM"){
-        
-        filename1 <- sprintf("outputs/species_richness/%1$s_%2$s_fold1_SR.rds",
-                             pred_type,
-                             dataset)
-        
-        filename2 <- sprintf("outputs/species_richness/%1$s_%2$s_fold2_SR.rds",
-                             pred_type,
-                             dataset)
-        
-        filename3 <- sprintf("outputs/species_richness/%1$s_%2$s_fold3_SR.rds",
-                             pred_type,
-                             dataset)
-        
-        filename4 <- sprintf("outputs/species_richness/%1$s_%2$s_fold4_SR.rds",
-                             pred_type,
-                             dataset)
-        
-        filename5 <- sprintf("outputs/species_richness/%1$s_%2$s_fold5_SR.rds",
-                             pred_type,
-                             dataset)
-        
-        sr_array <- readRDS(filename1)
-        
-        tmp1 <- readRDS(filename2)
-        
-        tmp2 <- readRDS(filename3)
-        
-        tmp3 <- readRDS(filename4)
-        
-        tmp4 <- readRDS(filename5)
-        
-        sr_array <- abind(sr_array,
-                          tmp1,
-                          tmp2,
-                          tmp3,
-                          tmp4,
-                          along = 1)
-        
-      }
-      
-      ## SESAM
-      
-      if(model == "SESAM"){
-        
-        filename1 <- sprintf("outputs/species_richness/%1$s_%2$s_fold1_SR.rds",
-                             model,
-                             dataset)
-        
-        filename2 <- sprintf("outputs/species_richness/%1$s_%2$s_fold2_SR.rds",
-                             model,
-                             dataset)
-        
-        filename3 <- sprintf("outputs/species_richness/%1$s_%2$s_fold3_SR.rds",
-                             model,
-                             dataset)
-        
-        filename4 <- sprintf("outputs/species_richness/%1$s_%2$s_fold4_SR.rds",
-                             model,
-                             dataset)
-        
-        filename5 <- sprintf("outputs/species_richness/%1$s_%2$s_fold5_SR.rds",
-                             model,
-                             dataset)
-        
-        sr_array <- readRDS(filename1)
-        
-        tmp1 <- readRDS(filename2)
-        
-        tmp2 <- readRDS(filename3)
-        
-        tmp3 <- readRDS(filename4)
-        
-        tmp4 <- readRDS(filename5)
-        
-        sr_array <- abind(sr_array,
-                          tmp1,
-                          tmp2,
-                          tmp3,
-                          tmp4,
-                          along = 1)
-        
-      }
-      
-      ## JSDMs
-      
-      ### Any dataset EXCEPT birds
-      
-      if(model %in% JSDM_models & dataset != "birds"){
-        
-        filename1 <- sprintf("outputs/species_richness/%1$s_%2$s_fold1_%3$s_SR.rds",
-                             model,
-                             dataset,
-                             pred_type)
-        
-        filename2 <- sprintf("outputs/species_richness/%1$s_%2$s_fold2_%3$s_SR.rds",
-                             model,
-                             dataset,
-                             pred_type)
-        
-        filename3 <- sprintf("outputs/species_richness/%1$s_%2$s_fold3_%3$s_SR.rds",
-                             model,
-                             dataset,
-                             pred_type)
-        
-        filename4 <- sprintf("outputs/species_richness/%1$s_%2$s_fold4_%3$s_SR.rds",
-                             model,
-                             dataset,
-                             pred_type)
-        
-        filename5 <- sprintf("outputs/species_richness/%1$s_%2$s_fold5_%3$s_SR.rds",
-                             model,
-                             dataset,
-                             pred_type)
-        
-        sr_array <- readRDS(filename1)
-        
-        tmp1 <- readRDS(filename2)
-        
-        tmp2 <- readRDS(filename3)
-        
-        tmp3 <- readRDS(filename4)
-        
-        tmp4 <- readRDS(filename5)
-        
-        sr_array <- abind(sr_array,
-                          tmp1,
-                          tmp2,
-                          tmp3,
-                          tmp4,
-                          along = 1)
-        
-      }
-      
-      ### Bird dataset
-      
-      if(model %in% JSDM_models & dataset == "birds"){
-        
-        #### Find all files that match pattern
-        
-        file_list <- intersect(list.files(path = "outputs/species_richness",
-                                          pattern = sprintf("%1$s_%2$s_fold",
-                                                            model,
-                                                            dataset),
-                                          full.names = TRUE),
-                               list.files(path = "outputs/species_richness",
-                                          pattern = pred_type,
-                                          full.names = TRUE))
-        
-        #### Read in first file to start array list
-        
-        sr_array <- readRDS(file_list[1])
-        
-        #### Read in other files and abind together
-        
-        for(extra_file in 2:length(file_list)){
           
-          tmp_file <- readRDS(file_list[extra_file])
-          
-          sr_array <- abind(sr_array,
-                            tmp_file,
-                            along = 1)
+          next()
           
         }
         
-      }
-      
-      #####################################################
-      ### Summarise Species Richness And Fill Dataframe ###
-      #####################################################
-      
-      ## All prediction types that aren't condLOI
-      
-      if(pred_type != "condLOI"){
+        #################
+        ### Load Data ###
+        #################
         
-        ### Calculate summaries
+        ## SSDM
         
-        sr_mean <- mean(sr_array[ , "Difference", ],
-                        na.rm = TRUE)
-        
-        sr_median <- median(sr_array[ , "Difference", ],
-                            na.rm = TRUE)
-        
-        sr_lower <- quantile(sr_array[ , "Difference", ],
-                             probs = 0.025,
-                             na.rm = TRUE)[[1]]
-        
-        sr_upper <- quantile(sr_array[ , "Difference", ],
-                             probs = 0.975,
-                             na.rm = TRUE)[[1]]
-        
-        sr_NA <- proportionNA(sr_array[ , "Difference", ])
-        
-        #### Write to dataframe
-        
-        sr_df[row_index, ] <- list(model,
-                                   dataset,
-                                   pred_type,
-                                   ifelse(pred_type %in% binary_predictions,
-                                          "binary",
-                                          "probability"),
-                                   "species_richness_difference",
-                                   sr_mean,
-                                   sr_median,
-                                   sr_lower,
-                                   sr_upper,
-                                   sr_NA)
-        
-        #### Increase row index counter
-        
-        row_index <- row_index + 1
-        
-      }
-      
-      if(pred_type == "condLOI"){
-        
-        for(i in seq_len(dim(sr_array)[4])){
+        if(model == "SSDM"){
           
-          tmp_array <- sr_array[ , , , i]
+          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_SR.rds",
+                              pred_type,
+                              dataset,
+                              fold)
           
-          #### Calculate summaries
-          
-          sr_mean <- mean(tmp_array[ , "Difference", ],
-                          na.rm = TRUE)
-          
-          sr_median <- median(tmp_array[ , "Difference", ],
-                              na.rm = TRUE)
-          
-          sr_lower <- quantile(tmp_array[ , "Difference", ],
-                               probs = 0.025,
-                               na.rm = TRUE)[[1]]
-          
-          sr_upper <- quantile(tmp_array[ , "Difference", ],
-                               probs = 0.975,
-                               na.rm = TRUE)[[1]]
-          
-          sr_NA <- proportionNA(tmp_array[ , "Difference", ])
-          
-          #### Write to dataframe
-          
-          cond_pred_type <- c("condLOI_low", "condLOI_med", "condLOI_high")[i]
-          
-          sr_df[row_index, ] <- list(model,
-                                     dataset,
-                                     cond_pred_type,
-                                     ifelse(cond_pred_type %in% binary_predictions,
-                                            "binary",
-                                            "probability"),
-                                     "species_richness_difference",
-                                     sr_mean,
-                                     sr_median,
-                                     sr_lower,
-                                     sr_upper,
-                                     sr_NA)
-          
-          #### Increase row index counter
-          
-          row_index <- row_index + 1
+          sr_array <- readRDS(filename)
           
         }
+        
+        ## SESAM
+        
+        if(model == "SESAM"){
+          
+          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_SR.rds",
+                              model,
+                              dataset,
+                              fold)
+          
+          sr_array <- readRDS(filename)
+          
+        }
+        
+        ## JSDMs
+        
+        ### Any dataset EXCEPT birds
+        
+        if(model %in% JSDM_models & dataset != "birds"){
+          
+          filename <- sprintf("outputs/species_richness/%1$s_%2$s_fold%3$s_%4$s_SR.rds",
+                              model,
+                              dataset,
+                              fold,
+                              pred_type)
+          
+          sr_array <- readRDS(filename)
+          
+        }
+        
+        ### Bird dataset
+        
+        if(model %in% JSDM_models & dataset == "birds"){
+          
+          #### Find all files that match pattern
+          
+          file_list <- intersect(list.files(path = "outputs/species_richness",
+                                            pattern = sprintf("%1$s_%2$s_fold%3$s",
+                                                              model,
+                                                              dataset,
+                                                              fold),
+                                            full.names = TRUE),
+                                 list.files(path = "outputs/species_richness",
+                                            pattern = pred_type,
+                                            full.names = TRUE))
+          
+          #### Read in first file to start array list
+          
+          sr_array <- readRDS(file_list[1])
+          
+          #### Read in other files and abind together
+          
+          if(pred_type != "condLOI"){
+            
+            for(extra_file in 2:length(file_list)){
+              
+              tmp_file <- readRDS(file_list[extra_file])
+              
+              sr_array <- abind(sr_array,
+                                tmp_file,
+                                along = 1)
+              
+            }
+          }
+          
+          if(pred_type == "condLOI"){
+            
+            for(extra_file in 2:length(file_list)){
+              
+              tmp_file <- readRDS(file_list[extra_file])
+              
+              for(i in seq_len(length(tmp_file))){
+                
+                sr_array[[i]] <- abind(sr_array[[i]],
+                                       tmp_file[[i]],
+                                       along = 3)
+                
+              }
+            }
+          }
+        }
+        
+        ###################################################
+        ### Create temporary dataframes to store ouputs ###
+        ###################################################
+        
+        n_site <- dim(sr_array)[1]
+        
+        tmp_sr <- data.frame(model = factor(character(n_site),
+                                            levels = model_order[model_order %in% model_options]),
+                             dataset = factor(character(n_site),
+                                              levels = dataset_options),
+                             fold = numeric(n_site),
+                             site = character(n_site),
+                             prediction_type = factor(character(n_site),
+                                                      levels = prediction_levels),
+                             prediction_class = factor(character(n_site),
+                                                       levels = c("binary",
+                                                                  "probability")),
+                             test_statistic = factor(character(n_site),
+                                                     levels = "species_richness_difference"),
+                             mean = numeric(n_site),
+                             stringsAsFactors = FALSE)
+        
+        #####################################################
+        ### Summarise Species Richness And Fill Dataframe ###
+        #####################################################
+        
+        ## All prediction types that aren't condLOI
+        
+        if(pred_type != "condLOI"){
+          
+          row_index <- 1
+          
+          for(j in seq_len(n_site)){
+            
+            tmp_sr[row_index, ] <- list(model,
+                                        dataset,
+                                        fold,
+                                        sprintf("%s_fold%s_%s",
+                                                dataset,
+                                                fold,
+                                                site),
+                                        pred_type,
+                                        ifelse(pred_type %in% binary_predictions,
+                                               "binary",
+                                               "probability"),
+                                        "species_richness_difference",
+                                        mean(sr_array[ j, "Difference", ],
+                                             na.rm = TRUE))
+            
+            row_index <- row_index + 1
+            
+          }
+        }
+        
+        if(pred_type == "condLOI"){
+          
+          tmp_sr <- rbind(tmp_sr,
+                          tmp_sr,
+                          tmp_sr)
+          
+          cond_pred_type <- c("condLOI_low",
+                              "condLOI_med",
+                              "condLOI_high")
+          
+          row_index <- 1
+          
+          for(cond in seq_len(dim(sr_array)[4])){
+            
+            tmp_array <- sr_array[ , , , cond]
+            
+            for(j in seq_len(n_site)){
+              
+              tmp_sr[row_index, ] <- list(model,
+                                          dataset,
+                                          fold,
+                                          sprintf("%s_fold%s_%s",
+                                                  dataset,
+                                                  fold,
+                                                  site),
+                                          cond_pred_type[cond],
+                                          ifelse(cond_pred_type[cond] %in% binary_predictions,
+                                                 "binary",
+                                                 "probability"),
+                                          "species_richness_difference",
+                                          mean(sr_array[ j, "Difference", , cond],
+                                               na.rm = TRUE))
+              
+              row_index <- row_index + 1
+              
+            }
+          }
+        }
+        
+        #########################################
+        ### Add to complete dataframe storage ###
+        #########################################
+        
+        sr_df <- rbind(sr_df,
+                       tmp_sr)
+        
       }
     }
-    
   }
 }
 
 ####################################################
 ### Final Species Richness Summary Modifications ###
 ####################################################
-
-## Remove excess rows
-
-sr_df <- sr_df[-(row_index:nrow(sr_df)), ]
 
 ## Replace "incorrect" prediction types
 # 
@@ -1017,6 +940,37 @@ sr_df <- sr_df[-(row_index:nrow(sr_df)), ]
 # sr_df$prediction_type <-  gsub(x = sr_df$prediction_type,
 #                                pattern = "SESAM",
 #                                replacement = "marginal_bin")
+
+## Correct the "site" IDs
+
+### Load site IDS from file
+
+for(dataset in dataset_options){
+  
+  command <- sprintf("%1$s_site_ids <- readRDS('data/%1$s/site_ids.rds')",
+                     dataset)
+  
+  eval(parse(text = command))
+  
+}
+
+### Perform conversion
+
+for(i in seq_len(nrow(sr_df))){
+  
+  old_id <- sr_df[i, "site"]
+  
+  old_id_facets <- str_split(old_id, "_")[[1]]
+  
+  new_id <- sprintf("%s_site_ids[[%s]][%s]", 
+                    old_id_facets[1],
+                    str_split(old_id_facets[2], "")[[1]][5],
+                    old_id_facets[3])
+  
+  sr_df[i, "site"] <- as.character(eval(parse(text = new_id)))
+  
+}
+
 
 ####################################################
 ### Save Species Richness Summary Output To File ###
