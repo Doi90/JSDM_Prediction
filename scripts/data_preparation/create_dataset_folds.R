@@ -174,6 +174,8 @@ while(dataset_ok == FALSE){
 
 ## Write data to file
 
+bird_site_ids <- list()
+
 for(i in seq_len(5)){
   
   fold_id <- paste0("fold",i, collapse = "")          # set fold id
@@ -208,7 +210,12 @@ for(i in seq_len(5)){
   write.csv(tmp_LL_test, LL_test_filename)            # write LL fold i test csv
   write.csv(tmp_LL_train, LL_train_filename)          # write LL fold i train csv
   
+  bird_site_ids[[i]] <- Bird_blockCV$folds[[i]][[2]]
+  
 }
+
+saveRDS(bird_site_ids,
+        "data/bird/site_ids.rds")
 
 # Eucalypts ----
 
@@ -266,6 +273,8 @@ while(dataset_ok == FALSE){
 
 ## Write data to file
 
+euc_site_ids <- list()
+
 for(i in seq_len(5)){
   
   fold_id <- paste0("fold",i, collapse = "")          # set fold id
@@ -300,7 +309,11 @@ for(i in seq_len(5)){
   write.csv(tmp_LL_test, LL_test_filename)            # write LL fold i test csv
   write.csv(tmp_LL_train, LL_train_filename)          # write LL fold i train csv
   
+  euc_site_ids[[i]] <- Euc_blockCV$folds[[i]][[2]]
+  
 }
+
+saveRDS("data/eucalypt/site_ids.rds")
 
 # Frogs ----
 
@@ -352,6 +365,8 @@ while(dataset_ok == FALSE){
   
 }
 
+frog_site_ids <- list()
+
 for(i in seq_len(5)){
   
   fold_id <- paste0("Fold",i, collapse = "")                    # set fold id
@@ -392,7 +407,12 @@ for(i in seq_len(5)){
   write.csv(tmp_LL_test, LL_test_filename)            # write LL fold i test csv
   write.csv(tmp_LL_train, LL_train_filename)          # write LL fold i train csv
   
+  frog_site_ids[[i]] <- folds[[i]]
+  
 }
+
+saveRDS(frog_site_ids,
+        "data/frog/site_ids.rds")
 
 #----
 
