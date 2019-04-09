@@ -8,6 +8,7 @@
 library(nlme)
 library(ggplot2)
 library(RColorBrewer)
+library(PassButter)
 
 ##################################
 ### Set combination parameters ###

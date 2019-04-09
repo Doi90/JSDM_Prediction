@@ -30,6 +30,7 @@ message(sprintf("Job started at %s",
 library(abind)
 library(ggplot2)
 library(RColorBrewer)
+library(PassButter)
 
 message("Packages loaded")
 
@@ -173,7 +174,6 @@ ts_site <- c("Binomial",
 #############################
 
 source("scripts/analysis/proportionNA_function.R")
-source("scripts/analysis/notin_function.R")
 
 #######################
 #######################
@@ -236,7 +236,7 @@ for(model in model_options){
       
       ### SSDM
       
-      if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
+      if(model == "SSDM" & pred_type %nin% c("SSDM_bin", "SSDM_prob")){
         
         next()
         
@@ -252,7 +252,7 @@ for(model in model_options){
       
       ### JSDMs
       
-      if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
+      if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
                                                       "marginal_prob",
                                                       "condLOI",
                                                       "joint")){
@@ -792,7 +792,7 @@ for(model in model_options){
       
       ### SSDM
       
-      if(model == "SSDM" & pred_type %notin% c("SSDM_bin", "SSDM_prob")){
+      if(model == "SSDM" & pred_type %nin% c("SSDM_bin", "SSDM_prob")){
         
         next()
         
@@ -808,7 +808,7 @@ for(model in model_options){
       
       ### JSDMs
       
-      if(model %in% JSDM_models & pred_type %notin% c("marginal_bin",
+      if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
                                                       "marginal_prob",
                                                       "condLOI",
                                                       "joint")){

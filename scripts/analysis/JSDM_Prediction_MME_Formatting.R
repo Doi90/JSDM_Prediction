@@ -31,6 +31,7 @@ message(sprintf("Job started at %s",
 library(abind)
 library(ggplot2)
 library(RColorBrewer)
+library(PassButter)
 
 message("Packages loaded")
 
