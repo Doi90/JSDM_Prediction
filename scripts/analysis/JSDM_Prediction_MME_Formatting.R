@@ -599,6 +599,36 @@ for(dataset in dataset_options){
 #                                pattern = "SESAM",
 #                                replacement = "marginal_bin")
 
+## Correct the "site" IDs
+
+### Load site IDS from file
+
+for(dataset in dataset_options){
+  
+  command <- sprintf("%1$s_site_ids <- readRDS('data/%1$s/site_ids.rds')",
+                     dataset)
+  
+  eval(parse(text = command))
+  
+}
+
+### Perform conversion
+
+for(i in seq_len(nrow(ts_df_site))){
+  
+  old_id <- ts_df_site[i, "site"]
+  
+  old_id_facets <- str_split(old_id, "_")[[1]]
+  
+  new_id <- sprintf("%s_site_ids[[%s]][%s]", 
+                    old_id_facets[1],
+                    str_split(old_id_facets[2], "")[[1]][5],
+                    old_id_facets[3])
+  
+  ts_df_site[i, "site"] <- as.character(eval(parse(text = new_id)))
+  
+}
+
 ###################################################
 ### Save Test Statistics Summary Output To File ###
 ###################################################
