@@ -180,7 +180,7 @@ ts_site <- c("Binomial",
 #############################
 
 source("scripts/analysis/proportionNA_function.R")
-source("scripts/analysis/notin_function.R")
+#source("scripts/analysis/notin_function.R")
 
 #######################
 #######################
@@ -582,7 +582,6 @@ for(dataset in dataset_options){
   }
 }
 
-
 ##################################################
 ### Final Test Statistic Summary Modifications ###
 ##################################################
@@ -858,7 +857,7 @@ for(model in model_options){
                                         sprintf("%s_fold%s_%s",
                                                 dataset,
                                                 fold,
-                                                site),
+                                                j),
                                         pred_type,
                                         ifelse(pred_type %in% binary_predictions,
                                                "binary",
@@ -896,7 +895,7 @@ for(model in model_options){
                                           sprintf("%s_fold%s_%s",
                                                   dataset,
                                                   fold,
-                                                  site),
+                                                  j),
                                           cond_pred_type[cond],
                                           ifelse(cond_pred_type[cond] %in% binary_predictions,
                                                  "binary",
