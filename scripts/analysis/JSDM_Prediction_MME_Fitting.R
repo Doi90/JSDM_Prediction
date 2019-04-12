@@ -99,6 +99,15 @@ binary_predictions <- c("marginal_bin",
 probability_predictions <- c("marginal_prob",
                              "SSDM_prob")
 
+## Define prediction combinations for subsetting
+
+pred_sets <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM"),
+                  marginal_prob = c("marginal_prob", "SSDM_prob"),
+                  condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM"),
+                  condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM"),
+                  condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM"),
+                  joint = c("joint", "SSDM_bin"))
+
 ## Test statistics
 
 ### By Species
@@ -149,7 +158,11 @@ ts_site <- c("Binomial",
              "Mountford",
              "Raup")
 
-
+#######################
+#######################
+### TEST STATISTICS ###
+#######################
+#######################
 
 #################
 ### Load Data ###
@@ -162,15 +175,6 @@ ts_df_site <- readRDS("outputs/test_statistics/test_statistics_site_summary_MME.
 ############################
 ### Mixed Effects Models ###
 ############################
-
-## Define prediction combinations for subsetting
-
-pred_sets <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM"),
-                  marginal_prob = c("marginal_prob", "SSDM_prob"),
-                  condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM"),
-                  condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM"),
-                  condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM"),
-                  joint = c("joint", "SSDM_bin"))
 
 ## Empty dataframe to store Kolmogorov-Smirnov test outputs
 
@@ -466,9 +470,187 @@ for(dataset in unique(ts_df_site$dataset)){
   }
 }
 
+########################
+########################
+### SPECIES RICHNESS ###
+########################
+########################
+
+#################
+### Load Data ###
+#################
+
+sr_df <- readRDS("outputs/species_richness/species_richness_summary.rds")
+
+############################
+### Mixed Effects Models ###
+############################
+
+## Empty dataframe to store Kolmogorov-Smirnov test outputs
+
+n_row <- length(unique(sr_df$dataset)) *
+  length(unique(sr_df$test_statistic)) *
+  length(pred_sets)
+
+ks_sr <- data.frame(dataset = factor(character(n_row),
+                                     levels = unique(sr_df$dataset)),
+                    pred_type = factor(character(n_row),
+                                       levels = names(pred_sets)),
+                    test_statistic = factor(character(n_row),
+                                            levels = unique(as.character(sr_df$test_statistic))),
+                    p_value = numeric(n_row),
+                    ks_D = numeric(n_row),
+                    model_fit_success = numeric(n_row))
+
+## Loop over different different model iterations
+
+row_index <- 1
+
+for(dataset in unique(sr_df$dataset)){
+  
+  for(prediction in seq_len(length(pred_sets))){
+    
+    ## Subset dataset
+    
+    tmp_df <- sr_df[sr_df$dataset == dataset &
+                      sr_df$prediction_type %in% pred_sets[[prediction]], ]
+    
+    tmp_df <- na.omit(tmp_df)
+    
+    ## Fit mixed effects model
+    
+    mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model, 
+                                           random = ~ 1|site,
+                                           weights = varIdent(form = ~1|model),
+                                           data = tmp_df),
+                          error = function(err){
+                            
+                            message(sprintf("Model fit failed for: %s - %s - %s",
+                                            dataset,
+                                            names(pred_sets[prediction]),
+                                            ts))
+                            
+                            return(NA)
+                            
+                          }
+    )
+    
+    if(class(mme_model) != "lme"){
+      
+      ks_sr[row_index, ] <- list(dataset,
+                                 names(pred_sets[prediction]),
+                                 "species_richness_difference",
+                                 NA,
+                                 NA,
+                                 0)
+      
+      row_index <- row_index + 1
+      
+      next()
+      
+    }
+    
+    ## Extract residuals
+    
+    residuals <- resid(mme_model, type = "pearson")
+    
+    ## Plot residuals and save to file
+    
+    ### Set filename
+    
+    if(length(model_options) == 2){
+      
+      chapter <- "Ch2"
+      
+    } else {
+      
+      chapter <- "Ch3"
+      
+    }
+    
+    filename <- sprintf("outputs/test_statistics/plots/test_statistics_MME_%1$s_%2$s_%3$s_%4$s.pdf",
+                        dataset,
+                        names(pred_sets[prediction]),
+                        "SR",
+                        chapter)
+    
+    ### Plot to pdf
+    
+    pdf(filename)
+    
+    ### Residuals boxplot
+    
+    plot(residuals ~ tmp_df$model,
+         ylab = "Pearson residuals",
+         xlab = "Model")
+    
+    ### Residuals qq plot
+    
+    qqplot(residuals, 
+           rnorm(n = 1000, 
+                 mean(residuals), 
+                 sd(residuals)),
+           ylab = "N(mean(residuals), sd(residuals))",
+           xlab = "Model Pearson residuals",
+           main = "QQ-plot")
+    abline(0,1)
+    
+    dev.off()
+    
+    ### Check normality with Kolmogorov-Smirnov test
+    
+    ks <- ks.test(residuals, 
+                  pnorm, 
+                  mean(residuals), 
+                  sd(residuals))
+    
+    ks_sr[row_index, ] <- list(dataset,
+                               names(pred_sets[prediction]),
+                               "species_richness_difference",
+                               ks$p.value,
+                               ks$statistic,
+                               1)
+    
+    ### Save model to file
+    
+    filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_model.rds",
+                        dataset,
+                        names(pred_sets[prediction]),
+                        "species_richness_difference")
+    
+    saveRDS(mme_model,
+            filename)
+    
+    ### Statusbar
+    
+    statusbar(run = row_index,
+              max.run = n_row,
+              info = sprintf("%s: %s - %s - SR",
+                             row_index,
+                             dataset,
+                             names(pred_sets[prediction])))
+    
+    row_index <- row_index + 1
+    
+  }
+}
+
+ks_df <- rbind(ks_df,
+               ks_sr)
+
+
+
+
+
+
+
+
+
+
+
 ##################
 ##################
-### Make plots ###
+### MAKE PLOTS ###
 ##################
 ##################
 
