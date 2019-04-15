@@ -17,26 +17,26 @@ library(PassButter)
 ## Models
 
 model_options <- c("MPR",
-                   # "HPR",
-                   # "LPR",
-                   # "DPR",
-                   # "HLR_NS",
-                   # "HLR_S",
-                   "SSDM")#,
-#"SESAM")
+                   "HPR",
+                   "LPR",
+                   "DPR",
+                   "HLR_NS",
+                   "HLR_S",
+                   "SSDM",
+                   "SESAM")
 
 model_order <- c("SSDM",
-                 #"SESAM",
-                 "MPR")#,
-# "HPR",
-# "LPR",
-# "DPR",
-# "HLR_NS",
-# "HLR_S")
+                 "SESAM",
+                 "MPR",
+                 "HPR",
+                 "LPR",
+                 "DPR",
+                 "HLR_NS",
+                 "HLR_S")
 
-JSDM_models <- model_options[1]#:6]
+JSDM_models <- model_options[1:6]
 
-SSDM_models <- model_options[2]#7:8]
+SSDM_models <- model_options[7:8]
 
 ## Datasets
 
@@ -106,7 +106,7 @@ pred_sets <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM"),
                   condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM"),
                   condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM"),
                   condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM"),
-                  joint = c("joint", "SSDM_bin"))
+                  joint = c("joint", "SSDM_bin", "SESAM"))
 
 ## Test statistics
 
@@ -158,6 +158,18 @@ ts_site <- c("Binomial",
              "Mountford",
              "Raup")
 
+## Chapter
+
+if(length(model_options) == 2){
+  
+  chapter <- "Ch2"
+  
+} else {
+  
+  chapter <- "Ch3"
+  
+}
+
 #######################
 #######################
 ### TEST STATISTICS ###
@@ -168,9 +180,11 @@ ts_site <- c("Binomial",
 ### Load Data ###
 #################
 
-ts_df_species <- readRDS("outputs/test_statistics/test_statistics_species_summary_MME.rds")
+ts_df_species <- readRDS(sprintf("outputs/test_statistics/test_statistics_species_summary_MME_%s.rds",
+                                 chapter))
 
-ts_df_site <- readRDS("outputs/test_statistics/test_statistics_site_summary_MME.rds")
+ts_df_site <- readRDS(sprintf("outputs/test_statistics/test_statistics_site_summary_MME_%s.rds",
+                              chapter))
 
 ############################
 ### Mixed Effects Models ###
@@ -219,7 +233,9 @@ for(dataset in unique(ts_df_species$dataset)){
       mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model, 
                                              random = ~ 1|species,
                                              weights = varIdent(form = ~1|model),
-                                             data = tmp_df),
+                                             data = tmp_df,
+                                             control = lmeControl(msMaxIter = 1000,
+                                                                  opt = "optim")),
                             error = function(err){
                               
                               message(sprintf("Model fit failed for: %s - %s - %s",
@@ -310,10 +326,11 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ### Save model to file
       
-      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_model.rds",
+      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
                           dataset,
                           names(pred_sets[prediction]),
-                          ts)
+                          ts,
+                          chapter)
       
       saveRDS(mme_model,
               filename)
@@ -355,7 +372,9 @@ for(dataset in unique(ts_df_site$dataset)){
       mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model, 
                                              random = ~ 1|site,
                                              weights = varIdent(form = ~1|model),
-                                             data = tmp_df),
+                                             data = tmp_df,
+                                             control = lmeControl(msMaxIter = 1000,
+                                                                  opt = "optim")),
                             error = function(err){
                               
                               message(sprintf("Model fit failed for: %s - %s - %s",
@@ -446,10 +465,11 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ### Save model to file
       
-      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_model.rds",
+      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
                           dataset,
                           names(pred_sets[prediction]),
-                          ts)
+                          ts,
+                          chapter)
       
       saveRDS(mme_model,
               filename)
@@ -480,7 +500,8 @@ for(dataset in unique(ts_df_site$dataset)){
 ### Load Data ###
 #################
 
-sr_df <- readRDS("outputs/species_richness/species_richness_summary.rds")
+sr_df <- readRDS(sprintf("outputs/species_richness/species_richness_summary_%s.rds",
+                         chapter))
 
 ############################
 ### Mixed Effects Models ###
@@ -522,13 +543,15 @@ for(dataset in unique(sr_df$dataset)){
     mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model, 
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
-                                           data = tmp_df),
+                                           data = tmp_df,
+                                           control = lmeControl(msMaxIter = 1000,
+                                                                opt = "optim")),
                           error = function(err){
                             
                             message(sprintf("Model fit failed for: %s - %s - %s",
                                             dataset,
                                             names(pred_sets[prediction]),
-                                            ts))
+                                            "species_richness_difference"))
                             
                             return(NA)
                             
@@ -613,10 +636,11 @@ for(dataset in unique(sr_df$dataset)){
     
     ### Save model to file
     
-    filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_model.rds",
+    filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
                         dataset,
                         names(pred_sets[prediction]),
-                        "species_richness_difference")
+                        "species_richness_difference",
+                        chapter)
     
     saveRDS(mme_model,
             filename)
@@ -716,16 +740,22 @@ for(dataset in unique(ts_df_species$dataset)){
   
   for(prediction in seq_len(length(pred_sets))){
     
-    for(ts in c(ts_species, ts_site)){
+    for(ts in c(ts_species, ts_site, "species_richness_difference")){
       
       ## Read in file
       
-      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_model.rds",
+      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
                           dataset,
                           names(pred_sets[prediction]),
-                          ts)
+                          ts,
+                          chapter)
       
       if(!file.exists(filename)){
+        
+        message(sprintf("No model for: %s - %s - %s",
+                        dataset,
+                        names(pred_sets[prediction]),
+                        ts))
         
         next()
         
@@ -753,27 +783,47 @@ for(dataset in unique(ts_df_species$dataset)){
         
         model <- model_order[i]
         
-        plot_df[i, ] <- list(model,                                         # Model
-                             coefs[paste0("model", model), "Value"],        # Mean
-                             coefs[paste0("model", model), "Value"] +       # Upper
-                               coefs[paste0("model", model), "Std.Error"],
-                             coefs[paste0("model", model), "Value"] - 
-                               coefs[paste0("model", model), "Std.Error"])  # Lower
+        if(paste0("model", model) %nin% rownames(coefs)){
+          
+          plot_df[i, ] <- list(model,
+                               NA,
+                               NA,
+                               NA)
+        }
         
+        if(paste0("model", model) %in% rownames(coefs)){
+          
+          plot_df[i, ] <- list(model,                                         # Model
+                               coefs[paste0("model", model), "Value"],        # Mean
+                               coefs[paste0("model", model), "Value"] +       # Upper
+                                 coefs[paste0("model", model), "Std.Error"],
+                               coefs[paste0("model", model), "Value"] - 
+                                 coefs[paste0("model", model), "Std.Error"])  # Lower
+          
+        }
       }
       
       ## Make plot and save to file
       
-      filename <- sprintf("outputs/test_statistics/plots/%1$s_%2$s_%3$s_MME.pdf",
+      filename <- sprintf("outputs/test_statistics/plots/%1$s_%2$s_%3$s_%4$s_MME.pdf",
                           dataset,
                           names(pred_sets[prediction]),
-                          ts)
+                          ts,
+                          chapter)
       pdf(filename)
       
-      print(ggplot(plot_df,
+      tmp_plot <- ggplot(plot_df,
                    aes(x = model,
                        y = mean,
                        colour = model)) +
+              geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "mean"],
+                         linetype = 11) +
+              geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "upper"],
+                         linetype = 11,
+                         colour = "lightgrey") +
+              geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "lower"],
+                         linetype = 11,
+                         colour = "lightgrey") + 
               geom_point(position = dodge,
                          size = 2) + 
               geom_errorbar(aes(ymax = upper,
@@ -791,9 +841,16 @@ for(dataset in unique(ts_df_species$dataset)){
                     panel.grid.minor = element_blank(),
                     panel.grid.major = element_blank()) +
               ggtitle(label = pred_pairs[[prediction]][4],
-                      subtitle = pred_pairs[[prediction]][5]) +
-              geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "mean"],
-                         linetype = 11))
+                      subtitle = pred_pairs[[prediction]][5])
+      
+      if(chapter == "Ch3"){
+        
+        tmp_plot <- tmp_plot + geom_vline(xintercept = 2.5,
+                                          lwd = 1.1)
+        
+      }
+      
+      print(tmp_plot)
       
       dev.off()
     }
