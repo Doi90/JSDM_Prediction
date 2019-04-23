@@ -136,7 +136,8 @@ cond_LOI_pred <- readRDS(filename)
 # Loop over array 4th dimension, calculate test statistic separately
 # Save as list, turn back into 4D array
 
-ts_list <- list()
+ts_list <- vector(mode = "list",
+                  length = dim(cond_LOI_pred)[4])
 
 for(i in seq_len(dim(cond_LOI_pred)[4])){
   

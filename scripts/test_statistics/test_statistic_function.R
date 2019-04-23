@@ -70,7 +70,7 @@
         iteration_data <- cbind(unlist(observed[ , j]),
                                 predictions[ , j, s])
         
-        iteration_data <- iteration_data[!apply(iteration_data, 1, anyNA), ]
+        iteration_data <- iteration_data[!apply(iteration_data, 1, anyNA), , drop = FALSE]
         
         obs_data <- iteration_data[ , 1]
         
