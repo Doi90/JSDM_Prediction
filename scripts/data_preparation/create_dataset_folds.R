@@ -27,6 +27,7 @@ library(sp)
 Bird <- read.csv("data/bird/birds_compiled.csv")
 Eucalypt <- read.csv("data/eucalypt/eucalypt_compiled.csv")
 Frog <- read.csv("data/frog/frog_compiled.csv")
+Butterfly <- read.csv("data/butterfly/Butterfly_Compiled.csv")
 
 ###############################
 ### Create Custom Functions ###
@@ -416,3 +417,103 @@ saveRDS(frog_site_ids,
 
 #----
 
+# Butterflies ----
+
+## Data manipulation
+
+Butterfly_y <- Butterfly[ , 1:55]                 # Butterfly PA data
+
+Butterfly_y <- Butterfly_y[ , -which(colSums(Butterfly_y) < 50)]  # Only keep species with 50+ presences
+
+Butterfly_X <- Butterfly[ , 56:59]                # Butterfly covariate data 
+
+Butterfly_X <- scale(Butterfly_X)                 # Standardise covariates
+
+Butterfly_LL <- Butterfly[, 60:61]                # Butterfly coordinate data
+
+## Generate folds
+
+### Define control parameters
+
+dataset_ok <- FALSE
+
+iteration <- 0
+
+### Generate folds until meet our test condition
+
+while(dataset_ok == FALSE){
+  
+  ## Increase counter
+  
+  iteration <- iteration + 1
+  
+  ## Prevent infinite loop
+  
+  if(iteration >= 1000){
+    
+    break()
+    
+  }
+  
+  ## Generate folds
+  
+  set.seed(28041948 + iteration)                    # Creator's Birthday
+  
+  Butterfly_SP <- SpatialPoints(coords = Butterfly_LL,
+                                proj4string = CRS("+proj=longlat +datum=WGS84"))
+  
+  Butterfly_blockCV <- spatialBlock(speciesData = Butterfly_SP,
+                                    rows = 20,
+                                    cols = 10,
+                                    k = 5,
+                                    iteration = 100)
+  
+  dataset_ok <- blockCV_multi_spp_test(dataset = Butterfly_y,
+                                       blockCV = Butterfly_blockCV)
+  
+}
+
+## Write data to file
+
+butterfly_site_ids <- list()
+
+for(i in seq_len(5)){
+  
+  fold_id <- paste0("fold",i, collapse = "")          # set fold id
+  
+  train_id <- Butterfly_blockCV$folds[[i]][[1]]            # Training site ids
+  test_id <- Butterfly_blockCV$folds[[i]][[2]]             # Testing site ids
+  
+  tmp_y_test <- Butterfly_y[test_id, ]                     # y test data
+  tmp_y_train <- Butterfly_y[train_id, ]                   # y train data
+  
+  tmp_X_test <- Butterfly_X[test_id, ]                     # X test data
+  tmp_X_train <- Butterfly_X[train_id, ]                   # X train data
+  
+  tmp_LL_test <- Butterfly_LL[test_id, ]                   # Lat/long test data
+  tmp_LL_train <- Butterfly_LL[train_id, ]                 # Lat/long train data
+  
+  y_test_filename <- sprintf('data/butterfly/y_butterfly_%s_test.csv', fold_id)     # test filename
+  y_train_filename <- sprintf('data/butterfly/y_butterfly_%s_train.csv', fold_id)   # train filename
+  
+  X_test_filename <- sprintf('data/butterfly/X_butterfly_%s_test.csv', fold_id)     # test filename
+  X_train_filename <- sprintf('data/butterfly/X_butterfly_%s_train.csv', fold_id)   # train filename
+  
+  LL_test_filename <- sprintf('data/butterfly/LL_butterfly_%s_test.csv', fold_id)   # test filename
+  LL_train_filename <- sprintf('data/butterfly/LL_butterfly_%s_train.csv', fold_id) # train filename
+  
+  write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
+  write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
+  
+  write.csv(tmp_X_test, X_test_filename)              # write X fold i test csv
+  write.csv(tmp_X_train, X_train_filename)            # write X fold i train csv
+  
+  write.csv(tmp_LL_test, LL_test_filename)            # write LL fold i test csv
+  write.csv(tmp_LL_train, LL_train_filename)          # write LL fold i train csv
+  
+  butterfly_site_ids[[i]] <- Butterfly_blockCV$folds[[i]][[2]]
+  
+}
+
+saveRDS(butterfly_site_ids,
+        "data/butterfly/site_ids.rds")
