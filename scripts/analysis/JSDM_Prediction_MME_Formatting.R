@@ -66,9 +66,10 @@ SSDM_models <- model_options[7:8]
 
 ## Datasets
 
-dataset_options <- c("frog")#,
-#"eucalypt",
+dataset_options <- c("frog",
+"eucalypt")#,
 # "bird",
+# "butterfly",
 # "sim1random",
 # "sim2random",
 # "sim3random",

@@ -48,7 +48,8 @@ model_options <- c("MPR",
 
 dataset_options <- c("frog",
                      "eucalypt",
-                     "bird")
+                     "bird",
+                     "butterfly")
 
 fold_options <- 1:5
 

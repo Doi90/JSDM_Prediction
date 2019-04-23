@@ -9,7 +9,7 @@ do
     nCPU=1
   fi
   
-    for dataset in {1..3}
+    for dataset in {1..4}
     do
 	  if [ $dataset = "1" ]
       then
@@ -64,6 +64,13 @@ do
           PARTITION="cloud,physical"
           WALLTIME=7
         fi  
+      fi
+      
+      if [ $dataset = "4" ]
+      then
+        MEMORY_LIMIT=100000
+        PARTITION="cloud,physical"
+        WALLTIME=30
       fi
       
         for fold in {1..5}
