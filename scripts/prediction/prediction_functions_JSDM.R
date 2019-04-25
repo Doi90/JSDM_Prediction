@@ -258,6 +258,12 @@ predict.conditional.LOI <- function(Beta = NULL,
     
   }
   
+  if(dataset_id == "butterfly"){
+    
+    species_left_in_IDs <- c(5, 6, 43) # high_brown_fritillary, dark.green_fritillary, common_blue
+    
+  }
+  
   if(dataset_id %in% c("sim1random",
                        "sim2random",
                        "sim3random",
