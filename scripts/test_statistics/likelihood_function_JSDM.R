@@ -444,18 +444,21 @@ log_likelihood <- function(Beta = NULL,
     
   } 
   
-  ## Calculate single likelihood value for whole model
+  # ## Calculate single likelihood value for whole model
+  # 
+  # ### Take the product of site-level likelihoods within a single sample
+  # 
+  # sum_log_lik <- colSums(log_lik,
+  #                        na.rm = TRUE)
+  # 
+  # ### Take the mean likelihood across samples
+  # 
+  # mean_log_lik <- mean(sum_log_lik,
+  #                      na.rm = TRUE)
+  # 
+  # return(mean_log_lik)
+  # 
   
-  ### Take the product of site-level likelihoods within a single sample
-  
-  sum_log_lik <- colSums(log_lik,
-                         na.rm = TRUE)
-  
-  ### Take the mean likelihood across samples
-  
-  mean_log_lik <- mean(sum_log_lik,
-                       na.rm = TRUE)
-  
-  return(mean_log_lik)
+  return(log_lik)
   
 }  

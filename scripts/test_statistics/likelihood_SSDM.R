@@ -187,10 +187,10 @@ for(i in seq_len(dim(SESAM_predictions)[1])){
   
 }
 
-## Obtain single likelihood value for whole model
-
-SESAM_log_likelihood_estimate <- sum(SESAM_log_lik_vector,
-                                     na.rm = TRUE)
+# ## Obtain single likelihood value for whole model
+# 
+# SESAM_log_likelihood_estimate <- sum(SESAM_log_lik_vector,
+#                                      na.rm = TRUE)
 
 ## Save to file
 
@@ -198,5 +198,5 @@ filename <- sprintf("outputs/likelihood/SESAM_%s_fold%s_likelihood.rds",
                     dataset_id,
                     fold_id)
 
-saveRDS(SESAM_log_likelihood_estimate,
+saveRDS(SESAM_log_lik_vector,
         filename)
