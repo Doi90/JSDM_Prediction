@@ -157,36 +157,37 @@ for(i in seq_len(dim(SSDM_predictions_prob)[1])){
   
   #### Prediction for species assemblage at site i using values from slice a
   
-  likelihood_tmp <- pmvnorm(mean = mu,
-                            sigma = sigma,
-                            lower = lower,
-                            upper = upper)
+  likelihood_tmp <- lik_probit(obs = obs_spp,
+                               mu = mu,
+                               R = sigma,
+                               log.p = FALSE,
+                               niter = 1000)
   
-  # If the default GenzBretz algorithm fails, redo with slower Miwa algorithm
-  
-  if(likelihood_tmp[1] == 0 & attr(likelihood_tmp, "error") == 0){
-    
-    likelihood_tmp <- pmvnorm(mean = mu,
-                              sigma = sigma,
-                              lower = lower,
-                              upper = upper,
-                              algorithm = "Miwa")
-    
-  }
-  
-  if(likelihood_tmp[1] != 0){
-    
-    likelihood <- likelihood_tmp[1]
-    
-  }
-  
-  if(likelihood_tmp[1] == 0){
-    
-    likelihood <- attr(likelihood_tmp, "error")
-    
-  }
+  # # If the default GenzBretz algorithm fails, redo with slower Miwa algorithm
+  # 
+  # if(likelihood_tmp[1] == 0 & attr(likelihood_tmp, "error") == 0){
+  #   
+  #   likelihood_tmp <- pmvnorm(mean = mu,
+  #                             sigma = sigma,
+  #                             lower = lower,
+  #                             upper = upper,
+  #                             algorithm = "Miwa")
+  #   
+  # }
+  # 
+  # if(likelihood_tmp[1] != 0){
+  #   
+  #   likelihood <- likelihood_tmp[1]
+  #   
+  # }
+  # 
+  # if(likelihood_tmp[1] == 0){
+  #   
+  #   likelihood <- attr(likelihood_tmp, "error")
+  #   
+  # }
 
-  SSDM_log_lik_vector[i] <- log(likelihood)
+  SSDM_log_lik_vector[i] <- log(likelihood_tmp)
   
 }
 
