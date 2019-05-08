@@ -19,7 +19,7 @@
 
 ## Pres/Abs data
 
-command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train.csv')", 
+command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_test.csv')", 
                    dataset_id,                          # Need to build command to read in
                    fold_id)                             # specific files for this CV fold
 
@@ -67,19 +67,19 @@ SSDM_predictions_prob <- readRDS(filename)
 
 ### Vector to store likelihoods
 
-SSDM_log_lik_vector <- vector(length = dim(SSDM_predictions_prob)[1])
+SSDM_log_lik_vector <- vector(length = dim(SSDM_predictions_prob)[2])
 
 ### Calculate likelihoods
 
-for(i in seq_len(dim(SSDM_predictions_prob)[1])){
+for(i in seq_len(dim(SSDM_predictions_prob)[2])){
   
   ### Get predicted species probabilities for site
   
-  pred_probs <- SSDM_predictions_prob[i, , 1]
+  pred_probs <- SSDM_predictions_prob[ , i, 1]
   
   ### Get observed species state for site
   
-  obs_spp <- y[i, ]
+  obs_spp <- y[ , i]
   
   ### Calculate log likelihood for site
   
