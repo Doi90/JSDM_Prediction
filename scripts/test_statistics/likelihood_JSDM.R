@@ -43,12 +43,9 @@ R_posterior <- readRDS(R_filename)
 ### Load Data ###
 #################
 
-## Likelihood is calculated using the data used to fit the model
-## so we need to load in the TRAINING data
-
 ## Pres/Abs data
 
-command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_train.csv')", 
+command <- sprintf("read.csv('data/%1$s/y_%1$s_fold%2$s_test.csv')", 
                    dataset_id,                          # Need to build command to read in
                    fold_id)                             # specific files for this CV fold
 
@@ -58,7 +55,7 @@ y <- y[ , -1]                                           # Remove rownames
 
 ## Site data
 
-command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_train.csv')", 
+command <- sprintf("read.csv('data/%1$s/X_%1$s_fold%2$s_test.csv')", 
                    dataset_id,                          # Need to build command to read in
                    fold_id)                             # specific files for this CV fold
 
@@ -82,20 +79,42 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 ### Calculate Log-Likelihood ###
 ################################
 
-log_likelihood_estimate <- tryCatch(expr = log_likelihood(Beta = Beta_posterior,
-                                                          X = X,
-                                                          y = y,
-                                                          R = R_posterior,
-                                                          n_species = n_species,
-                                                          n_sites = n_sites,
-                                                          n_iter = n_iter),
-                                    error = function(e){ return(NA) })
+## Independent likelihood
+
+independent_LL <- tryCatch(expr = independent_log_likelihood(Beta = Beta_posterior,
+                                                             X = X,
+                                                             y = y,
+                                                             R = R_posterior,
+                                                             n_species = n_species,
+                                                             n_sites = n_sites,
+                                                             n_iter = n_iter),
+                           error = function(e){ return(NA) })
 ## Save to file
 
-filename <- sprintf("outputs/likelihood/%s_%s_fold%s_likelihood.rds",
+filename <- sprintf("outputs/likelihood/%s_%s_fold%s_independent_likelihood.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
-saveRDS(log_likelihood_estimate,
+saveRDS(independent_LL,
+        filename)
+
+## Joint likelihood
+
+joint_LL <- tryCatch(expr = joint_log_likelihood(Beta = Beta_posterior,
+                                                 X = X,
+                                                 y = y,
+                                                 R = R_posterior,
+                                                 n_species = n_species,
+                                                 n_sites = n_sites,
+                                                 n_iter = n_iter),
+                     error = function(e){ return(NA) })
+## Save to file
+
+filename <- sprintf("outputs/likelihood/%s_%s_fold%s_joint_likelihood.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(joint_LL,
         filename)
