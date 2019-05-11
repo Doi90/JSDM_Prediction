@@ -120,40 +120,40 @@ for(i in seq_len(dim(SSDM_predictions_prob)[1])){
   
   ### Get predicted species probabilities for site
   
-  pred_probs <- SSDM_predictions_prob[i, , 1]
-  
+  #pred_probs <- SSDM_predictions_prob[i, , 1]
+  pred_probs <- SSDM_predictions_prob[, , 1]
   ### Get observed species state for site
   
-  obs_spp <- y[i, ]
-  
+  #obs_spp <- y[i, ]
+  obs_spp <- y[ , ]
   ### Mu and Sigma
   
   mu <- qnorm(pred_probs)
   
-  sigma <- diag(length(pred_probs))
-  
+  #sigma <- diag(length(pred_probs))
+  sigma <- diag(dim(pred_probs)[2])
   ### Define probability distribution thresholds
   
-  #### lower / upper to limit integral of density for lielihood
-  
-  lower <- rep(-Inf, length(pred_probs))  # default vector of -Inf lower limits
-  upper <- rep(+Inf, length(pred_probs))  # default vector of +Inf upper limits
-  
-  for(k in seq_len(length(pred_probs))){  # set actual lower/upper limits based on known occurrence states
-    
-    if(obs_spp[k] == 0){     # if species is absent
-      
-      upper[k] <- 0            # species absent when z<0
-      
-    } 
-    
-    if(obs_spp[k] == 1){     # if species is present
-      
-      lower[k] <- 0            # species present when z>0
-      
-    } 
-    
-  }
+  # #### lower / upper to limit integral of density for lielihood
+  # 
+  # lower <- rep(-Inf, length(pred_probs))  # default vector of -Inf lower limits
+  # upper <- rep(+Inf, length(pred_probs))  # default vector of +Inf upper limits
+  # 
+  # for(k in seq_len(length(pred_probs))){  # set actual lower/upper limits based on known occurrence states
+  #   
+  #   if(obs_spp[k] == 0){     # if species is absent
+  #     
+  #     upper[k] <- 0            # species absent when z<0
+  #     
+  #   } 
+  #   
+  #   if(obs_spp[k] == 1){     # if species is present
+  #     
+  #     lower[k] <- 0            # species present when z>0
+  #     
+  #   } 
+  #   
+  # }
   
   #### Prediction for species assemblage at site i using values from slice a
   
