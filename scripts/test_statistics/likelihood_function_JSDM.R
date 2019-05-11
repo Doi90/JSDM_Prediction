@@ -56,16 +56,10 @@ log_likelihood_old <- function(Beta = NULL,
                                n_species,
                                n_iter))
   
-  for(i in seq_len(n_sites)){
+  for(s in seq_len(n_iter)){
     
-    for(j in seq_len(n_species)){
-      
-      for(s in seq_len(n_iter)){
-        
-        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
-        
-      }
-    }
+    mean_values[, , s] <- as.matrix(X) %*% Beta[ , , s]
+    
   }
   
   ## Create a log_likelihood matrix full of NAs
@@ -486,7 +480,7 @@ joint_log_likelihood <- function(Beta = NULL,
   
   for(s in seq_len(n_iter)){
     
-    mean_values[, , s] <- X %*% Beta[ , , s]
+    mean_values[, , s] <- as.matrix(X) %*% Beta[ , , s]
     
   }
   

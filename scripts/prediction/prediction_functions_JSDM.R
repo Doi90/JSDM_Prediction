@@ -212,7 +212,7 @@ predict.conditional.LOI <- function(Beta = NULL,
   
   for(s in seq_len(n_iter)){
     
-    mean_values[, , s] <- X %*% Beta[ , , s]
+    mean_values[, , s] <- as.matrix(X) %*% Beta[ , , s]
     
   }
   
@@ -395,7 +395,7 @@ predict.conditional.LOO <- function(Beta = NULL,
   
   for(s in seq_len(n_iter)){
     
-    mean_values[, , s] <- X %*% Beta[ , , s]
+    mean_values[, , s] <- as.matrix(X) %*% Beta[ , , s]
     
   }
   
@@ -544,7 +544,7 @@ predict.joint <- function(Beta = NULL,
   
   for(s in seq_len(n_iter)){
     
-    mean_values[, , s] <- X %*% Beta[ , , s]
+    mean_values[, , s] <- as.matrix(X) %*% Beta[ , , s]
     
   }
   
