@@ -63,6 +63,17 @@ X <- eval(parse(text = command))                        # Evaluate command to re
 
 X <- X[ , -1]                                           # Remove rownames
 
+X <- cbind(1, X)
+
+## Marginal probability prediction
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_prob.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+prediction <- readRDS(filename)
+
 ########################
 ### Define Constants ###
 ########################
@@ -81,10 +92,8 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 
 ## Independent likelihood
 
-independent_LL <- tryCatch(expr = independent_log_likelihood(Beta = Beta_posterior,
-                                                             X = X,
-                                                             y = y,
-                                                             R = R_posterior,
+independent_LL <- tryCatch(expr = independent_log_likelihood(y = y,
+                                                             pred = prediction,
                                                              n_species = n_species,
                                                              n_sites = n_sites,
                                                              n_iter = n_iter),
