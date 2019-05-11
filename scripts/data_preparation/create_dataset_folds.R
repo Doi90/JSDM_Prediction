@@ -19,6 +19,7 @@
 library(caret)
 library(blockCV)
 library(sp)
+library(sf)
 
 #################
 ### Load Data ###
@@ -54,7 +55,8 @@ colMax <- function(df){
 ## must have at least one presence for all species.
 
 blockCV_multi_spp_test <- function(dataset,
-                                   blockCV){
+                                   blockCV,
+                                   n_sites){
   
   train_tests <- vector(length = 5)
   
@@ -68,7 +70,14 @@ blockCV_multi_spp_test <- function(dataset,
     
   }
   
-  if(all(train_tests == TRUE)){
+  test_sites <- c(blockCV$folds[[1]][[2]],
+                  blockCV$folds[[2]][[2]],
+                  blockCV$folds[[3]][[2]],
+                  blockCV$folds[[4]][[2]],
+                  blockCV$folds[[5]][[2]])
+  
+  
+  if(all(train_tests == TRUE) & length(unique(test_sites)) == n_sites){
     
     return(TRUE)
     
@@ -268,7 +277,8 @@ while(dataset_ok == FALSE){
                                iteration = 100)
   
   dataset_ok <- blockCV_multi_spp_test(dataset = Euc_y,
-                                       blockCV = Euc_blockCV)
+                                       blockCV = Euc_blockCV,
+                                       n_sites = nrow(Euc_y))
   
 }
 
@@ -314,7 +324,8 @@ for(i in seq_len(5)){
   
 }
 
-saveRDS("data/eucalypt/site_ids.rds")
+saveRDS(euc_site_ids,
+        "data/eucalypt/site_ids.rds")
 
 # Frogs ----
 
@@ -459,17 +470,17 @@ while(dataset_ok == FALSE){
   
   set.seed(28041948 + iteration)                    # Creator's Birthday
   
-  Butterfly_SP <- SpatialPoints(coords = Butterfly_LL,
-                                proj4string = CRS("+proj=longlat +datum=WGS84"))
+  Butterfly_SP <- st_as_sf(Butterfly_LL, coords = c("Longitude", "Latitude"))
   
-  Butterfly_blockCV <- spatialBlock(speciesData = Butterfly_SP,
+  Butterfly_blockCV <- spatialBlock(speciesData = st_jitter(Butterfly_SP, 0.0005),
                                     rows = 20,
                                     cols = 10,
                                     k = 5,
                                     iteration = 100)
   
   dataset_ok <- blockCV_multi_spp_test(dataset = Butterfly_y,
-                                       blockCV = Butterfly_blockCV)
+                                       blockCV = Butterfly_blockCV,
+                                       n_sites = nrow(Butterfly_y))
   
 }
 
