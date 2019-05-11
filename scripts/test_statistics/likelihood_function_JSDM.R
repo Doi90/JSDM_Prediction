@@ -364,105 +364,69 @@ lik_probit <- function(obs = NULL,
 
 ### My new wrapper around Nick's functions to fit the overall workflow
 
-independent_log_likelihood <- function(Beta = NULL,
-                                       X = NULL,
-                                       y = NULL,
-                                       R = NULL,
+independent_log_likelihood <- function(y = NULL,
+                                       pred = NULL,
                                        n_species = NULL,
                                        n_sites = NULL,
                                        n_iter = NULL){
   
   ## Tests to make sure correct inputs supplied
   
-  if(is.null(Beta)){
-    stop("Beta not supplied.")
-  } 
-  
-  if(is.null(X)){
-    stop("X not supplied.")
-  } 
-  
   if(is.null(y)){
     stop("y not supplied.")
-  }  
+  } 
   
-  if(is.null(R)){
-    stop("R not supplied.")
+  if(is.null(pred)){
+    stop("pred not supplied.")
   }  
   
   if(is.null(n_species)){
     stop("n_species not supplied.")
   }  
   
+  if(is.null(n_sites)){
+    stop("n_sites not supplied.")
+  }  
+  
   if(is.null(n_iter)){
     stop("n_iter not supplied.")
   }  
   
-  ## Create an array of distribution mean values. Beta * X values
-  
-  mean_values <- array(data = NA,
-                       dim = c(n_sites,
-                               n_species,
-                               n_iter))
-  
-  for(i in seq_len(n_sites)){
-    
-    for(j in seq_len(n_species)){
-      
-      for(s in seq_len(n_iter)){
-        
-        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
-        
-      }
-    }
-  }
-  
   ## Create a log_likelihood matrix full of NAs
   
   log_lik <- matrix(NA,
-                    nrow = n_sites,
+                    nrow = n_species,
                     ncol = n_iter)
   
-  ## Calculate log likelihood values. Fill matrix with values as we go
-  
-  ### For each slice of array
+  ## Calculate likelihoods
   
   for(s in seq_len(n_iter)){
     
-    #### Prediction for species assemblage at site i using values from slice a
-    
-    likelihood <- lik_probit(obs = y,
-                             mu = mean_values[ , , s],
-                             R = diag(n_species),
-                             log.p = FALSE,
-                             niter = 1000)
-    
-    #### Fill predictions array with value
-    
-    log_lik[ , s] <- log(likelihood)
-    
-    
-  } 
-  
-  # ## Calculate single likelihood value for whole model
-  # 
-  # ### Take the product of site-level likelihoods within a single sample
-  # 
-  # sum_log_lik <- colSums(log_lik,
-  #                        na.rm = TRUE)
-  # 
-  # ### Take the mean likelihood across samples
-  # 
-  # mean_log_lik <- mean(sum_log_lik,
-  #                      na.rm = TRUE)
-  # 
-  # return(mean_log_lik)
-  # 
+    for(j in seq_len(n_species)){
+      
+      ### Get observed species state for all sites
+      
+      obs_spp <- y[ , j]
+      
+      ### Get predicted species probabilities for all sites
+      
+      pred_spp <- pred[ , j, s]
+      
+      log_lik_tmp <- sum(dbinom(x = obs_spp,
+                                size = 1,
+                                prob = pred_spp,
+                                log = TRUE))
+      
+      ## Add to storage matrix
+      
+      log_lik[j, s] <- log_lik_tmp
+      
+    }
+  }
   
   return(log_lik)
   
 }  
-
 
 joint_log_likelihood <- function(Beta = NULL,
                                  X = NULL,
@@ -500,21 +464,30 @@ joint_log_likelihood <- function(Beta = NULL,
   
   ## Create an array of distribution mean values. Beta * X values
   
+  X <- as.matrix(X)
+  
   mean_values <- array(data = NA,
                        dim = c(n_sites,
                                n_species,
                                n_iter))
   
-  for(i in seq_len(n_sites)){
+  # for(i in seq_len(n_sites)){
+  #   
+  #   for(j in seq_len(n_species)){
+  #     
+  #     for(s in seq_len(n_iter)){
+  #       
+  #       mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
+  #       
+  #     }
+  #   }
+  # }
+  # 
+  
+  for(s in seq_len(n_iter)){
     
-    for(j in seq_len(n_species)){
-      
-      for(s in seq_len(n_iter)){
-        
-        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
-        
-      }
-    }
+    mean_values[, , s] <- X %*% Beta[ , , s]
+    
   }
   
   ## Create a log_likelihood matrix full of NAs

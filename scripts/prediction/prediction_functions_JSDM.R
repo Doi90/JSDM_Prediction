@@ -210,16 +210,10 @@ predict.conditional.LOI <- function(Beta = NULL,
                                n_species,
                                n_iter))
   
-  for(i in seq_len(n_sites)){
+  for(s in seq_len(n_iter)){
     
-    for(j in seq_len(n_species)){
-      
-      for(s in seq_len(n_iter)){
-        
-        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
-        
-      }
-    }
+    mean_values[, , s] <- X %*% Beta[ , , s]
+    
   }
   
   ## Create a prediction array full of NAs. Unlike other predictions,
@@ -399,16 +393,10 @@ predict.conditional.LOO <- function(Beta = NULL,
                                n_species,
                                n_iter))
   
-  for(i in seq_len(n_sites)){
+  for(s in seq_len(n_iter)){
     
-    for(j in seq_len(n_species)){
-      
-      for(s in seq_len(n_iter)){
-        
-        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
-        
-      }
-    }
+    mean_values[, , s] <- X %*% Beta[ , , s]
+    
   }
   
   ## Create a prediction array full of NAs
@@ -554,16 +542,10 @@ predict.joint <- function(Beta = NULL,
                                n_species,
                                n_iter))
   
-  for(i in seq_len(n_sites)){
+  for(s in seq_len(n_iter)){
     
-    for(j in seq_len(n_species)){
-      
-      for(s in seq_len(n_iter)){
-        
-        mean_values[i, j, s] <- sum(X[i, ] * Beta[ , j, s])
-        
-      }
-    }
+    mean_values[, , s] <- X %*% Beta[ , , s]
+    
   }
   
   ## Create a prediction array full of NAs
