@@ -73,15 +73,15 @@ SSDM_log_lik_vector <- vector(length = dim(SSDM_predictions_prob)[2])
 
 for(i in seq_len(dim(SSDM_predictions_prob)[2])){
   
-  ### Get predicted species probabilities for site
+  ### Get predicted species probabilities for all sites
   
   pred_probs <- SSDM_predictions_prob[ , i, 1]
   
-  ### Get observed species state for site
+  ### Get observed species state for all site
   
   obs_spp <- y[ , i]
   
-  ### Calculate log likelihood for site
+  ### Calculate log likelihood for spp
   
   log_lik <- sum(dbinom(x = unlist(obs_spp),
                         size = 1,
