@@ -113,6 +113,7 @@ if(model_id == "MPR"){
 
 ### Prediction packages
 
+library(mvtnorm)
 library(tmvtnorm)
 
 ### Test statistics packages
