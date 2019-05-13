@@ -490,6 +490,215 @@ predict.conditional.LOO <- function(Beta = NULL,
   
 } 
 
+### Cond_Marg
+
+predict.conditional.LOI.prob <- function(Beta = NULL,
+                                         X = NULL,
+                                         y = NULL,
+                                         R = NULL,
+                                         n_species = NULL,
+                                         n_sites = NULL,
+                                         n_iter = NULL,
+                                         dataset_id = NULL){
+  
+  ## Tests to make sure correct inputs supplied
+  
+  if(is.null(Beta)){
+    stop("Beta not supplied.")
+  }
+  
+  if(is.null(X)){
+    stop("X not supplied.")
+  }
+  
+  if(is.null(y)){
+    stop("y not supplied.")
+  } 
+  
+  if(is.null(R)){
+    stop("R not supplied.")
+  } 
+  
+  if(is.null(n_species)){
+    stop("n_species not supplied.")
+  } 
+  
+  if(is.null(n_sites)){
+    stop("n_sites not supplied.")
+  } 
+  
+  if(is.null(n_iter)){
+    stop("n_iter not supplied.")
+  } 
+  
+  if(is.null(dataset_id)){
+    stop("dataset_id not supplied.")
+  }
+  
+  ## Create an array of distribution mean values. Beta * X values
+  
+  mean_values <- array(data = NA,
+                       dim = c(n_sites,
+                               n_species,
+                               n_iter))
+  
+  for(s in seq_len(n_iter)){
+    
+    mean_values[, , s] <- as.matrix(X) %*% Beta[ , , s]
+    
+  }
+  
+  ## Create a prediction array full of NAs. Unlike other predictions,
+  ## this one needs a 4D array for predictions as we need to predict
+  ## all species at a site once for three different species left in
+  ## scenarios. Thus, 3 predictions per species per site
+  
+  predictions <- array(NA,
+                       dim = c(n_sites,     # Number of sites in test data
+                               n_species,
+                               n_iter,      # 1:1 Prediction slice:Posterior slice
+                               3),          # Need to predict for each species left in   
+                       dimnames = list(rownames(X),
+                                       colnames(y),
+                                       NULL,
+                                       NULL))
+  
+  
+  ## Identify the species being left in
+  
+  if(dataset_id == "frog"){
+    
+    species_left_in_IDs <- c(9, 4, 6) # Lit_rani, Lim_tas, Lit_ewing
+    
+  }
+  
+  if(dataset_id == "eucalypt"){
+    
+    species_left_in_IDs <- c(8, 9, 3) # OVA, WIL, BAX
+    
+  }
+  
+  if(dataset_id == "bird"){
+    
+    species_left_in_IDs <- c(16, 19, 289) # Common_Goldeneye, Canada_Goose, American_Robin
+    
+  }
+  
+  if(dataset_id == "butterfly"){
+    
+    species_left_in_IDs <- c(5, 6, 43) # high_brown_fritillary, dark.green_fritillary, common_blue
+    
+  }
+  
+  if(dataset_id %in% c("sim1random",
+                       "sim2random",
+                       "sim3random",
+                       "sim4random",
+                       "sim5random",
+                       "sim6random",
+                       "sim7random",
+                       "sim8random",
+                       "sim9random",
+                       "sim10random",
+                       "sim1spatial",
+                       "sim2spatial",
+                       "sim3spatial",
+                       "sim4spatial",
+                       "sim5spatial",
+                       "sim6spatial",
+                       "sim7spatial",
+                       "sim8spatial",
+                       "sim9spatial",
+                       "sim10spatial")){
+    
+    spp_LOI <- readRDS("data/simulated_datasets_species_left_in.rds")
+    
+    species_left_in_IDs <- as.numeric(spp_LOI[dataset_id, ])
+    
+  }
+  ## Make predictions. Fill predictions array with values as we go
+  
+  ### For each 4th dimension/left-in species
+  
+  for(jj in species_left_in_IDs){
+    
+    j_array_id <- which(species_left_in_IDs == jj)
+    
+    ### For each slice of array
+    
+    for(s in seq_len(n_iter)){
+      
+      ### For each site
+      
+      for(i in seq_len(n_sites)){
+        
+        occ_state <- y[i, ]         # observed occurrence state  at site i
+        
+        #### Define probability distribution thresholds
+        
+        ## lower / upper to truncate distribution (known pres/abs)
+        
+        lower <- rep(-Inf, n_species)  # default vector of -Inf lower limits
+        upper <- rep(+Inf, n_species)  # default vector of +Inf upper limits
+        
+        if(occ_state[jj] == 0){        # If species jj (left-in) is absent
+          upper[jj] <- 0               # set upper threshold
+        } 
+        
+        if(occ_state[jj] == 1){        # If species jj (left-in) is present
+          lower[jj] <- 0               # set lower threshold
+        } 
+        
+        for(j in seq_len(n_species)){
+          
+          if(j == jj){
+            
+            predictions[i, j, s, j_array_id] <- 1
+            
+            next()
+            
+          }
+          
+          lowerx <- lower
+          
+          lowerx[j] <- 0
+          
+          upperx <- upper
+          
+          spp_pred <- ptmvtnorm.new(mean = mean_values[ i, , s],
+                                    sigma = R[ , , s],
+                                    lower = lower,
+                                    upper = upper,
+                                    lowerx = lowerx,
+                                    upperx = upperx,
+                                    algorithm = "GenzBretz")
+          
+          ## If default algorithm returns NA, use slower Miwa algorithm
+          
+          if(is.na(spp_pred)){
+            
+            spp_pred <- ptmvtnorm.new(mean = mean_values[ i, , s],
+                                      sigma = R[ , , s],
+                                      lower = lower,
+                                      upper = upper,
+                                      lowerx = lowerx,
+                                      upperx = upperx,
+                                      algorithm = "Miwa")
+            
+          }
+          
+          predictions[i, j, s, j_array_id] <- spp_pred
+          
+        }
+        
+      } 
+    }
+  }
+  
+  return(predictions)  
+  
+}
+
 ### Joint prediction ----
 
 # Joint prediction involves predicting the probability of 
