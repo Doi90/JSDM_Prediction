@@ -4,12 +4,12 @@ for model in {1..7}
 do
   if [ $model = "2" ]
   then
-    nCPU=3
+    nCPU=1
   else
     nCPU=1
   fi
   
-    for dataset in {1..4}
+    for dataset in 1 2 4
     do
 	  if [ $dataset = "1" ]
       then
