@@ -120,7 +120,7 @@ rm(marg_pred_bin,
 # rm(cond_LOO_pred,
 #    cond_LOO_ts)
 
-## Conditional - leave one in ----
+## Conditional - leave one in - binary ----
 
 ### Load Data
 
@@ -141,8 +141,10 @@ ts_list <- vector(mode = "list",
 
 for(i in seq_len(dim(cond_LOI_pred)[4])){
   
-  ts_list[[i]] <- test_statistic(observed = y_test,
-                                 predictions = cond_LOI_pred[ , , , i])
+  ts_list[[i]] <- test_statistic_conditional(observed = y_test,
+                                             predictions = cond_LOI_pred[ , , , i],
+                                             dataset_id = dataset_id,
+                                             species_id = i)
   
 }
 
@@ -162,6 +164,51 @@ saveRDS(cond_LOI_ts,
 
 rm(cond_LOI_pred,
    cond_LOI_ts)
+
+## Conditional Marginal - Leave One In ----
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI_marg.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+cond_marg_LOI_pred <- readRDS(filename)
+
+### Calculate Test Statistics
+
+# Loop over array 4th dimension, calculate test statistic separately
+# Save as list, turn back into 4D array
+
+ts_list <- vector(mode = "list",
+                  length = dim(cond_LOI_pred)[4])
+
+for(i in seq_len(dim(cond_marg_LOI_pred)[4])){
+  
+  ts_list[[i]] <- test_statistic_conditional(observed = y_test,
+                                             predictions = cond_marg_LOI_pred[ , , , i],
+                                             dataset_id = dataset_id,
+                                             species_id = i)
+  
+}
+
+cond_marg_LOI_ts <- ts_list
+
+### Save To File
+
+filename <- sprintf("outputs/test_statistics/%s_%s_fold%s_condLOI_marg_ts.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_marg_LOI_ts,
+        filename)
+
+### Memory purge
+
+rm(cond_marg_LOI_pred,
+   cond_marg_LOI_ts)
 
 ## Joint ----
 

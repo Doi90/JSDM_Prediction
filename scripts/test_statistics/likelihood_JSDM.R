@@ -72,7 +72,16 @@ filename <- sprintf("outputs/predictions/%s_%s_fold%s_marginal_prob.rds",
                     dataset_id,
                     fold_id)
 
-prediction <- readRDS(filename)
+prediction_marg <- readRDS(filename)
+
+## Conditional Marginal probability prediction
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI_marg.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+prediction_cond_marg <- readRDS(filename)
 
 ########################
 ### Define Constants ###
@@ -90,17 +99,19 @@ n_iter <-  dim(Beta_posterior)[3]  # Number of MCMC iterations in posterior chai
 ### Calculate Log-Likelihood ###
 ################################
 
-## Independent likelihood
+## Marginal Prediction
+
+### Independent likelihood
 
 independent_LL <- tryCatch(expr = independent_log_likelihood(y = y,
-                                                             pred = prediction,
+                                                             pred = prediction_marg,
                                                              n_species = n_species,
                                                              n_sites = n_sites,
                                                              n_iter = n_iter),
                            error = function(e){ return(NA) })
-## Save to file
+### Save to file
 
-filename <- sprintf("outputs/likelihood/%s_%s_fold%s_independent_likelihood.rds",
+filename <- sprintf("outputs/likelihood/%s_%s_fold%s_marg_independent_likelihood.rds",
                     model_id,
                     dataset_id,
                     fold_id)
@@ -108,7 +119,7 @@ filename <- sprintf("outputs/likelihood/%s_%s_fold%s_independent_likelihood.rds"
 saveRDS(independent_LL,
         filename)
 
-## Joint likelihood
+### Joint likelihood
 
 joint_LL <- tryCatch(expr = joint_log_likelihood(Beta = Beta_posterior,
                                                  X = X,
@@ -118,12 +129,53 @@ joint_LL <- tryCatch(expr = joint_log_likelihood(Beta = Beta_posterior,
                                                  n_sites = n_sites,
                                                  n_iter = n_iter),
                      error = function(e){ return(NA) })
-## Save to file
+### Save to file
 
-filename <- sprintf("outputs/likelihood/%s_%s_fold%s_joint_likelihood.rds",
+filename <- sprintf("outputs/likelihood/%s_%s_fold%s_marg_joint_likelihood.rds",
                     model_id,
                     dataset_id,
                     fold_id)
 
 saveRDS(joint_LL,
         filename)
+
+## Conditional Marginal Prediction
+
+### Independent likelihood
+
+independent_LL <- tryCatch(expr = independent_log_likelihood(y = y,
+                                                             pred = prediction_cond_marg,
+                                                             n_species = n_species,
+                                                             n_sites = n_sites,
+                                                             n_iter = n_iter),
+                           error = function(e){ return(NA) })
+### Save to file
+
+filename <- sprintf("outputs/likelihood/%s_%s_fold%s_condLOI_marg_independent_likelihood.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(independent_LL,
+        filename)
+
+### Joint likelihood
+
+joint_LL <- tryCatch(expr = joint_log_likelihood(Beta = Beta_posterior,
+                                                 X = X,
+                                                 y = y,
+                                                 R = R_posterior,
+                                                 n_species = n_species,
+                                                 n_sites = n_sites,
+                                                 n_iter = n_iter),
+                     error = function(e){ return(NA) })
+### Save to file
+
+filename <- sprintf("outputs/likelihood/%s_%s_fold%s_condLOI_marg_joint_likelihood.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(joint_LL,
+        filename)
+

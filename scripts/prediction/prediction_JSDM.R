@@ -163,7 +163,7 @@ rm(marg_start,
 # rm(cond_LOO_start,
 #    cond_LOO_pred)
 
-## Conditional - Leave One In
+## Conditional - Leave One In - binary
 
 cond_LOI_start <- Sys.time()
 
@@ -177,6 +177,36 @@ cond_LOI_pred <- predict.conditional.LOI(Beta = Beta_posterior,
                                          dataset_id = dataset_id)
 
 filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_LOI_pred,
+        filename)
+
+message(sprintf("Conditional LOI prediction duration: %s hours",
+                round(difftime(Sys.time(),
+                               cond_LOI_start,
+                               units = "hours")[[1]],
+                      digits = 5)))
+
+rm(cond_LOI_start,
+   cond_LOI_pred)
+
+## Conditional - Leave One In - probabilistic
+
+cond_LOI_start <- Sys.time()
+
+cond_LOI_pred <- predict.conditional.LOI.prob(Beta = Beta_posterior,
+                                              X = X_test,
+                                              y = y_test,
+                                              R = R_posterior,
+                                              n_species = n_species,
+                                              n_sites = n_sites,
+                                              n_iter = n_iter,
+                                              dataset_id = dataset_id)
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI_marg.rds",
                     model_id,
                     dataset_id,
                     fold_id)

@@ -120,7 +120,7 @@ rm(marg_pred_bin,
 # rm(cond_LOO_pred,
 #    cond_LOO_SR)
 
-## Conditional - leave one in
+## Conditional - leave one in - binary
 
 ### Load Data
 
@@ -159,6 +159,46 @@ saveRDS(cond_LOI_SR,
 
 rm(cond_LOI_pred,
    cond_LOI_SR)
+
+## Conditional Marginal - leave one in
+
+### Load Data
+
+filename <- sprintf("outputs/predictions/%s_%s_fold%s_condLOI_marg.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+cond_LOI_marg_pred <- readRDS(filename)
+
+### Calculate species richness
+
+SR_list <- list()
+
+for(i in seq_len(dim(cond_LOI_marg_pred)[4])){
+  
+  SR_list[[i]] <- species_richness(observed = y_test,
+                                   predicted = cond_LOI_marg_pred[ , , , i])
+  
+}
+
+cond_LOI_marg_SR <- abind(SR_list,
+                          along = 4)
+
+### Save To File
+
+filename <- sprintf("outputs/species_richness/%s_%s_fold%s_condLOI_marg_SR.rds",
+                    model_id,
+                    dataset_id,
+                    fold_id)
+
+saveRDS(cond_LOI_marg_SR,
+        filename)
+
+### Memory purge
+
+rm(cond_LOI_marg_pred,
+   cond_LOI_marg_SR)
 
 ## Joint
 
