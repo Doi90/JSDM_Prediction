@@ -19,6 +19,7 @@
 library(caret)
 library(blockCV)
 library(sp)
+library(sf)
 
 ###############################
 ### Create Custom Functions ###
@@ -29,7 +30,8 @@ library(sp)
 ## must have at least one presence for all species.
 
 blockCV_multi_spp_test <- function(dataset,
-                                   blockCV){
+                                   blockCV,
+                                   n_sites){
   
   train_tests <- vector(length = 5)
   
@@ -39,12 +41,18 @@ blockCV_multi_spp_test <- function(dataset,
     
     y_train <- dataset[train_id, ]
     
-    train_tests[i] <- all(apply(y_train, 2, max) == 1 &
-                            apply(y_train, 2, min) == 0)
+    train_tests[i] <- all(colMax(y_train) > 0)
     
   }
   
-  if(all(train_tests == TRUE)){
+  test_sites <- c(blockCV$folds[[1]][[2]],
+                  blockCV$folds[[2]][[2]],
+                  blockCV$folds[[3]][[2]],
+                  blockCV$folds[[4]][[2]],
+                  blockCV$folds[[5]][[2]])
+  
+  
+  if(all(train_tests == TRUE) & length(unique(test_sites)) == n_sites){
     
     return(TRUE)
     
@@ -116,17 +124,17 @@ for(i in seq_len(10)){
       
       set.seed(28041948 + iteration)                    # Creator's Birthday
       
-      data_SP <- SpatialPoints(coords = data_LL,
-                               proj4string = CRS("+proj=longlat +datum=WGS84"))
+      data_SP <- st_as_sf(as.data.frame(data_LL), coords = 1:2)
       
-      data_blockCV <- spatialBlock(speciesData = data_SP,
-                                   rows = 10,
-                                   cols = 10,
+      data_blockCV <- spatialBlock(speciesData = st_jitter(data_SP, 0.05),
+                                   rows = 5,
+                                   cols = 5,
                                    k = 5,
                                    iteration = 100)
       
       dataset_ok <- blockCV_multi_spp_test(dataset = data_Y,
-                                           blockCV = data_blockCV)
+                                           blockCV = data_blockCV,
+                                           n_sites = nrow(data_Y))
       
     }
     
@@ -148,6 +156,12 @@ for(i in seq_len(10)){
       tmp_LL_test <- data_LL[test_id, ]                   # Lat/long test data
       tmp_LL_train <- data_LL[train_id, ]                 # Lat/long train data
       
+      site_ids <- list(data_blockCV$folds[[1]][[2]],
+                       data_blockCV$folds[[2]][[2]],
+                       data_blockCV$folds[[3]][[2]],
+                       data_blockCV$folds[[4]][[2]],
+                       data_blockCV$folds[[5]][[2]])
+      
       y_test_filename <- sprintf('data/sim%1$s%2$s/y_sim%1$s%2$s_%3$s_test.csv',
                                  i, j, fold_id)     # test filename
       y_train_filename <- sprintf('data/sim%1$s%2$s/y_sim%1$s%2$s_%3$s_train.csv',
@@ -163,6 +177,9 @@ for(i in seq_len(10)){
       LL_train_filename <- sprintf('data/sim%1$s%2$s/LL_sim%1$s%2$s_%3$s_train.csv',
                                    i, j, fold_id) # train filename
       
+      site_id_filename <- sprintf("data/sim%1$s%2$s/site_ids.rds",
+                                  i, j)
+      
       write.csv(tmp_y_test, y_test_filename)              # write y fold i test csv
       write.csv(tmp_y_train, y_train_filename)            # write y fold i train csv
       
@@ -171,6 +188,9 @@ for(i in seq_len(10)){
       
       write.csv(tmp_LL_test, LL_test_filename)            # write LL fold i test csv
       write.csv(tmp_LL_train, LL_train_filename)          # write LL fold i train csv
+      
+      saveRDS(site_ids,
+              site_id_filename)
       
     }
   }
