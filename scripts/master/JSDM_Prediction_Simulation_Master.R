@@ -131,6 +131,7 @@ if(model_id == "MPR"){
 
 ### Prediction packages
 
+library(mvtnorm)
 library(tmvtnorm)
 
 ### Test statistics packages
@@ -315,6 +316,7 @@ if(run_status){
     
   } else if(model_id == "SSDM"){
     
+    source("scripts/test_statistics/likelihood_function_JSDM.R")
     source("scripts/test_statistics/likelihood_SSDM.R")
     
   }

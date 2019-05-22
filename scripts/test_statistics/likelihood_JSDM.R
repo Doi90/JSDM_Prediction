@@ -143,12 +143,32 @@ saveRDS(joint_LL,
 
 ### Independent likelihood
 
-independent_LL <- tryCatch(expr = independent_log_likelihood(y = y,
-                                                             pred = prediction_cond_marg,
-                                                             n_species = n_species,
-                                                             n_sites = n_sites,
-                                                             n_iter = n_iter),
-                           error = function(e){ return(NA) })
+independent_LL_low <- tryCatch(expr = independent_log_likelihood(y = y,
+                                                                 pred = prediction_cond_marg[ , , , 1],
+                                                                 n_species = n_species,
+                                                                 n_sites = n_sites,
+                                                                 n_iter = n_iter),
+                               error = function(e){ return(NA) })
+
+independent_LL_med <- tryCatch(expr = independent_log_likelihood(y = y,
+                                                                 pred = prediction_cond_marg[ , , , 2],
+                                                                 n_species = n_species,
+                                                                 n_sites = n_sites,
+                                                                 n_iter = n_iter),
+                               error = function(e){ return(NA) })
+
+independent_LL_high <- tryCatch(expr = independent_log_likelihood(y = y,
+                                                                  pred = prediction_cond_marg[ , , , 3],
+                                                                  n_species = n_species,
+                                                                  n_sites = n_sites,
+                                                                  n_iter = n_iter),
+                                error = function(e){ return(NA) })
+
+independent_LL <- abind(independent_LL_low,
+                        independent_LL_med,
+                        independent_LL_high,
+                        along = 3)
+
 ### Save to file
 
 filename <- sprintf("outputs/likelihood/%s_%s_fold%s_condLOI_marg_independent_likelihood.rds",
