@@ -182,7 +182,7 @@ cond_marg_LOI_pred <- readRDS(filename)
 # Save as list, turn back into 4D array
 
 ts_list <- vector(mode = "list",
-                  length = dim(cond_LOI_pred)[4])
+                  length = dim(cond_marg_LOI_pred)[4])
 
 for(i in seq_len(dim(cond_marg_LOI_pred)[4])){
   
