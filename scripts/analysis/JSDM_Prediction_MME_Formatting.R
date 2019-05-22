@@ -43,31 +43,31 @@ message("Packages loaded")
 ## Models
 
 model_options <- c("MPR",
-                     "HPR",
-                     "LPR",
-                     "DPR",
-                     "HLR_NS",
-                     "HLR_S",
-                   "SSDM",
-                   "SESAM")
+                     #"HPR",
+                     #"LPR",
+                     #"DPR",
+                     #"HLR_NS",
+                     #"HLR_S",
+                   "SSDM")#,
+                   #"SESAM")
 
 model_order <- c("SSDM",
-                "SESAM",
-                 "MPR",
-  "HPR",
-  "LPR",
-  "DPR",
-  "HLR_NS",
-  "HLR_S")
+                #"SESAM",
+                 "MPR")#,
+#  "HPR",
+#  "LPR",
+#  "DPR",
+#  "HLR_NS",
+#  "HLR_S")
 
-JSDM_models <- model_options[1:6]
+JSDM_models <- model_options[1]#:6]
 
-SSDM_models <- model_options[7:8]
+SSDM_models <- model_options[2]#7:8]
 
 ## Datasets
 
-dataset_options <- c("frog",
-"eucalypt")#,
+dataset_options <- c("frog")#,
+#"eucalypt")#,
 # "bird",
 # "butterfly",
 # "sim1random",
@@ -100,6 +100,7 @@ fold_options <- 1:5
 prediction_options <- c("marginal_bin",
                         "marginal_prob",
                         "condLOI",
+                        "condLOI_marg",
                         "joint",
                         "SESAM",
                         "SSDM_bin",
@@ -110,6 +111,10 @@ prediction_levels <- c("marginal_bin",
                        "condLOI_low",
                        "condLOI_med",
                        "condLOI_high",
+                       "condLOI_marg_low",
+                       "condLOI_marg_med",
+                       "condLOI_marg_high",
+                       "condLOI_marg",      # Joint likelihood doesn't utilise prediction so no L/M/H designation
                        "joint",
                        "SESAM",
                        "SSDM_bin",
@@ -124,6 +129,9 @@ binary_predictions <- c("marginal_bin",
                         "SSDM_bin")
 
 probability_predictions <- c("marginal_prob",
+                             "condLOI_marg_low",
+                             "condLOI_marg_med",
+                             "condLOI_marg_high",
                              "SSDM_prob")
 
 ## Test statistics
@@ -175,6 +183,70 @@ ts_site <- c("Binomial",
              "Manhattan",
              "Mountford",
              "Raup")
+
+## Test statistic / prediction type compatibility
+
+binary_ts <- c("TP",
+               "FP",
+               "TN",
+               "FN",
+               "TPR",
+               "FPR",
+               "TNR",
+               "FNR",
+               "PLR",
+               "NLR",
+               "DOR",
+               "Accuracy",
+               "PPV",
+               "FOR",
+               "FDR",
+               "NPV",
+               "F_1",
+               "Youden_J",
+               "Kappa",
+               "Binomial",
+               "Bray",
+               "Canberra",
+               "Euclidean",
+               "Gower",
+               "Gower_alt",
+               "Horn",
+               "Jaccard",
+               "Kulczynski",
+               "Mahalanobis",
+               "Manhattan",
+               "Mountford",
+               "Raup")
+
+prob_ts <- c("AUC",
+             "bias",
+             "MSE",
+             "R2",
+             "RMSE",
+             "SSE",
+             "Pearson",
+             "Spearman",
+             "Kendall",
+             "TP",
+             "FP",
+             "TN",
+             "FN",
+             "TPR",
+             "FPR",
+             "TNR",
+             "FNR",
+             "PLR",
+             "NLR",
+             "DOR",
+             "Prevalence",
+             "Accuracy",
+             "PPV",
+             "FOR",
+             "FDR",
+             "NPV",
+             "F_1",
+             "Youden_J")
 
 ## Chapter
 
@@ -280,6 +352,7 @@ for(dataset in dataset_options){
         if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
                                                       "marginal_prob",
                                                       "condLOI",
+                                                      "condLOI_marg",
                                                       "joint")){
           
           next()
@@ -397,7 +470,7 @@ for(dataset in dataset_options){
         ### Create temporary dataframes to store ouputs ###
         ###################################################
         
-        if(pred_type != "condLOI"){
+        if(pred_type %nin% c("condLOI", "condLOI_marg")){
           
           n_species <- dim(ts_array$test_statistics_species)[1]
           
@@ -405,7 +478,7 @@ for(dataset in dataset_options){
           
         }
         
-        if(pred_type == "condLOI"){
+        if(pred_type %in% c("condLOI", "condLOI_marg")){
           
           n_species <- dim(ts_array[[1]]$test_statistics_species)[1]
           
@@ -449,7 +522,7 @@ for(dataset in dataset_options){
         ### Extract Summaries ###
         #########################
         
-        if(pred_type != "condLOI"){
+        if(pred_type %nin% c("condLOI", "condLOI_marg")){
           
           row_index_spp <- 1
           
@@ -579,6 +652,81 @@ for(dataset in dataset_options){
           
         }
         
+        if(pred_type == "condLOI_marg"){
+          
+          tmp_species <- rbind(tmp_species,
+                               tmp_species,
+                               tmp_species)
+          
+          tmp_site <- rbind(tmp_site,
+                            tmp_site,
+                            tmp_site)
+          
+          cond_pred_type <- c("condLOI_marg_low",
+                              "condLOI_marg_med",
+                              "condLOI_marg_high")
+          
+          row_index_species <- 1
+          
+          for(cond in seq_len(length(ts_array))){
+            
+            for(spp in seq_len(dim(ts_array[[cond]]$test_statistics_species)[1])){
+              
+              for(ts in ts_species){
+                
+                tmp_species[row_index_species, ] <- list(model,
+                                                         dataset,
+                                                         fold,
+                                                         sprintf("%s_%s",
+                                                                 dataset,
+                                                                 spp),
+                                                         cond_pred_type[cond],
+                                                         ifelse(cond_pred_type[cond] %in% binary_predictions,
+                                                                "binary",
+                                                                "probability"),
+                                                         ts,
+                                                         mean(ts_array[[cond]]$test_statistics_species[spp, ts, ][is.finite(ts_array[[cond]]$test_statistics_species[spp, ts, ])],
+                                                              na.rm = TRUE))
+                
+                row_index_species <- row_index_species + 1
+                
+              }
+              
+            }
+          }
+          
+          row_index_site <- 1
+          
+          for(cond in seq_len(length(ts_array))){
+            
+            for(site in seq_len(dim(ts_array[[cond]]$test_statistics_site)[1])){
+              
+              for(ts in ts_site){
+                
+                tmp_site[row_index_site, ] <- list(model,
+                                                   dataset,
+                                                   fold,
+                                                   sprintf("%s_fold%s_%s",
+                                                           dataset,
+                                                           fold,
+                                                           site),
+                                                   cond_pred_type[cond],
+                                                   ifelse(cond_pred_type[cond] %in% binary_predictions,
+                                                          "binary",
+                                                          "probability"),
+                                                   ts,
+                                                   mean(ts_array[[cond]]$test_statistics_site[site, ts, ][is.finite(ts_array[[cond]]$test_statistics_site[site, ts, ])],
+                                                        na.rm = TRUE))
+                
+                row_index_site <- row_index_site + 1
+                
+              }
+              
+            }
+          }
+          
+        }
+        
         #########################################
         ### Add to complete dataframe storage ###
         #########################################
@@ -642,6 +790,12 @@ for(i in seq_len(nrow(ts_df_site))){
   ts_df_site[i, "site"] <- as.character(eval(parse(text = new_id)))
   
 }
+
+## Fold as factor
+
+ts_df_species$fold <- as.factor(ts_df_species$fold)
+
+ts_df_site$fold <- as.factor(ts_df_site$fold)
 
 ###################################################
 ### Save Test Statistics Summary Output To File ###
@@ -728,6 +882,7 @@ for(model in model_options){
         if(model %in% JSDM_models & pred_type %nin% c("marginal_bin",
                                                       "marginal_prob",
                                                       "condLOI",
+                                                      "condLOI_marg",
                                                       "joint")){
           
           next()
@@ -860,7 +1015,7 @@ for(model in model_options){
         
         ## All prediction types that aren't condLOI
         
-        if(pred_type != "condLOI"){
+        if(pred_type %nin% c("condLOI", "condLOI_marg")){
           
           row_index <- 1
           
@@ -895,6 +1050,45 @@ for(model in model_options){
           cond_pred_type <- c("condLOI_low",
                               "condLOI_med",
                               "condLOI_high")
+          
+          row_index <- 1
+          
+          for(cond in seq_len(dim(sr_array)[4])){
+            
+            tmp_array <- sr_array[ , , , cond]
+            
+            for(j in seq_len(n_site)){
+              
+              tmp_sr[row_index, ] <- list(model,
+                                          dataset,
+                                          fold,
+                                          sprintf("%s_fold%s_%s",
+                                                  dataset,
+                                                  fold,
+                                                  j),
+                                          cond_pred_type[cond],
+                                          ifelse(cond_pred_type[cond] %in% binary_predictions,
+                                                 "binary",
+                                                 "probability"),
+                                          "species_richness_difference",
+                                          mean(sr_array[ j, "Difference", , cond],
+                                               na.rm = TRUE))
+              
+              row_index <- row_index + 1
+              
+            }
+          }
+        }
+        
+        if(pred_type == "condLOI_marg"){
+          
+          tmp_sr <- rbind(tmp_sr,
+                          tmp_sr,
+                          tmp_sr)
+          
+          cond_pred_type <- c("condLOI_marg_low",
+                              "condLOI_marg_med",
+                              "condLOI_marg_high")
           
           row_index <- 1
           
@@ -985,6 +1179,9 @@ for(i in seq_len(nrow(sr_df))){
   
 }
 
+## Fold as factor
+
+sr_df$fold <- as.factor(sr_df$fold)
 
 ####################################################
 ### Save Species Richness Summary Output To File ###
@@ -992,6 +1189,411 @@ for(i in seq_len(nrow(sr_df))){
 
 saveRDS(object = sr_df,
         file = sprintf("outputs/species_richness/species_richness_summary_%s.rds",
+                       chapter))
+
+######################
+######################
+### LOG-LIKELIHOOD ###
+######################
+######################
+
+#############################################################
+### Create empty dataframe to store log-likelihood output ###
+#############################################################
+
+ll_i_df <- data.frame(model = factor(character(),
+                                     levels = model_order[model_order %in% model_options]),
+                      dataset = factor(character(),
+                                       levels = dataset_options),
+                      fold = numeric(),
+                      site = character(),
+                      prediction_type = factor(character(),
+                                               levels = prediction_levels),
+                      prediction_class = factor(character(),
+                                                levels = c("binary",
+                                                           "probability")),
+                      test_statistic = factor(character(),
+                                              levels = ts_species),
+                      mean = numeric(),
+                      stringsAsFactors = FALSE)
+
+ll_j_df <- data.frame(model = factor(character(),
+                                     levels = model_order[model_order %in% model_options]),
+                      dataset = factor(character(),
+                                       levels = dataset_options),
+                      fold = numeric(),
+                      species = character(),
+                      prediction_type = factor(character(),
+                                               levels = prediction_levels),
+                      prediction_class = factor(character(),
+                                                levels = c("binary",
+                                                           "probability")),
+                      test_statistic = factor(character(),
+                                              levels = ts_species),
+                      mean = numeric(),
+                      stringsAsFactors = FALSE)
+
+##########################################
+### Summarise log-likelihood Metrics ###
+##########################################
+
+## Loop over model
+
+for(model in model_options){
+  
+  ## Loop over fold
+  
+  for(fold in fold_options){
+    
+    ## Loop over datasets
+    
+    for(dataset in dataset_options){
+      
+      ## Loop over prediction type
+      
+      for(pred_type in prediction_options){
+        
+        ########################################
+        ### Combination Compatibility Checks ###
+        ########################################
+        
+        ## Skip combinations of loop iterators that are non-compatible
+        
+        if(pred_type %nin% c("SSDM_prob", "marginal_prob", "condLOI_marg")){
+          
+          next()
+          
+        }
+        
+        ### SSDM
+        
+        if(model == "SSDM" & pred_type != "SSDM_prob"){
+          
+          next()
+          
+        }
+        
+        ### SESAM
+        
+        if(model == "SESAM" & pred_type != "SESAM"){
+          
+          next()
+          
+        }
+        
+        ### JSDMs
+        
+        if(model %in% JSDM_models & pred_type %nin% c("marginal_prob",
+                                                      "condLOI_marg")){
+          
+          next()
+          
+        }
+        
+        ## Pred type name check
+        
+        pred_name <- ifelse(pred_type == "marginal_prob",
+                            "marg",
+                            pred_type)
+        
+        #################
+        ### Load Data ###
+        #################
+        
+        ## SSDM
+        
+        if(model == "SSDM"){
+          
+          filename_i <- sprintf("outputs/likelihood/%1$s_%2$s_fold%3$s_independent_likelihood.rds",
+                                pred_type,
+                                dataset,
+                                fold)
+          
+          ll_i_array <- readRDS(filename_i)
+          
+          filename_j <- sprintf("outputs/likelihood/%1$s_%2$s_fold%3$s_joint_likelihood.rds",
+                                pred_type,
+                                dataset,
+                                fold)
+          
+          ll_j_array <- readRDS(filename_j)
+          
+        }
+        
+        ## JSDMs
+        
+        ### Any dataset EXCEPT birds
+        
+        if(model %in% JSDM_models & dataset != "birds"){
+          
+          filename_i <- sprintf("outputs/likelihood/%1$s_%2$s_fold%3$s_%4$s_independent_likelihood.rds",
+                                model,
+                                dataset,
+                                fold,
+                                pred_name)
+          
+          ll_i_array <- readRDS(filename_i)
+          
+          filename_j <- sprintf("outputs/likelihood/%1$s_%2$s_fold%3$s_%4$s_joint_likelihood.rds",
+                                model,
+                                dataset,
+                                fold,
+                                pred_name)
+          
+          ll_j_array <- readRDS(filename_j)
+          
+        }
+        
+        # ### Bird dataset
+        # 
+        # if(model %in% JSDM_models & dataset == "birds"){
+        #   
+        #   #### Find all files that match pattern
+        #   
+        #   file_list <- intersect(list.files(path = "outputs/likelihood",
+        #                                     pattern = sprintf("%1$s_%2$s_fold%3$s",
+        #                                                       model,
+        #                                                       dataset,
+        #                                                       fold),
+        #                                     full.names = TRUE),
+        #                          list.files(path = "outputs/likelihood",
+        #                                     pattern = pred_type,
+        #                                     full.names = TRUE))
+        #   
+        #   #### Read in first file to start array list
+        #   
+        #   sr_array <- readRDS(file_list[1])
+        #   
+        #   #### Read in other files and abind together
+        #   
+        #   if(pred_type != "condLOI"){
+        #     
+        #     for(extra_file in 2:length(file_list)){
+        #       
+        #       tmp_file <- readRDS(file_list[extra_file])
+        #       
+        #       sr_array <- abind(sr_array,
+        #                         tmp_file,
+        #                         along = 1)
+        #       
+        #     }
+        #   }
+        #   
+        #   if(pred_type == "condLOI"){
+        #     
+        #     for(extra_file in 2:length(file_list)){
+        #       
+        #       tmp_file <- readRDS(file_list[extra_file])
+        #       
+        #       for(i in seq_len(length(tmp_file))){
+        #         
+        #         sr_array[[i]] <- abind(sr_array[[i]],
+        #                                tmp_file[[i]],
+        #                                along = 3)
+        #         
+        #       }
+        #     }
+        #   }
+        # }
+        
+        ###################################################
+        ### Create temporary dataframes to store ouputs ###
+        ###################################################
+        
+        n_spp <- dim(ll_i_array)[1]
+        
+        n_site <- dim(ll_j_array)[1]
+        
+        tmp_ll_j <- data.frame(model = factor(character(n_site),
+                                              levels = model_order[model_order %in% model_options]),
+                               dataset = factor(character(n_site),
+                                                levels = dataset_options),
+                               fold = numeric(n_site),
+                               site = character(n_site),
+                               prediction_type = factor(character(n_site),
+                                                        levels = prediction_levels),
+                               prediction_class = factor(character(n_site),
+                                                         levels = c("binary",
+                                                                    "probability")),
+                               test_statistic = factor(character(n_site),
+                                                       levels = "joint_log_likelihood"),
+                               mean = numeric(n_site),
+                               stringsAsFactors = FALSE)
+        
+        tmp_ll_i <- data.frame(model = factor(character(n_spp),
+                                              levels = model_order[model_order %in% model_options]),
+                               dataset = factor(character(n_spp),
+                                                levels = dataset_options),
+                               fold = numeric(n_spp),
+                               species = character(n_spp),
+                               prediction_type = factor(character(n_spp),
+                                                        levels = prediction_levels),
+                               prediction_class = factor(character(n_spp),
+                                                         levels = c("binary",
+                                                                    "probability")),
+                               test_statistic = factor(character(n_spp),
+                                                       levels = "independent_log_likelihood"),
+                               mean = numeric(n_spp),
+                               stringsAsFactors = FALSE)
+        
+        
+        ###############################################
+        ### Summarise Likelihood And Fill Dataframe ###
+        ###############################################
+        
+        ## Joint log-likelihood
+        
+        row_index <- 1
+        
+        for(j in seq_len(n_site)){
+          
+          tmp_ll_j[row_index, ] <- list(model,
+                                        dataset,
+                                        fold,
+                                        sprintf("%s_fold%s_%s",
+                                                dataset,
+                                                fold,
+                                                j),
+                                        pred_type,
+                                        ifelse(pred_type %in% binary_predictions,
+                                               "binary",
+                                               "probability"),
+                                        "joint_log_likelihood",
+                                        mean(ll_j_array[j, ],
+                                             na.rm = TRUE))
+          
+          row_index <- row_index + 1
+          
+        }
+        
+        ## Indepedent log-likelihood
+        
+        ### All prediction types that aren't condLOI
+        
+        if(pred_type != "condLOI_marg"){
+          
+          row_index <- 1
+          
+          for(i in seq_len(n_spp)){
+            
+            tmp_ll_i[row_index, ] <- list(model,
+                                          dataset,
+                                          fold,
+                                          sprintf("%s_fold%s_%s",
+                                                  dataset,
+                                                  fold,
+                                                  i),
+                                          pred_type,
+                                          ifelse(pred_type %in% binary_predictions,
+                                                 "binary",
+                                                 "probability"),
+                                          "independent_log_likelihood",
+                                          mean(ll_i_array[i, ],
+                                               na.rm = TRUE))
+            
+            row_index <- row_index + 1
+            
+          }
+        }
+        
+        if(pred_type == "condLOI_marg"){
+          
+          tmp_ll_i <- rbind(tmp_ll_i,
+                            tmp_ll_i,
+                            tmp_ll_i)
+          
+          cond_pred_type <- c("condLOI_marg_low",
+                              "condLOI_marg_med",
+                              "condLOI_marg_high")
+          
+          row_index <- 1
+          
+          for(cond in seq_len(dim(ll_i_array)[4])){
+            
+            tmp_array <- ll_i_array[ , , cond]
+            
+            for(i in seq_len(n_spp)){
+              
+              tmp_ll_i[row_index, ] <- list(model,
+                                            dataset,
+                                            fold,
+                                            sprintf("%s_fold%s_%s",
+                                                    dataset,
+                                                    fold,
+                                                    i),
+                                            cond_pred_type[cond],
+                                            ifelse(cond_pred_type[cond] %in% binary_predictions,
+                                                   "binary",
+                                                   "probability"),
+                                            "independent_log_likelihood",
+                                            mean(tmp_array[i, ],
+                                                 na.rm = TRUE))
+              
+              row_index <- row_index + 1
+              
+            }
+          }
+        }
+        
+        #########################################
+        ### Add to complete dataframe storage ###
+        #########################################
+        
+        ll_i_df <- rbind(ll_i_df,
+                         tmp_ll_i)
+        
+        ll_j_df <- rbind(ll_j_df,
+                         tmp_ll_j)
+        
+      }
+    }
+  }
+}
+
+##################################################
+### Final Log likelihood Summary Modifications ###
+##################################################
+
+## Correct the "site" IDs
+
+### Load site IDS from file
+
+for(dataset in dataset_options){
+  
+  command <- sprintf("%1$s_site_ids <- readRDS('data/%1$s/site_ids.rds')",
+                     dataset)
+  
+  eval(parse(text = command))
+  
+}
+
+### Perform conversion
+
+for(i in seq_len(nrow(ll_j_df))){
+  
+  old_id <- ll_j_df[i, "site"]
+  
+  old_id_facets <- str_split(old_id, "_")[[1]]
+  
+  new_id <- sprintf("%s_site_ids[[%s]][%s]", 
+                    old_id_facets[1],
+                    str_split(old_id_facets[2], "")[[1]][5],
+                    old_id_facets[3])
+  
+  sr_df[i, "site"] <- as.character(eval(parse(text = new_id)))
+  
+}
+
+####################################################
+### Save Species Richness Summary Output To File ###
+####################################################
+
+saveRDS(object = ll_i_df,
+        file = sprintf("outputs/likelihood/independent_likelihood_summary_%s.rds",
+                       chapter))
+
+saveRDS(object = ll_j_df,
+        file = sprintf("outputs/likelihood/joint_likelihood_summary_%s.rds",
                        chapter))
 
 # ################
