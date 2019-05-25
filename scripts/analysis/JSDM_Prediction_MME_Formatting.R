@@ -1580,13 +1580,19 @@ for(i in seq_len(nrow(ll_j_df))){
                     str_split(old_id_facets[2], "")[[1]][5],
                     old_id_facets[3])
   
-  sr_df[i, "site"] <- as.character(eval(parse(text = new_id)))
+  ll_j_df[i, "site"] <- as.character(eval(parse(text = new_id)))
   
 }
 
-####################################################
-### Save Species Richness Summary Output To File ###
-####################################################
+## Fold as factor
+
+ll_i_df$fold <- as.factor(ll_i_df$fold)
+
+ll_j_df$fold <- as.factor(ll_j_df$fold)
+
+###################################################
+### Save Log Likelihood Summary Outputs To File ###
+###################################################
 
 saveRDS(object = ll_i_df,
         file = sprintf("outputs/likelihood/independent_likelihood_summary_%s.rds",
