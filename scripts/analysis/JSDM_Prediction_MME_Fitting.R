@@ -775,15 +775,313 @@ for(dataset in unique(sr_df$dataset)){
 ks_df <- rbind(ks_df,
                ks_sr)
 
+##################
+##################
+### LIKELIHOOD ###
+##################
+##################
 
+#################
+### Load Data ###
+#################
 
+ll_i_df <- readRDS(sprintf("outputs/likelihood/independent_likelihood_summary_%s.rds",
+                         chapter))
 
+ll_j_df <- readRDS(sprintf("outputs/likelihood/joint_likelihood_summary_%s.rds",
+                           chapter))
 
+############################
+### Mixed Effects Models ###
+############################
 
+## Empty dataframe to store Kolmogorov-Smirnov test outputs
 
+n_row <- (length(unique(ll_i_df$dataset)) *
+  length(unique(ll_i_df$test_statistic)) *
+  length(pred_sets)) +
+  (length(unique(ll_j_df$dataset)) *
+    length(unique(ll_j_df$test_statistic)) *
+    length(pred_sets))
 
+ks_ll <- data.frame(dataset = factor(character(n_row),
+                                     levels = unique(ll_df$dataset)),
+                    pred_type = factor(character(n_row),
+                                       levels = names(pred_sets)),
+                    test_statistic = factor(character(n_row),
+                                            levels = unique(as.character(ll_df$test_statistic))),
+                    p_value = numeric(n_row),
+                    ks_D = numeric(n_row),
+                    model_fit_success = numeric(n_row))
 
+## Loop over different different model iterations
 
+row_index <- 1
+
+for(dataset in unique(ll_i_df$dataset)){
+  
+  for(prediction in seq_len(length(pred_sets))){
+    
+    ## Only run for probabilistic predictions
+    
+    if(prediction %nin% c(2, 6:8)){
+      
+      next()
+      
+    }
+    
+    ## Subset dataset
+    
+    tmp_df_i <- ll_i_df[ll_i_df$dataset == dataset &
+                          ll_i_df$prediction_type %in% pred_sets[[prediction]] &
+                          ll_i_df$test_statistic == "independent_log_likelihood", ]
+    
+    tmp_df_i <- na.omit(tmp_df_i)
+    
+    tmp_df_j <- ll_j_df[ll_j_df$dataset == dataset &
+                          ll_j_df$prediction_type %in% pred_sets[[prediction]] &
+                          ll_j_df$test_statistic == "joint_log_likelihood", ]
+    
+    tmp_df_j <- na.omit(tmp_df_j)
+    
+    ## Fit mixed effects model
+    
+    mme_model_i <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
+                                             random = ~ 1|species,
+                                             weights = varIdent(form = ~1|model),
+                                             data = tmp_df_i,
+                                             control = lmeControl(msMaxIter = 1000,
+                                                                  opt = "optim")),
+                            error = function(err){
+                              
+                              message(sprintf("Model fit failed for: %s - %s - %s",
+                                              dataset,
+                                              names(pred_sets[prediction]),
+                                              "independent_log_likelihood"))
+                              
+                              return(NA)
+                              
+                            }
+    )
+    
+    mme_model_j <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
+                                             random = ~ 1|site,
+                                             weights = varIdent(form = ~1|model),
+                                             data = tmp_df_j,
+                                             control = lmeControl(msMaxIter = 1000,
+                                                                  opt = "optim")),
+                            error = function(err){
+                              
+                              message(sprintf("Model fit failed for: %s - %s - %s",
+                                              dataset,
+                                              names(pred_sets[prediction]),
+                                              "joint_log_likelihood"))
+                              
+                              return(NA)
+                              
+                            }
+    )
+    
+    if(class(mme_model_i) != "lme"){
+      
+      ks_ll[row_index, ] <- list(dataset,
+                                 names(pred_sets[prediction]),
+                                 "independent_log_likelihood",
+                                 NA,
+                                 NA,
+                                 0)
+      
+      row_index <- row_index + 1
+      
+    } else {
+      
+      ## Extract residuals
+      
+      residuals <- resid(mme_model_i, type = "pearson")
+      
+      ## Plot residuals and save to file
+      
+      ### Set filename
+      
+      if(length(model_options) == 2){
+        
+        chapter <- "Ch2"
+        
+      } else {
+        
+        chapter <- "Ch3"
+        
+      }
+      
+      filename <- sprintf("outputs/test_statistics/plots/test_statistics_MME_%1$s_%2$s_%3$s_%4$s.pdf",
+                          dataset,
+                          names(pred_sets[prediction]),
+                          "independent_log_likelihood",
+                          chapter)
+      
+      ### Plot to pdf
+      
+      pdf(filename)
+      
+      ### Residuals boxplot
+      
+      plot(residuals ~ tmp_df_i$model, 
+           ylab = "Pearson residuals",
+           xlab = "Model")
+      
+      ### Residuals qq plot
+      
+      qqplot(residuals, 
+             rnorm(n = 1000, 
+                   mean(residuals), 
+                   sd(residuals)),
+             ylab = "N(mean(residuals), sd(residuals))",
+             xlab = "Model Pearson residuals",
+             main = "QQ-plot")
+      abline(0,1)
+      
+      dev.off()
+      
+      ### Check normality with Kolmogorov-Smirnov test
+      
+      ks <- ks.test(residuals, 
+                    pnorm, 
+                    mean(residuals), 
+                    sd(residuals))
+      
+      ks_ll[row_index, ] <- list(dataset,
+                                 names(pred_sets[prediction]),
+                                 "independent_log_likelihood",
+                                 ks$p.value,
+                                 ks$statistic,
+                                 1)
+      
+      ### Save model to file
+      
+      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
+                          dataset,
+                          names(pred_sets[prediction]),
+                          "independent_log_likelihood",
+                          chapter)
+      
+      saveRDS(mme_model_i,
+              filename)
+      
+      ### Statusbar
+      
+      statusbar(run = row_index,
+                max.run = n_row,
+                info = sprintf("%s: %s - %s - LL_I",
+                               row_index,
+                               dataset,
+                               names(pred_sets[prediction])))
+      
+      row_index <- row_index + 1
+      
+    }
+    
+    if(class(mme_model_j) != "lme"){
+      
+      ks_ll[row_index, ] <- list(dataset,
+                                 names(pred_sets[prediction]),
+                                 "joint_log_likelihood",
+                                 NA,
+                                 NA,
+                                 0)
+      
+      row_index <- row_index + 1
+    
+    } else {
+      
+      ## Extract residuals
+      
+      residuals <- resid(mme_model_j, type = "pearson")
+      
+      ## Plot residuals and save to file
+      
+      ### Set filename
+      
+      if(length(model_options) == 2){
+        
+        chapter <- "Ch2"
+        
+      } else {
+        
+        chapter <- "Ch3"
+        
+      }
+      
+      filename <- sprintf("outputs/test_statistics/plots/test_statistics_MME_%1$s_%2$s_%3$s_%4$s.pdf",
+                          dataset,
+                          names(pred_sets[prediction]),
+                          "joint_log_likelihood",
+                          chapter)
+      
+      ### Plot to pdf
+      
+      pdf(filename)
+      
+      ### Residuals boxplot
+      
+      plot(residuals ~ tmp_df_j$model, 
+           ylab = "Pearson residuals",
+           xlab = "Model")
+      
+      ### Residuals qq plot
+      
+      qqplot(residuals, 
+             rnorm(n = 1000, 
+                   mean(residuals), 
+                   sd(residuals)),
+             ylab = "N(mean(residuals), sd(residuals))",
+             xlab = "Model Pearson residuals",
+             main = "QQ-plot")
+      abline(0,1)
+      
+      dev.off()
+      
+      ### Check normality with Kolmogorov-Smirnov test
+      
+      ks <- ks.test(residuals, 
+                    pnorm, 
+                    mean(residuals), 
+                    sd(residuals))
+      
+      ks_ll[row_index, ] <- list(dataset,
+                                 names(pred_sets[prediction]),
+                                 "joint_log_likelihood",
+                                 ks$p.value,
+                                 ks$statistic,
+                                 1)
+      
+      ### Save model to file
+      
+      filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
+                          dataset,
+                          names(pred_sets[prediction]),
+                          "joint_log_likelihood",
+                          chapter)
+      
+      saveRDS(mme_model_j,
+              filename)
+      
+      ### Statusbar
+      
+      statusbar(run = row_index,
+                max.run = n_row,
+                info = sprintf("%s: %s - %s - LL_J",
+                               row_index,
+                               dataset,
+                               names(pred_sets[prediction])))
+      
+      row_index <- row_index + 1
+      
+    }
+  }
+}
+
+ks_df <- rbind(ks_df,
+               ks_ll)
 
 ##################
 ##################
@@ -843,17 +1141,24 @@ pred_pairs <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM", "Binary
                    condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Conditional (low)"),
                    condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Conditional (med)"),
                    condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Conditional (high)"),
+                   condLOI_marg_low = c("condLOI_marg_low", "SSDM_prob", "", "Probabilistic predictions", "JSDM prediction: Conditional Marginal (low)"),
+                   condLOI_marg_med = c("condLOI_marg_med", "SSDM_prob", "", "Probabilistic predictions", "JSDM prediction: Conditional Marginal (med)"),
+                   condLOI_marg_high = c("condLOI_marg_high", "SSDM_bin", "SESAM", "Probabilistic predictions", "JSDM prediction: Conditional Marginal (high)"),
                    joint = c("joint", "SSDM_bin", "SESAM", "Binary predictions", "JSDM prediction: Joint"))
 
 ################################################
 ### Generate plot for different combinations ###
 ################################################
 
-for(dataset in unique(ts_df_species$dataset)){
+for(dataset in dataset_options){
   
   for(prediction in seq_len(length(pred_sets))){
     
-    for(ts in c(ts_species, ts_site, "species_richness_difference")){
+    for(ts in c(ts_species, 
+                ts_site, 
+                "species_richness_difference",
+                "independent_log_likelihood",
+                "joint_log_likelihood")){
       
       ## Read in file
       
