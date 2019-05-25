@@ -17,31 +17,31 @@ library(PassButter)
 ## Models
 
 model_options <- c("MPR",
-                   "HPR",
-                   "LPR",
-                   "DPR",
-                   "HLR_NS",
-                   "HLR_S",
-                   "SSDM",
-                   "SESAM")
+                   #"HPR",
+                   #"LPR",
+                   #"DPR",
+                   #"HLR_NS",
+                   #"HLR_S",
+                   "SSDM")#,
+#"SESAM")
 
 model_order <- c("SSDM",
-                 "SESAM",
-                 "MPR",
-                 "HPR",
-                 "LPR",
-                 "DPR",
-                 "HLR_NS",
-                 "HLR_S")
+                 #"SESAM",
+                 "MPR")#,
+#                 "HPR",
+#                 "LPR",
+#                 "DPR",
+#                 "HLR_NS",
+#                "HLR_S")
 
-JSDM_models <- model_options[1:6]
+JSDM_models <- model_options[1]#:6]
 
-SSDM_models <- model_options[7:8]
+SSDM_models <- model_options[2]#7:8]
 
 ## Datasets
 
-dataset_options <- c("frog",
-"eucalypt")#,
+dataset_options <- c("frog")#,
+#"eucalypt")#,
 # "bird",
 # "butterfly",
 # "sim1random",
@@ -74,6 +74,7 @@ fold_options <- 1:5
 prediction_options <- c("marginal_bin",
                         "marginal_prob",
                         "condLOI",
+                        "condLOI_marg",
                         "joint",
                         "SESAM",
                         "SSDM_bin",
@@ -84,6 +85,10 @@ prediction_levels <- c("marginal_bin",
                        "condLOI_low",
                        "condLOI_med",
                        "condLOI_high",
+                       "condLOI_marg_low",
+                       "condLOI_marg_med",
+                       "condLOI_marg_high",
+                       "condLOI_marg",      # Joint likelihood doesn't utilise prediction so no L/M/H designation
                        "joint",
                        "SESAM",
                        "SSDM_bin",
@@ -98,7 +103,11 @@ binary_predictions <- c("marginal_bin",
                         "SSDM_bin")
 
 probability_predictions <- c("marginal_prob",
+                             "condLOI_marg_low",
+                             "condLOI_marg_med",
+                             "condLOI_marg_high",
                              "SSDM_prob")
+
 
 ## Define prediction combinations for subsetting
 
@@ -107,6 +116,9 @@ pred_sets <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM"),
                   condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM"),
                   condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM"),
                   condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM"),
+                  condLOI_marg_low = c("condLOI_marg_low", "SSDM_prob"),
+                  condLOI_marg_med = c("condLOI_marg_med", "SSDM_prob"),
+                  condLOI_marg_high = c("condLOI_marg_high", "SSDM_prob"),
                   joint = c("joint", "SSDM_bin", "SESAM"))
 
 ## Test statistics
@@ -158,6 +170,70 @@ ts_site <- c("Binomial",
              "Manhattan",
              "Mountford",
              "Raup")
+
+## Test statistic / prediction type compatibility
+
+binary_ts <- c("TP",
+               "FP",
+               "TN",
+               "FN",
+               "TPR",
+               "FPR",
+               "TNR",
+               "FNR",
+               "PLR",
+               "NLR",
+               "DOR",
+               "Accuracy",
+               "PPV",
+               "FOR",
+               "FDR",
+               "NPV",
+               "F_1",
+               "Youden_J",
+               "Kappa",
+               "Binomial",
+               "Bray",
+               "Canberra",
+               "Euclidean",
+               "Gower",
+               "Gower_alt",
+               "Horn",
+               "Jaccard",
+               "Kulczynski",
+               "Mahalanobis",
+               "Manhattan",
+               "Mountford",
+               "Raup")
+
+prob_ts <- c("AUC",
+             "bias",
+             "MSE",
+             "R2",
+             "RMSE",
+             "SSE",
+             "Pearson",
+             "Spearman",
+             "Kendall",
+             "TP",
+             "FP",
+             "TN",
+             "FN",
+             "TPR",
+             "FPR",
+             "TNR",
+             "FNR",
+             "PLR",
+             "NLR",
+             "DOR",
+             "Prevalence",
+             "Accuracy",
+             "PPV",
+             "FOR",
+             "FDR",
+             "NPV",
+             "F_1",
+             "Youden_J")
 
 ## Chapter
 
@@ -221,6 +297,24 @@ for(dataset in unique(ts_df_species$dataset)){
     
     for(ts in ts_species){
       
+      ## Check ts/prediction compatibility
+      
+      ### Binary test statistics for binary predictions
+      
+      if(ts %in% binary_ts & names(pred_sets)[prediction] %nin% binary_predictions){
+        
+        next()
+        
+      }
+      
+      ### Probabilistic test statistics for probabilistic predictions
+      
+      if(ts %in% prob_ts & names(pred_sets)[prediction] %nin% probability_predictions){
+        
+        next()
+        
+      }
+      
       ## Subset dataset
       
       tmp_df <- ts_df_species[ts_df_species$dataset == dataset &
@@ -231,7 +325,7 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ## Fit mixed effects model
       
-      mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model, 
+      mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
                                              random = ~ 1|species,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -247,8 +341,8 @@ for(dataset in unique(ts_df_species$dataset)){
                               return(NA)
                               
                             }
-                            )
-                       
+      )
+      
       if(class(mme_model) != "lme"){
         
         ks_df[row_index, ] <- list(dataset,
@@ -360,6 +454,24 @@ for(dataset in unique(ts_df_site$dataset)){
     
     for(ts in ts_site){
       
+      ## Check ts/prediction compatibility
+      
+      ### Binary test statistics for binary predictions
+      
+      if(ts %in% binary_ts & names(pred_sets)[prediction] %nin% binary_predictions){
+        
+        next()
+        
+      }
+      
+      ### Probabilistic test statistics for probabilistic predictions
+      
+      if(ts %in% prob_ts & names(pred_sets)[prediction] %nin% probability_predictions){
+        
+        next()
+        
+      }
+      
       ## Subset dataset
       
       tmp_df <- ts_df_site[ts_df_site$dataset == dataset &
@@ -370,7 +482,7 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ## Fit mixed effects model
       
-      mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model, 
+      mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
                                              random = ~ 1|site,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -541,7 +653,7 @@ for(dataset in unique(sr_df$dataset)){
     
     ## Fit mixed effects model
     
-    mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model, 
+    mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -814,35 +926,35 @@ for(dataset in unique(ts_df_species$dataset)){
       pdf(filename)
       
       tmp_plot <- ggplot(plot_df,
-                   aes(x = model,
-                       y = mean,
-                       colour = model)) +
-              geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "mean"],
-                         linetype = 11) +
-              geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "upper"],
-                         linetype = 11,
-                         colour = "lightgrey") +
-              geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "lower"],
-                         linetype = 11,
-                         colour = "lightgrey") + 
-              geom_point(position = dodge,
-                         size = 2) + 
-              geom_errorbar(aes(ymax = upper,
-                                ymin = lower,),
-                            position = dodge,
-                            width = 0.1) +
-              ylim(c(graph_customisation[graph_customisation$test_statistic == ts, "y_min"],
-                     graph_customisation[graph_customisation$test_statistic == ts, "y_max"])) +
-              xlab("Model") +
-              ylab(eval(parse(text = graph_customisation[graph_customisation$test_statistic == ts, "graph_label"]))) +
-              scale_colour_manual(values = colour,
-                                  breaks = levels(plot_df$model)) +
-              theme_bw() +
-              theme(legend.position = "none",
-                    panel.grid.minor = element_blank(),
-                    panel.grid.major = element_blank()) +
-              ggtitle(label = pred_pairs[[prediction]][4],
-                      subtitle = pred_pairs[[prediction]][5])
+                         aes(x = model,
+                             y = mean,
+                             colour = model)) +
+        geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "mean"],
+                   linetype = 11) +
+        geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "upper"],
+                   linetype = 11,
+                   colour = "lightgrey") +
+        geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "lower"],
+                   linetype = 11,
+                   colour = "lightgrey") + 
+        geom_point(position = dodge,
+                   size = 2) + 
+        geom_errorbar(aes(ymax = upper,
+                          ymin = lower,),
+                      position = dodge,
+                      width = 0.1) +
+        ylim(c(graph_customisation[graph_customisation$test_statistic == ts, "y_min"],
+               graph_customisation[graph_customisation$test_statistic == ts, "y_max"])) +
+        xlab("Model") +
+        ylab(eval(parse(text = graph_customisation[graph_customisation$test_statistic == ts, "graph_label"]))) +
+        scale_colour_manual(values = colour,
+                            breaks = levels(plot_df$model)) +
+        theme_bw() +
+        theme(legend.position = "none",
+              panel.grid.minor = element_blank(),
+              panel.grid.major = element_blank()) +
+        ggtitle(label = pred_pairs[[prediction]][4],
+                subtitle = pred_pairs[[prediction]][5])
       
       if(chapter == "Ch3"){
         
