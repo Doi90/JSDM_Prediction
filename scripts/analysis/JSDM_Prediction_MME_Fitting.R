@@ -805,11 +805,12 @@ n_row <- (length(unique(ll_i_df$dataset)) *
     length(pred_sets))
 
 ks_ll <- data.frame(dataset = factor(character(n_row),
-                                     levels = unique(ll_df$dataset)),
+                                     levels = unique(ll_i_df$dataset)),
                     pred_type = factor(character(n_row),
                                        levels = names(pred_sets)),
                     test_statistic = factor(character(n_row),
-                                            levels = unique(as.character(ll_df$test_statistic))),
+                                            levels = c(unique(as.character(ll_i_df$test_statistic)),
+                                                       unique(as.character(ll_j_df$test_statistic)))),
                     p_value = numeric(n_row),
                     ks_D = numeric(n_row),
                     model_fit_success = numeric(n_row))
