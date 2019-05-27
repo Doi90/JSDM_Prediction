@@ -121,17 +121,17 @@ for(i in seq_len(dim(SSDM_predictions_prob)[1])){
   ### Get predicted species probabilities for site
   
   #pred_probs <- SSDM_predictions_prob[i, , 1]
-  pred_probs <- SSDM_predictions_prob[, , 1]
+  pred_probs <- SSDM_predictions_prob[i, , 1]
   ### Get observed species state for site
   
   #obs_spp <- y[i, ]
-  obs_spp <- y[ , ]
+  obs_spp <- y[ i, ]
   ### Mu and Sigma
   
   mu <- qnorm(pred_probs)
   
   #sigma <- diag(length(pred_probs))
-  sigma <- diag(dim(pred_probs)[2])
+  sigma <- diag(length(pred_probs))
   ### Define probability distribution thresholds
   
   # #### lower / upper to limit integral of density for lielihood
