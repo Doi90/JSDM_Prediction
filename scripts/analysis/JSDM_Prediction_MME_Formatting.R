@@ -1400,138 +1400,233 @@ for(model in model_options){
         ### Create temporary dataframes to store ouputs ###
         ###################################################
         
-        n_spp <- dim(ll_i_array)[1]
-        
-        n_site <- dim(ll_j_array)[1]
-        
-        tmp_ll_j <- data.frame(model = factor(character(n_site),
-                                              levels = model_order[model_order %in% model_options]),
-                               dataset = factor(character(n_site),
-                                                levels = dataset_options),
-                               fold = numeric(n_site),
-                               site = character(n_site),
-                               prediction_type = factor(character(n_site),
-                                                        levels = prediction_levels),
-                               prediction_class = factor(character(n_site),
-                                                         levels = c("binary",
-                                                                    "probability")),
-                               test_statistic = factor(character(n_site),
-                                                       levels = "joint_log_likelihood"),
-                               mean = numeric(n_site),
-                               stringsAsFactors = FALSE)
-        
-        tmp_ll_i <- data.frame(model = factor(character(n_spp),
-                                              levels = model_order[model_order %in% model_options]),
-                               dataset = factor(character(n_spp),
-                                                levels = dataset_options),
-                               fold = numeric(n_spp),
-                               species = character(n_spp),
-                               prediction_type = factor(character(n_spp),
-                                                        levels = prediction_levels),
-                               prediction_class = factor(character(n_spp),
-                                                         levels = c("binary",
-                                                                    "probability")),
-                               test_statistic = factor(character(n_spp),
-                                                       levels = "independent_log_likelihood"),
-                               mean = numeric(n_spp),
-                               stringsAsFactors = FALSE)
-        
-        
-        ###############################################
-        ### Summarise Likelihood And Fill Dataframe ###
-        ###############################################
-        
-        ## Joint log-likelihood
-        
-        row_index <- 1
-        
-        for(j in seq_len(n_site)){
+        if(model %in% JSDM_models){
           
-          tmp_ll_j[row_index, ] <- list(model,
-                                        dataset,
-                                        fold,
-                                        sprintf("%s_fold%s_%s",
-                                                dataset,
-                                                fold,
-                                                j),
-                                        pred_type,
-                                        ifelse(pred_type %in% binary_predictions,
-                                               "binary",
-                                               "probability"),
-                                        "joint_log_likelihood",
-                                        mean(ll_j_array[j, ],
-                                             na.rm = TRUE))
+          n_spp <- dim(ll_i_array)[1]
           
-          row_index <- row_index + 1
+          n_site <- dim(ll_j_array)[1]
           
-        }
-        
-        ## Indepedent log-likelihood
-        
-        ### All prediction types that aren't condLOI
-        
-        if(pred_type != "condLOI_marg"){
+          tmp_ll_j <- data.frame(model = factor(character(n_site),
+                                                levels = model_order[model_order %in% model_options]),
+                                 dataset = factor(character(n_site),
+                                                  levels = dataset_options),
+                                 fold = numeric(n_site),
+                                 site = character(n_site),
+                                 prediction_type = factor(character(n_site),
+                                                          levels = prediction_levels),
+                                 prediction_class = factor(character(n_site),
+                                                           levels = c("binary",
+                                                                      "probability")),
+                                 test_statistic = factor(character(n_site),
+                                                         levels = "joint_log_likelihood"),
+                                 mean = numeric(n_site),
+                                 stringsAsFactors = FALSE)
           
-          row_index <- 1
+          tmp_ll_i <- data.frame(model = factor(character(n_spp),
+                                                levels = model_order[model_order %in% model_options]),
+                                 dataset = factor(character(n_spp),
+                                                  levels = dataset_options),
+                                 fold = numeric(n_spp),
+                                 species = character(n_spp),
+                                 prediction_type = factor(character(n_spp),
+                                                          levels = prediction_levels),
+                                 prediction_class = factor(character(n_spp),
+                                                           levels = c("binary",
+                                                                      "probability")),
+                                 test_statistic = factor(character(n_spp),
+                                                         levels = "independent_log_likelihood"),
+                                 mean = numeric(n_spp),
+                                 stringsAsFactors = FALSE)
           
-          for(i in seq_len(n_spp)){
+          
+          ###############################################
+          ### Summarise Likelihood And Fill Dataframe ###
+          ###############################################
+          
+          ## Joint log-likelihood
+          
+          row_index_j <- 1
+          
+          for(j in seq_len(n_site)){
             
-            tmp_ll_i[row_index, ] <- list(model,
-                                          dataset,
-                                          fold,
-                                          sprintf("%s_fold%s_%s",
-                                                  dataset,
-                                                  fold,
-                                                  i),
-                                          pred_type,
-                                          ifelse(pred_type %in% binary_predictions,
-                                                 "binary",
-                                                 "probability"),
-                                          "independent_log_likelihood",
-                                          mean(ll_i_array[i, ],
-                                               na.rm = TRUE))
+            tmp_ll_j[row_index_j, ] <- list(model,
+                                            dataset,
+                                            fold,
+                                            sprintf("%s_fold%s_%s",
+                                                    dataset,
+                                                    fold,
+                                                    j),
+                                            pred_type,
+                                            ifelse(pred_type %in% binary_predictions,
+                                                   "binary",
+                                                   "probability"),
+                                            "joint_log_likelihood",
+                                            mean(ll_j_array[j, ],
+                                                 na.rm = TRUE))
             
-            row_index <- row_index + 1
+            row_index_j <- row_index_j + 1
             
           }
-        }
-        
-        if(pred_type == "condLOI_marg"){
           
-          tmp_ll_i <- rbind(tmp_ll_i,
-                            tmp_ll_i,
-                            tmp_ll_i)
+          ## Indepedent log-likelihood
           
-          cond_pred_type <- c("condLOI_marg_low",
-                              "condLOI_marg_med",
-                              "condLOI_marg_high")
+          ### All prediction types that aren't condLOI
           
-          row_index <- 1
-          
-          for(cond in seq_len(dim(ll_i_array)[4])){
+          if(pred_type != "condLOI_marg"){
             
-            tmp_array <- ll_i_array[ , , cond]
+            row_index_i <- 1
             
             for(i in seq_len(n_spp)){
               
-              tmp_ll_i[row_index, ] <- list(model,
+              tmp_ll_i[row_index_i, ] <- list(model,
+                                              dataset,
+                                              fold,
+                                              sprintf("%s_fold%s_%s",
+                                                      dataset,
+                                                      fold,
+                                                      i),
+                                              pred_type,
+                                              ifelse(pred_type %in% binary_predictions,
+                                                     "binary",
+                                                     "probability"),
+                                              "independent_log_likelihood",
+                                              mean(ll_i_array[i, ],
+                                                   na.rm = TRUE))
+              
+              row_index_i <- row_index_i + 1
+              
+            }
+          }
+          
+          if(pred_type == "condLOI_marg"){
+            
+            tmp_ll_i <- rbind(tmp_ll_i,
+                              tmp_ll_i,
+                              tmp_ll_i)
+            
+            cond_pred_type <- c("condLOI_marg_low",
+                                "condLOI_marg_med",
+                                "condLOI_marg_high")
+            
+            row_index_i <- 1
+            
+            for(cond in seq_len(dim(ll_i_array)[3])){
+              
+              tmp_array <- ll_i_array[ , , cond]
+              
+              for(i in seq_len(n_spp)){
+                
+                tmp_ll_i[row_index_i, ] <- list(model,
+                                                dataset,
+                                                fold,
+                                                sprintf("%s_fold%s_%s",
+                                                        dataset,
+                                                        fold,
+                                                        i),
+                                                cond_pred_type[cond],
+                                                ifelse(cond_pred_type[cond] %in% binary_predictions,
+                                                       "binary",
+                                                       "probability"),
+                                                "independent_log_likelihood",
+                                                mean(tmp_array[i, ],
+                                                     na.rm = TRUE))
+                
+                row_index_i <- row_index_i + 1
+                
+              }
+            }
+          }
+        }
+        
+        if(model %in% SSDM_models){
+          
+          n_spp <- length(ll_i_array)
+          
+          n_site <- length(ll_j_array)
+          
+          tmp_ll_j <- data.frame(model = factor(character(n_site),
+                                                levels = model_order[model_order %in% model_options]),
+                                 dataset = factor(character(n_site),
+                                                  levels = dataset_options),
+                                 fold = numeric(n_site),
+                                 site = character(n_site),
+                                 prediction_type = factor(character(n_site),
+                                                          levels = prediction_levels),
+                                 prediction_class = factor(character(n_site),
+                                                           levels = c("binary",
+                                                                      "probability")),
+                                 test_statistic = factor(character(n_site),
+                                                         levels = "joint_log_likelihood"),
+                                 mean = numeric(n_site),
+                                 stringsAsFactors = FALSE)
+          
+          tmp_ll_i <- data.frame(model = factor(character(n_spp),
+                                                levels = model_order[model_order %in% model_options]),
+                                 dataset = factor(character(n_spp),
+                                                  levels = dataset_options),
+                                 fold = numeric(n_spp),
+                                 species = character(n_spp),
+                                 prediction_type = factor(character(n_spp),
+                                                          levels = prediction_levels),
+                                 prediction_class = factor(character(n_spp),
+                                                           levels = c("binary",
+                                                                      "probability")),
+                                 test_statistic = factor(character(n_spp),
+                                                         levels = "independent_log_likelihood"),
+                                 mean = numeric(n_spp),
+                                 stringsAsFactors = FALSE)
+          
+          
+          ###############################################
+          ### Summarise Likelihood And Fill Dataframe ###
+          ###############################################
+          
+          ## Joint log-likelihood
+          
+          row_index_j <- 1
+          
+          for(j in seq_len(n_site)){
+            
+            tmp_ll_j[row_index_j, ] <- list(model,
+                                            dataset,
+                                            fold,
+                                            sprintf("%s_fold%s_%s",
+                                                    dataset,
+                                                    fold,
+                                                    j),
+                                            pred_type,
+                                            ifelse(pred_type %in% binary_predictions,
+                                                   "binary",
+                                                   "probability"),
+                                            "joint_log_likelihood",
+                                            ll_j_array[j])
+            
+            row_index_j <- row_index_j + 1
+            
+          }
+          
+          ## Indepedent log-likelihood
+          
+          row_index_i <- 1
+          
+          for(i in seq_len(n_spp)){
+            
+            tmp_ll_i[row_index_i, ] <- list(model,
                                             dataset,
                                             fold,
                                             sprintf("%s_fold%s_%s",
                                                     dataset,
                                                     fold,
                                                     i),
-                                            cond_pred_type[cond],
-                                            ifelse(cond_pred_type[cond] %in% binary_predictions,
+                                            pred_type,
+                                            ifelse(pred_type %in% binary_predictions,
                                                    "binary",
                                                    "probability"),
                                             "independent_log_likelihood",
-                                            mean(tmp_array[i, ],
-                                                 na.rm = TRUE))
-              
-              row_index <- row_index + 1
-              
-            }
+                                            ll_i_array[i])
+            
+            row_index_i <- row_index_i + 1
+            
           }
         }
         
