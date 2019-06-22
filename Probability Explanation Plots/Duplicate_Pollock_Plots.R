@@ -176,8 +176,9 @@ ggplot(sp1, aes(points)) +
   geom_vline(xintercept = 0) +
   geom_hline(yintercept = 0) +
   geom_text(data = axis_df, aes(x = x, y = y, label = z), size = 3) +
-  annotate("text", x = 5, y = -0.02, label = "z[i]", parse = TRUE, size = 5) +
+  annotate("text", x = 5, y = -0.02, label = "z[A]", parse = TRUE, size = 5) +
   annotate("text", x = 1, y = 0.1, label = round(p_1, 2), parse = TRUE, size = 4) +
+  annotate("text", x = -4, y = 0.4, label = "a)", parse = FALSE, size = 5) +
   geom_vline(xintercept = 0) +
   geom_hline(yintercept = 0) +
   xlim(-5,5)
@@ -213,8 +214,9 @@ ggplot(sp2, aes(points)) +
   geom_vline(xintercept = 0) +
   geom_hline(yintercept = 0) +
   geom_text(data = axis_df, aes(x = x, y = y, label = z), size = 3) +
-  annotate("text", x = 5, y = -0.02, label = "z[i]", parse = TRUE, size = 5) +
+  annotate("text", x = 5, y = -0.02, label = "z[B]", parse = TRUE, size = 5) +
   annotate("text", x = 0.5, y = 0.05, label = round(p_1, 2), parse = TRUE, size = 4) +
+  annotate("text", x = -4, y = 0.4, label = "b)", parse = FALSE, size = 5) +
   geom_vline(xintercept = 0) +
   geom_hline(yintercept = 0) +
   xlim(-5,5)
@@ -279,8 +281,8 @@ ggplot(as.data.frame(m_spp), aes(x = x,
   ylim(-4,4) +
   xlim(-4,4) +
   geom_text(data = axis_df, aes(label = z), size = 3) +
-  annotate("text", x = 4, y = -0.6, label = "z[1]", parse = TRUE, size = 4) +
-  annotate("text", x = -0.5, y = 4, label = "z[2]", parse = TRUE, size = 4) +
+  annotate("text", x = 4, y = -0.6, label = "z[A]", parse = TRUE, size = 4) +
+  annotate("text", x = -0.5, y = 4, label = "z[B]", parse = TRUE, size = 4) +
   annotate("text", x = 3.8, y = 3.8, label = round(p_1_1, 2), parse = TRUE, size = 4) +
   annotate("text", x = 3.8, y = -3.8, label = round(p_1_0, 2), parse = TRUE, size = 4) +
   annotate("text", x = -3.8, y = 3.8, label = round(p_0_1, 3), parse = TRUE, size = 4) +
@@ -399,8 +401,8 @@ ggplot(as.data.frame(m_spp), aes(x = x,
   ylim(-4,4) +
   xlim(-4,4) +
   geom_text(data = axis_df, aes(label = z), size = 3) +
-  annotate("text", x = 4, y = -0.6, label = "z[1]", parse = TRUE, size = 4) +
-  annotate("text", x = -0.5, y = 4, label = "z[2]", parse = TRUE, size = 4) +
+  annotate("text", x = 4, y = -0.6, label = "z[A]", parse = TRUE, size = 4) +
+  annotate("text", x = -0.5, y = 4, label = "z[B]", parse = TRUE, size = 4) +
   annotate("text", x = 3.8, y = 3.8, label = round(p_1_1_c, 2), parse = TRUE, size = 4) +
   annotate("text", x = 3.8, y = -3.8, label = round(p_1_0_c, 2), parse = TRUE, size = 4) +
   annotate("text", x = -3.8, y = 3.8, label = round(p_0_1_c, 3), parse = TRUE, size = 4) +
