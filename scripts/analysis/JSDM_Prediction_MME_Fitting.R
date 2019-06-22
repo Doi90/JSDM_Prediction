@@ -9,6 +9,7 @@ library(nlme)
 library(ggplot2)
 library(RColorBrewer)
 library(PassButter)
+library(psych)
 
 ##################################
 ### Set combination parameters ###
@@ -106,6 +107,7 @@ probability_predictions <- c("marginal_prob",
                              "condLOI_marg_low",
                              "condLOI_marg_med",
                              "condLOI_marg_high",
+                             "condLOI_marg",
                              "SSDM_prob")
 
 
@@ -116,9 +118,9 @@ pred_sets <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM"),
                   condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM"),
                   condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM"),
                   condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM"),
-                  condLOI_marg_low = c("condLOI_marg_low", "SSDM_prob"),
-                  condLOI_marg_med = c("condLOI_marg_med", "SSDM_prob"),
-                  condLOI_marg_high = c("condLOI_marg_high", "SSDM_prob"),
+                  condLOI_marg_low = c("condLOI_marg_low", "condLOI_marg", "SSDM_prob"),
+                  condLOI_marg_med = c("condLOI_marg_med", "condLOI_marg", "SSDM_prob"),
+                  condLOI_marg_high = c("condLOI_marg_high", "condLOI_marg", "SSDM_prob"),
                   joint = c("joint", "SSDM_bin", "SESAM"))
 
 ## Test statistics
@@ -134,10 +136,10 @@ ts_species <- c("AUC",
                 "Pearson",
                 "Spearman",
                 "Kendall",
-                "TP",
-                "FP",
-                "TN",
-                "FN",
+                #"TP",
+                #"FP",
+                #"TN",
+                #"FN",
                 "TPR",
                 "FPR",
                 "TNR",
@@ -145,7 +147,7 @@ ts_species <- c("AUC",
                 "PLR",
                 "NLR",
                 "DOR",
-                "Prevalence",
+                #"Prevalence",
                 "Accuracy",
                 "PPV",
                 "FOR",
@@ -157,26 +159,26 @@ ts_species <- c("AUC",
 
 ### By Site
 
-ts_site <- c("Binomial",
+ts_site <- c(#"Binomial",
              "Bray",
              "Canberra",
-             "Euclidean",
+             #"Euclidean",
              "Gower",
              "Gower_alt",
-             "Horn",
+             #"Horn",
              "Jaccard",
              "Kulczynski",
-             "Mahalanobis",
-             "Manhattan",
+             #"Mahalanobis",
+             #"Manhattan",
              "Mountford",
              "Raup")
 
 ## Test statistic / prediction type compatibility
 
-binary_ts <- c("TP",
-               "FP",
-               "TN",
-               "FN",
+binary_ts <- c(#"TP",
+               #"FP",
+               #"TN",
+               #"FN",
                "TPR",
                "FPR",
                "TNR",
@@ -192,17 +194,17 @@ binary_ts <- c("TP",
                "F_1",
                "Youden_J",
                "Kappa",
-               "Binomial",
+               #"Binomial",
                "Bray",
                "Canberra",
-               "Euclidean",
+               #"Euclidean",
                "Gower",
                "Gower_alt",
-               "Horn",
+               #"Horn",
                "Jaccard",
                "Kulczynski",
-               "Mahalanobis",
-               "Manhattan",
+               #"Mahalanobis",
+               #"Manhattan",
                "Mountford",
                "Raup")
 
@@ -215,10 +217,10 @@ prob_ts <- c("AUC",
              "Pearson",
              "Spearman",
              "Kendall",
-             "TP",
-             "FP",
-             "TN",
-             "FN",
+             #"TP",
+             #"FP",
+             #"TN",
+             #"FN",
              "TPR",
              "FPR",
              "TNR",
@@ -226,7 +228,7 @@ prob_ts <- c("AUC",
              "PLR",
              "NLR",
              "DOR",
-             "Prevalence",
+             #"Prevalence",
              "Accuracy",
              "PPV",
              "FOR",
@@ -234,6 +236,55 @@ prob_ts <- c("AUC",
              "NPV",
              "F_1",
              "Youden_J")
+
+## Test Statistic range
+
+ts_Inf_Inf <- c()
+
+ts_0_Inf <- c()
+
+ts_0_1 <- c()
+
+## Transformation functions
+
+trans_log <- function(x){
+  
+  x[x == 0] <- 0.0000001
+  
+  tmp <- log(x)
+  
+  return(tmp)
+  
+}
+
+trans_logit <- function(x){
+  
+  x[x == 0] <- 0.0000001
+  
+  x[x == 1] <- 0.9999999
+  
+  tmp <- logit(x)
+  
+  return(tmp)
+  
+  
+}
+
+trans_exp <- function(x){
+  
+  tmp <- exp(x)
+  
+  return(tmp)
+  
+}
+
+trans_inv_logit <- function(x){
+  
+  tmp <- plogis(x)
+  
+  return(tmp)
+  
+}
 
 ## Chapter
 
@@ -263,6 +314,14 @@ ts_df_species <- readRDS(sprintf("outputs/test_statistics/test_statistics_specie
 ts_df_site <- readRDS(sprintf("outputs/test_statistics/test_statistics_site_summary_MME_%s.rds",
                               chapter))
 
+ts_df_species$fold <- as.factor(ts_df_species$fold)
+
+ts_df_site$fold <- as.factor(ts_df_site$fold)
+
+ts_df_species$model <- as.factor(ts_df_species$model)
+
+ts_df_site$model <- as.factor(ts_df_site$model)
+
 ############################
 ### Mixed Effects Models ###
 ############################
@@ -274,16 +333,13 @@ n_row <- length(unique(ts_df_species$dataset)) *
      length(unique(ts_df_site$test_statistic))) *
   length(pred_sets)
 
-ks_df <- data.frame(dataset = factor(character(n_row),
-                                     levels = unique(ts_df_species$dataset)),
-                    pred_type = factor(character(n_row),
-                                       levels = names(pred_sets)),
-                    test_statistic = factor(character(n_row),
-                                            levels = c(unique(as.character(ts_df_species$test_statistic)),
-                                                       unique(as.character(ts_df_site$test_statistic)))),
+ks_df <- data.frame(dataset = character(n_row),
+                    pred_type = character(n_row),
+                    test_statistic = character(n_row),
                     p_value = numeric(n_row),
                     ks_D = numeric(n_row),
-                    model_fit_success = numeric(n_row))
+                    model_fit_success = numeric(n_row),
+                    stringsAsFactors = FALSE)
 
 ## Loop over different model iterations
 
@@ -301,7 +357,7 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ### Binary test statistics for binary predictions
       
-      if(ts %in% binary_ts & names(pred_sets)[prediction] %nin% binary_predictions){
+      if(names(pred_sets)[prediction] %in% binary_predictions & ts %nin% binary_ts){
         
         next()
         
@@ -309,7 +365,7 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ### Probabilistic test statistics for probabilistic predictions
       
-      if(ts %in% prob_ts & names(pred_sets)[prediction] %nin% probability_predictions){
+      if(names(pred_sets)[prediction] %in% probability_predictions & ts %nin% prob_ts){
         
         next()
         
@@ -321,27 +377,45 @@ for(dataset in unique(ts_df_species$dataset)){
                                 ts_df_species$prediction_type %in% pred_sets[[prediction]] &
                                 ts_df_species$test_statistic == ts, ]
       
+      tmp_df$species <- as.factor(tmp_df$species)
+      
       tmp_df <- na.omit(tmp_df)
       
       ## Fit mixed effects model
       
+      if(ts %in% ts_Inf_Inf){
+        
+      }
+      
+      if(ts %in% ts_0_Inf){
+        
+        tmp_df$mean <- trans_log(tmp_df$mean)
+        
+      }
+      
+      if(ts %in% ts_0_1){
+        
+        tmp_df$mean <- trans_logit(tmp_df$mean)
+        
+      }
+      
       mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
-                                             random = ~ 1|species,
-                                             weights = varIdent(form = ~1|model),
-                                             data = tmp_df,
-                                             control = lmeControl(msMaxIter = 1000,
-                                                                  opt = "optim")),
-                            error = function(err){
-                              
-                              message(sprintf("Model fit failed for: %s - %s - %s",
-                                              dataset,
-                                              names(pred_sets[prediction]),
-                                              ts))
-                              
-                              return(NA)
-                              
-                            }
-      )
+                                               random = ~ 1|species,
+                                               weights = varIdent(form = ~1|model),
+                                               data = tmp_df,
+                                               control = lmeControl(msMaxIter = 1000,
+                                                                    opt = "optim")),
+                              error = function(err){
+                                
+                                message(sprintf("Model fit failed for: %s - %s - %s",
+                                                dataset,
+                                                names(pred_sets[prediction]),
+                                                ts))
+                                
+                                return(NA)
+                                
+                              }
+        )
       
       if(class(mme_model) != "lme"){
         
@@ -388,7 +462,7 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ### Residuals boxplot
       
-      plot(residuals ~ tmp_df$model,
+      plot(residuals ~ factor(tmp_df$model),
            ylab = "Pearson residuals",
            xlab = "Model")
       
@@ -458,7 +532,7 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ### Binary test statistics for binary predictions
       
-      if(ts %in% binary_ts & names(pred_sets)[prediction] %nin% binary_predictions){
+      if(names(pred_sets)[prediction] %in% binary_predictions & ts %nin% binary_ts){
         
         next()
         
@@ -466,7 +540,7 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ### Probabilistic test statistics for probabilistic predictions
       
-      if(ts %in% prob_ts & names(pred_sets)[prediction] %nin% probability_predictions){
+      if(names(pred_sets)[prediction] %in% probability_predictions & ts %nin% prob_ts){
         
         next()
         
@@ -478,10 +552,28 @@ for(dataset in unique(ts_df_site$dataset)){
                              ts_df_site$prediction_type %in% pred_sets[[prediction]] &
                              ts_df_site$test_statistic == ts, ]
       
+      tmp_df$site <- as.factor(tmp_df$site)
+      
       tmp_df <- na.omit(tmp_df)
       
       ## Fit mixed effects model
       
+      if(ts %in% ts_Inf_Inf){
+        
+      }
+      
+      if(ts %in% ts_0_Inf){
+        
+        tmp_df$mean <- trans_log(tmp_df$mean)
+        
+      }
+      
+      if(ts %in% ts_0_1){
+        
+        tmp_df$mean <- trans_logit(tmp_df$mean)
+        
+      }
+        
       mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
                                              random = ~ 1|site,
                                              weights = varIdent(form = ~1|model),
@@ -498,7 +590,7 @@ for(dataset in unique(ts_df_site$dataset)){
                               return(NA)
                               
                             }
-      )
+      )  
       
       if(class(mme_model) != "lme"){
         
@@ -615,6 +707,10 @@ for(dataset in unique(ts_df_site$dataset)){
 
 sr_df <- readRDS(sprintf("outputs/species_richness/species_richness_summary_%s.rds",
                          chapter))
+
+sr_df$fold <- as.factor(sr_df$fold)
+
+sr_df$model <- as.factor(sr_df$model)
 
 ############################
 ### Mixed Effects Models ###
@@ -791,6 +887,14 @@ ll_i_df <- readRDS(sprintf("outputs/likelihood/independent_likelihood_summary_%s
 ll_j_df <- readRDS(sprintf("outputs/likelihood/joint_likelihood_summary_%s.rds",
                            chapter))
 
+ll_i_df$fold <- as.factor(ll_i_df$fold)
+
+ll_j_df$fold <- as.factor(ll_j_df$fold)
+
+ll_i_df$model <- as.factor(ll_i_df$model)
+
+ll_j_df$model <- as.factor(ll_j_df$model)
+
 ############################
 ### Mixed Effects Models ###
 ############################
@@ -804,16 +908,13 @@ n_row <- (length(unique(ll_i_df$dataset)) *
     length(unique(ll_j_df$test_statistic)) *
     length(pred_sets))
 
-ks_ll <- data.frame(dataset = factor(character(n_row),
-                                     levels = unique(ll_i_df$dataset)),
-                    pred_type = factor(character(n_row),
-                                       levels = names(pred_sets)),
-                    test_statistic = factor(character(n_row),
-                                            levels = c(unique(as.character(ll_i_df$test_statistic)),
-                                                       unique(as.character(ll_j_df$test_statistic)))),
+ks_ll <- data.frame(dataset = character(n_row),
+                    pred_type = character(n_row),
+                    test_statistic = character(n_row),
                     p_value = numeric(n_row),
                     ks_D = numeric(n_row),
-                    model_fit_success = numeric(n_row))
+                    model_fit_success = numeric(n_row),
+                    stringsAsFactors = FALSE)
 
 ## Loop over different different model iterations
 
@@ -850,7 +951,7 @@ for(dataset in unique(ll_i_df$dataset)){
     mme_model_i <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
                                              random = ~ 1|species,
                                              weights = varIdent(form = ~1|model),
-                                             data = tmp_df_i,
+                                             data = tmp_df_i[is.finite(tmp_df_i$mean), ],
                                              control = lmeControl(msMaxIter = 1000,
                                                                   opt = "optim")),
                             error = function(err){
@@ -926,7 +1027,7 @@ for(dataset in unique(ll_i_df$dataset)){
       
       ### Residuals boxplot
       
-      plot(residuals ~ tmp_df_i$model, 
+      plot(residuals ~ tmp_df_i$model[is.finite(tmp_df_i$mean)], 
            ylab = "Pearson residuals",
            xlab = "Model")
       
@@ -1084,6 +1185,22 @@ for(dataset in unique(ll_i_df$dataset)){
 ks_df <- rbind(ks_df,
                ks_ll)
 
+#######################################
+#######################################
+### KOLMOGOROV-SMIRNOV TEST SUMMARY ###
+#######################################
+#######################################
+
+## Drop empty rows from incompatible ts/pred combos
+
+ks_df <- ks_df[ks_df$test_statistic != "", ]
+
+## Test to see if any are now still > 0.05
+
+bonferroni_p <- 0.05 / nrow(ks_df)
+
+ks_fail <- ks_df[ks_df$p_value < bonferroni_p, ]
+
 ##################
 ##################
 ### MAKE PLOTS ###
@@ -1161,6 +1278,24 @@ for(dataset in dataset_options){
                 "independent_log_likelihood",
                 "joint_log_likelihood")){
       
+      ## Check ts/prediction compatibility
+      
+      ### Binary test statistics for binary predictions
+      
+      if(names(pred_sets)[prediction] %in% binary_predictions & ts %nin% binary_ts){
+        
+        next()
+        
+      }
+      
+      ### Probabilistic test statistics for probabilistic predictions
+      
+      if(names(pred_sets)[prediction] %in% probability_predictions & ts %nin% prob_ts){
+        
+        next()
+        
+      }
+      
       ## Read in file
       
       filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
@@ -1187,6 +1322,22 @@ for(dataset in dataset_options){
       model_summary <- summary(mme_model)
       
       coefs <- model_summary$tTable
+      
+      if(ts %in% ts_Inf_Inf){
+        
+      }
+      
+      if(ts %in% ts_0_Inf){
+        
+        coefs[ , 1:2] <- trans_exp(coefs[ , 1:2])
+        
+      }
+      
+      if(ts %in% ts_0_1){
+        
+        coefs[ , 1:2] <- trans_inv_logit(coefs[ , 1:2])
+        
+      }
       
       ## Dataframe to store values
       
@@ -1215,9 +1366,9 @@ for(dataset in dataset_options){
           plot_df[i, ] <- list(model,                                         # Model
                                coefs[paste0("model", model), "Value"],        # Mean
                                coefs[paste0("model", model), "Value"] +       # Upper
-                                 coefs[paste0("model", model), "Std.Error"],
-                               coefs[paste0("model", model), "Value"] - 
-                                 coefs[paste0("model", model), "Std.Error"])  # Lower
+                                 qnorm(0.975) * coefs[paste0("model", model), "Std.Error"],
+                               coefs[paste0("model", model), "Value"] +       # Lower
+                                 qnorm(0.025) * coefs[paste0("model", model), "Std.Error"])  
           
         }
       }
@@ -1249,8 +1400,8 @@ for(dataset in dataset_options){
                           ymin = lower,),
                       position = dodge,
                       width = 0.1) +
-        ylim(c(graph_customisation[graph_customisation$test_statistic == ts, "y_min"],
-               graph_customisation[graph_customisation$test_statistic == ts, "y_max"])) +
+        #ylim(c(graph_customisation[graph_customisation$test_statistic == ts, "y_min"],
+        #       graph_customisation[graph_customisation$test_statistic == ts, "y_max"])) +
         xlab("Model") +
         ylab(eval(parse(text = graph_customisation[graph_customisation$test_statistic == ts, "graph_label"]))) +
         scale_colour_manual(values = colour,
