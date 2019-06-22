@@ -132,6 +132,7 @@ probability_predictions <- c("marginal_prob",
                              "condLOI_marg_low",
                              "condLOI_marg_med",
                              "condLOI_marg_high",
+                             "condLOI_marg",
                              "SSDM_prob")
 
 ## Test statistics
@@ -277,35 +278,23 @@ source("scripts/analysis/proportionNA_function.R")
 ### Create empty dataframes to store test statistic output ###
 ##############################################################
 
-ts_df_species <- data.frame(model = factor(character(),
-                                           levels = model_order[model_order %in% model_options]),
-                            dataset = factor(character(),
-                                             levels = dataset_options),
+ts_df_species <- data.frame(model = character(),
+                            dataset = character(),
                             fold = numeric(),
                             species = character(),
-                            prediction_type = factor(character(),
-                                                     levels = prediction_levels),
-                            prediction_class = factor(character(),
-                                                      levels = c("binary",
-                                                                 "probability")),
-                            test_statistic = factor(character(),
-                                                    levels = ts_species),
+                            prediction_type = character(),
+                            prediction_class = character(),
+                            test_statistic = character(),
                             mean = numeric(),
                             stringsAsFactors = FALSE)
 
-ts_df_site <- data.frame(model = factor(character(),
-                                        levels = model_order[model_order %in% model_options]),
-                         dataset = factor(character(),
-                                          levels = dataset_options),
+ts_df_site <- data.frame(model = character(),
+                         dataset = character(),
                          fold = numeric(),
                          site = character(),
-                         prediction_type = factor(character(),
-                                                  levels = prediction_levels),
-                         prediction_class = factor(character(),
-                                                   levels = c("binary",
-                                                              "probability")),
-                         test_statistic = factor(character(),
-                                                 levels = ts_species),
+                         prediction_type = character(),
+                         prediction_class = character(),
+                         test_statistic = character(),
                          mean = numeric(),
                          stringsAsFactors = FALSE)
 
@@ -486,35 +475,23 @@ for(dataset in dataset_options){
           
         }
         
-        tmp_species <- data.frame(model = factor(character(n_species * length(ts_species)),
-                                                 levels = model_order[model_order %in% model_options]),
-                                  dataset = factor(character(n_species * length(ts_species)),
-                                                   levels = dataset_options),
+        tmp_species <- data.frame(model = character(n_species * length(ts_species)),
+                                  dataset = character(n_species * length(ts_species)),
                                   fold = numeric(n_species * length(ts_species)),
                                   species = character(n_species * length(ts_species)),
-                                  prediction_type = factor(character(n_species * length(ts_species)),
-                                                           levels = prediction_levels),
-                                  prediction_class = factor(character(n_species * length(ts_species)),
-                                                            levels = c("binary",
-                                                                       "probability")),
-                                  test_statistic = factor(character(n_species * length(ts_species)),
-                                                          levels = ts_species),
+                                  prediction_type = character(n_species * length(ts_species)),
+                                  prediction_class = character(n_species * length(ts_species)),
+                                  test_statistic = character(n_species * length(ts_species)),
                                   mean = numeric(n_species * length(ts_species)),
                                   stringsAsFactors = FALSE)
         
-        tmp_site <- data.frame(model = factor(character(n_site * length(ts_site)),
-                                              levels = model_order[model_order %in% model_options]),
-                               dataset = factor(character(n_site * length(ts_site)),
-                                                levels = dataset_options),
+        tmp_site <- data.frame(model = character(n_site * length(ts_site)),
+                               dataset = character(n_site * length(ts_site)),
                                fold = numeric(n_site * length(ts_site)),
                                site = character(n_site * length(ts_site)),
-                               prediction_type = factor(character(n_site * length(ts_site)),
-                                                        levels = prediction_levels),
-                               prediction_class = factor(character(n_site * length(ts_site)),
-                                                         levels = c("binary",
-                                                                    "probability")),
-                               test_statistic = factor(character(n_site * length(ts_site)),
-                                                       levels = ts_site),
+                               prediction_type = character(n_site * length(ts_site)),
+                               prediction_class = character(n_site * length(ts_site)),
+                               test_statistic = character(n_site * length(ts_site)),
                                mean = numeric(n_site * length(ts_site)),
                                stringsAsFactors = FALSE)
         
@@ -791,11 +768,11 @@ for(i in seq_len(nrow(ts_df_site))){
   
 }
 
-## Fold as factor
-
-ts_df_species$fold <- as.factor(ts_df_species$fold)
-
-ts_df_site$fold <- as.factor(ts_df_site$fold)
+# ## Fold as factor
+# 
+# ts_df_species$fold <- as.factor(ts_df_species$fold)
+# 
+# ts_df_site$fold <- as.factor(ts_df_site$fold)
 
 ###################################################
 ### Save Test Statistics Summary Output To File ###
@@ -819,19 +796,13 @@ saveRDS(object = ts_df_site,
 ### Create empty dataframe to store species richness output ###
 ###############################################################
 
-sr_df <- data.frame(model = factor(character(),
-                                   levels = model_order[model_order %in% model_options]),
-                    dataset = factor(character(),
-                                     levels = dataset_options),
+sr_df <- data.frame(model = character(),
+                    dataset = character(),
                     fold = numeric(),
                     site = character(),
-                    prediction_type = factor(character(),
-                                             levels = prediction_levels),
-                    prediction_class = factor(character(),
-                                              levels = c("binary",
-                                                         "probability")),
-                    test_statistic = factor(character(),
-                                            levels = ts_species),
+                    prediction_type = character(),
+                    prediction_class = character(),
+                    test_statistic = character(),
                     mean = numeric(),
                     stringsAsFactors = FALSE)
 
@@ -993,19 +964,13 @@ for(model in model_options){
         
         n_site <- dim(sr_array)[1]
         
-        tmp_sr <- data.frame(model = factor(character(n_site),
-                                            levels = model_order[model_order %in% model_options]),
-                             dataset = factor(character(n_site),
-                                              levels = dataset_options),
+        tmp_sr <- data.frame(model = character(n_site),
+                             dataset = character(n_site),
                              fold = numeric(n_site),
                              site = character(n_site),
-                             prediction_type = factor(character(n_site),
-                                                      levels = prediction_levels),
-                             prediction_class = factor(character(n_site),
-                                                       levels = c("binary",
-                                                                  "probability")),
-                             test_statistic = factor(character(n_site),
-                                                     levels = "species_richness_difference"),
+                             prediction_type = character(n_site),
+                             prediction_class = character(n_site),
+                             test_statistic = character(n_site),
                              mean = numeric(n_site),
                              stringsAsFactors = FALSE)
         
@@ -1179,9 +1144,9 @@ for(i in seq_len(nrow(sr_df))){
   
 }
 
-## Fold as factor
-
-sr_df$fold <- as.factor(sr_df$fold)
+# ## Fold as factor
+# 
+# sr_df$fold <- as.factor(sr_df$fold)
 
 ####################################################
 ### Save Species Richness Summary Output To File ###
@@ -1201,35 +1166,23 @@ saveRDS(object = sr_df,
 ### Create empty dataframe to store log-likelihood output ###
 #############################################################
 
-ll_i_df <- data.frame(model = factor(character(),
-                                     levels = model_order[model_order %in% model_options]),
-                      dataset = factor(character(),
-                                       levels = dataset_options),
+ll_i_df <- data.frame(model = character(),
+                      dataset = character(),
                       fold = numeric(),
                       site = character(),
-                      prediction_type = factor(character(),
-                                               levels = prediction_levels),
-                      prediction_class = factor(character(),
-                                                levels = c("binary",
-                                                           "probability")),
-                      test_statistic = factor(character(),
-                                              levels = ts_species),
+                      prediction_type = character(),
+                      prediction_class = character(),
+                      test_statistic = character(),
                       mean = numeric(),
                       stringsAsFactors = FALSE)
 
-ll_j_df <- data.frame(model = factor(character(),
-                                     levels = model_order[model_order %in% model_options]),
-                      dataset = factor(character(),
-                                       levels = dataset_options),
+ll_j_df <- data.frame(model = character(),
+                      dataset = character(),
                       fold = numeric(),
                       species = character(),
-                      prediction_type = factor(character(),
-                                               levels = prediction_levels),
-                      prediction_class = factor(character(),
-                                                levels = c("binary",
-                                                           "probability")),
-                      test_statistic = factor(character(),
-                                              levels = ts_species),
+                      prediction_type = character(),
+                      prediction_class = character(),
+                      test_statistic = character(),
                       mean = numeric(),
                       stringsAsFactors = FALSE)
 
@@ -1406,38 +1359,25 @@ for(model in model_options){
           
           n_site <- dim(ll_j_array)[1]
           
-          tmp_ll_j <- data.frame(model = factor(character(n_site),
-                                                levels = model_order[model_order %in% model_options]),
-                                 dataset = factor(character(n_site),
-                                                  levels = dataset_options),
+          tmp_ll_j <- data.frame(model = character(n_site),
+                                 dataset = character(n_site),
                                  fold = numeric(n_site),
                                  site = character(n_site),
-                                 prediction_type = factor(character(n_site),
-                                                          levels = prediction_levels),
-                                 prediction_class = factor(character(n_site),
-                                                           levels = c("binary",
-                                                                      "probability")),
-                                 test_statistic = factor(character(n_site),
-                                                         levels = "joint_log_likelihood"),
+                                 prediction_type = character(n_site),
+                                 prediction_class = character(n_site),
+                                 test_statistic = character(n_site),
                                  mean = numeric(n_site),
                                  stringsAsFactors = FALSE)
           
-          tmp_ll_i <- data.frame(model = factor(character(n_spp),
-                                                levels = model_order[model_order %in% model_options]),
-                                 dataset = factor(character(n_spp),
-                                                  levels = dataset_options),
+          tmp_ll_i <- data.frame(model = character(n_spp),
+                                 dataset = character(n_spp),
                                  fold = numeric(n_spp),
                                  species = character(n_spp),
-                                 prediction_type = factor(character(n_spp),
-                                                          levels = prediction_levels),
-                                 prediction_class = factor(character(n_spp),
-                                                           levels = c("binary",
-                                                                      "probability")),
-                                 test_statistic = factor(character(n_spp),
-                                                         levels = "independent_log_likelihood"),
+                                 prediction_type = character(n_spp),
+                                 prediction_class = character(n_spp),
+                                 test_statistic = character(n_spp),
                                  mean = numeric(n_spp),
                                  stringsAsFactors = FALSE)
-          
           
           ###############################################
           ### Summarise Likelihood And Fill Dataframe ###
@@ -1481,9 +1421,8 @@ for(model in model_options){
               tmp_ll_i[row_index_i, ] <- list(model,
                                               dataset,
                                               fold,
-                                              sprintf("%s_fold%s_%s",
+                                              sprintf("%s_%s",
                                                       dataset,
-                                                      fold,
                                                       i),
                                               pred_type,
                                               ifelse(pred_type %in% binary_predictions,
@@ -1519,9 +1458,8 @@ for(model in model_options){
                 tmp_ll_i[row_index_i, ] <- list(model,
                                                 dataset,
                                                 fold,
-                                                sprintf("%s_fold%s_%s",
+                                                sprintf("%s_%s",
                                                         dataset,
-                                                        fold,
                                                         i),
                                                 cond_pred_type[cond],
                                                 ifelse(cond_pred_type[cond] %in% binary_predictions,
@@ -1614,9 +1552,8 @@ for(model in model_options){
             tmp_ll_i[row_index_i, ] <- list(model,
                                             dataset,
                                             fold,
-                                            sprintf("%s_fold%s_%s",
+                                            sprintf("%s_%s",
                                                     dataset,
-                                                    fold,
                                                     i),
                                             pred_type,
                                             ifelse(pred_type %in% binary_predictions,
@@ -1679,11 +1616,11 @@ for(i in seq_len(nrow(ll_j_df))){
   
 }
 
-## Fold as factor
-
-ll_i_df$fold <- as.factor(ll_i_df$fold)
-
-ll_j_df$fold <- as.factor(ll_j_df$fold)
+# ## Fold as factor
+# 
+# ll_i_df$fold <- as.factor(ll_i_df$fold)
+# 
+# ll_j_df$fold <- as.factor(ll_j_df$fold)
 
 ###################################################
 ### Save Log Likelihood Summary Outputs To File ###
