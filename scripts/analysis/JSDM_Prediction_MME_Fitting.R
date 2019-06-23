@@ -10,6 +10,7 @@ library(ggplot2)
 library(RColorBrewer)
 library(PassButter)
 library(psych)
+library(logitnorm)
 
 ##################################
 ### Set combination parameters ###
@@ -239,11 +240,53 @@ prob_ts <- c("AUC",
 
 ## Test Statistic range
 
-ts_Inf_Inf <- c()
+ts_Inf_Inf <- c("bias",
+                "Pearson",
+                "Spearman",
+                "Kendall",
+                "species_richness_difference",
+                "independent_log_likelihood",
+                "joint_log_likelihood")
 
-ts_0_Inf <- c()
+ts_0_Inf <- c("MSE",
+              "RMSE",
+              "SSE",
+              "TP",
+              "FP",
+              "TN",
+              "FN",
+              "PLR",
+              "NLR",
+              "DOR",
+              "Binomial",
+              "Euclidean",
+              "Mahalanobis",
+              "Manhattan")
 
-ts_0_1 <- c()
+ts_0_1 <- c("AUC",
+            "R2",
+            "TPR",
+            "FPR",
+            "TNR",
+            "FNR",
+            "Prevalence",
+            "Accuracy",
+            "PPV",
+            "FOR",
+            "FDR",
+            "NPV",
+            "F_1",
+            "Youden_J",
+            "Kappa",
+            "Bray",
+            "Canberra",
+            "Gower",
+            "Gower_alt",
+            "Horn",
+            "Jaccard",
+            "Kulczynski",
+            "Mountford",
+            "Raup")
 
 ## Transformation functions
 
@@ -1323,22 +1366,6 @@ for(dataset in dataset_options){
       
       coefs <- model_summary$tTable
       
-      if(ts %in% ts_Inf_Inf){
-        
-      }
-      
-      if(ts %in% ts_0_Inf){
-        
-        coefs[ , 1:2] <- trans_exp(coefs[ , 1:2])
-        
-      }
-      
-      if(ts %in% ts_0_1){
-        
-        coefs[ , 1:2] <- trans_inv_logit(coefs[ , 1:2])
-        
-      }
-      
       ## Dataframe to store values
       
       n_row <- length(model_order)
@@ -1371,6 +1398,26 @@ for(dataset in dataset_options){
                                  qnorm(0.025) * coefs[paste0("model", model), "Std.Error"])  
           
         }
+      }
+      
+      if(ts %in% ts_Inf_Inf){
+        
+      }
+      
+      if(ts %in% ts_0_Inf){
+        
+        plot_df[ , 2:4] <- apply(plot_df[ , 2:4], 
+                                 1:2, 
+                                 plnorm)
+        
+      }
+      
+      if(ts %in% ts_0_1){
+        
+        plot_df[ , 2:4] <- apply(plot_df[ , 2:4],
+                                 1:2,
+                                 plogitnorm)
+        
       }
       
       ## Make plot and save to file
