@@ -341,15 +341,17 @@ if(length(model_options) == 2){
   
 }
 
+################################################
+################################################
+### LOAD ALL DATA AND CALCULATE BONFERRONI P ###
+################################################
+################################################
+
 #######################
-#######################
-### TEST STATISTICS ###
-#######################
+### Test Statistics ###
 #######################
 
-#################
-### Load Data ###
-#################
+## Load Data
 
 ts_df_species <- readRDS(sprintf("outputs/test_statistics/test_statistics_species_summary_MME_%s.rds",
                                  chapter))
@@ -373,24 +375,106 @@ ts_df_species <- ts_df_species[order(ts_df_species$model), ]
 
 ts_df_site <- ts_df_site[order(ts_df_site$model), ]
 
-############################
-### Mixed Effects Models ###
-############################
-
 ## Empty dataframe to store Kolmogorov-Smirnov test outputs
 
-n_row <- length(unique(ts_df_species$dataset)) *
+n_row_ts <- length(unique(ts_df_species$dataset)) *
   (length(unique(ts_df_species$test_statistic)) + 
      length(unique(ts_df_site$test_statistic))) *
   length(pred_sets)
 
-ks_df <- data.frame(dataset = character(n_row),
-                    pred_type = character(n_row),
-                    test_statistic = character(n_row),
-                    p_value = numeric(n_row),
-                    ks_D = numeric(n_row),
-                    model_fit_success = numeric(n_row),
+ks_df <- data.frame(dataset = character(n_row_ts),
+                    pred_type = character(n_row_ts),
+                    test_statistic = character(n_row_ts),
+                    p_value = numeric(n_row_ts),
+                    ks_D = numeric(n_row_ts),
+                    model_fit_success = numeric(n_row_ts),
                     stringsAsFactors = FALSE)
+
+########################
+### Species Richness ###
+########################
+
+## Load Data
+
+sr_df <- readRDS(sprintf("outputs/species_richness/species_richness_summary_%s.rds",
+                         chapter))
+
+sr_df$fold <- as.factor(sr_df$fold)
+
+sr_df$model <- as.factor(sr_df$model)
+
+sr_df$model <- relevel(sr_df$model, "SSDM")
+
+## Empty dataframe to store Kolmogorov-Smirnov test outputs
+
+n_row_sr <- length(unique(sr_df$dataset)) *
+  length(unique(sr_df$test_statistic)) *
+  length(pred_sets)
+
+ks_sr <- data.frame(dataset = character(n_row_sr),
+                    pred_type = character(n_row_sr),
+                    test_statistic = character(n_row_sr),
+                    p_value = numeric(n_row_sr),
+                    ks_D = numeric(n_row_sr),
+                    model_fit_success = numeric(n_row_sr),
+                    stringsAsFactors = FALSE)
+
+##################
+### Likelihood ###
+##################
+
+## Load Data
+
+ll_i_df <- readRDS(sprintf("outputs/likelihood/independent_likelihood_summary_%s.rds",
+                           chapter))
+
+ll_j_df <- readRDS(sprintf("outputs/likelihood/joint_likelihood_summary_%s.rds",
+                           chapter))
+
+ll_i_df$fold <- as.factor(ll_i_df$fold)
+
+ll_j_df$fold <- as.factor(ll_j_df$fold)
+
+ll_i_df$model <- as.factor(ll_i_df$model)
+
+ll_i_df$model <- relevel(ll_i_df$model, "SSDM")
+
+ll_j_df$model <- as.factor(ll_j_df$model)
+
+ll_j_df$model <- relevel(ll_j_df$model, "SSDM")
+
+## Empty dataframe to store Kolmogorov-Smirnov test outputs
+
+n_row_ll <- (length(unique(ll_i_df$dataset)) *
+               length(unique(ll_i_df$test_statistic)) *
+               length(pred_sets)) +
+  (length(unique(ll_j_df$dataset)) *
+     length(unique(ll_j_df$test_statistic)) *
+     length(pred_sets))
+
+ks_ll <- data.frame(dataset = character(n_row_ll),
+                    pred_type = character(n_row_ll),
+                    test_statistic = character(n_row_ll),
+                    p_value = numeric(n_row_ll),
+                    ks_D = numeric(n_row_ll),
+                    model_fit_success = numeric(n_row_ll),
+                    stringsAsFactors = FALSE)
+
+###############################
+### Bonferroni P correction ###
+###############################
+
+bonferroni_p <- 0.05 / (n_row_ts + n_row_sr + n_row_ll)
+
+#######################
+#######################
+### TEST STATISTICS ###
+#######################
+#######################
+
+############################
+### Mixed Effects Models ###
+############################
 
 ## Loop over different model iterations
 
@@ -952,39 +1036,6 @@ for(dataset in unique(ts_df_site$dataset)){
 ########################
 ########################
 
-#################
-### Load Data ###
-#################
-
-sr_df <- readRDS(sprintf("outputs/species_richness/species_richness_summary_%s.rds",
-                         chapter))
-
-sr_df$fold <- as.factor(sr_df$fold)
-
-sr_df$model <- as.factor(sr_df$model)
-
-sr_df$model <- relevel(sr_df$model, "SSDM")
-
-############################
-### Mixed Effects Models ###
-############################
-
-## Empty dataframe to store Kolmogorov-Smirnov test outputs
-
-n_row <- length(unique(sr_df$dataset)) *
-  length(unique(sr_df$test_statistic)) *
-  length(pred_sets)
-
-ks_sr <- data.frame(dataset = factor(character(n_row),
-                                     levels = unique(sr_df$dataset)),
-                    pred_type = factor(character(n_row),
-                                       levels = names(pred_sets)),
-                    test_statistic = factor(character(n_row),
-                                            levels = unique(as.character(sr_df$test_statistic))),
-                    p_value = numeric(n_row),
-                    ks_D = numeric(n_row),
-                    model_fit_success = numeric(n_row))
-
 ## Loop over different different model iterations
 
 row_index <- 1
@@ -1245,48 +1296,9 @@ ks_df <- rbind(ks_df,
 ##################
 ##################
 
-#################
-### Load Data ###
-#################
-
-ll_i_df <- readRDS(sprintf("outputs/likelihood/independent_likelihood_summary_%s.rds",
-                         chapter))
-
-ll_j_df <- readRDS(sprintf("outputs/likelihood/joint_likelihood_summary_%s.rds",
-                           chapter))
-
-ll_i_df$fold <- as.factor(ll_i_df$fold)
-
-ll_j_df$fold <- as.factor(ll_j_df$fold)
-
-ll_i_df$model <- as.factor(ll_i_df$model)
-
-ll_i_df$model <- relevel(ll_i_df$model, "SSDM")
-
-ll_j_df$model <- as.factor(ll_j_df$model)
-
-ll_j_df$model <- relevel(ll_j_df$model, "SSDM")
-
 ############################
 ### Mixed Effects Models ###
 ############################
-
-## Empty dataframe to store Kolmogorov-Smirnov test outputs
-
-n_row <- (length(unique(ll_i_df$dataset)) *
-  length(unique(ll_i_df$test_statistic)) *
-  length(pred_sets)) +
-  (length(unique(ll_j_df$dataset)) *
-    length(unique(ll_j_df$test_statistic)) *
-    length(pred_sets))
-
-ks_ll <- data.frame(dataset = character(n_row),
-                    pred_type = character(n_row),
-                    test_statistic = character(n_row),
-                    p_value = numeric(n_row),
-                    ks_D = numeric(n_row),
-                    model_fit_success = numeric(n_row),
-                    stringsAsFactors = FALSE)
 
 ## Loop over different different model iterations
 
@@ -1627,8 +1639,6 @@ ks_df <- rbind(ks_df,
 ks_df <- ks_df[ks_df$test_statistic != "", ]
 
 ## Test to see if any are now still > 0.05
-
-bonferroni_p <- 0.05 / nrow(ks_df)
 
 ks_fail <- ks_df[ks_df$p_value < bonferroni_p, ]
 
