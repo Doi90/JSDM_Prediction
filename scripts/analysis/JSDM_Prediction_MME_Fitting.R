@@ -513,7 +513,7 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ## If fail KS-test, re-fit model with transformation
       
-      if(ks$p.value < 0.05){
+      if(ks$p.value < bonferroni_p){
         
         if(ts %in% ts_Inf_Inf){
           
@@ -707,24 +707,8 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ## Fit mixed effects model
       
-      if(ts %in% ts_Inf_Inf){
-        
-        tmp_df$mean_trans <- tmp_df$mean
-        
-      }
+      tmp_df$mean_trans <- tmp_df$mean
       
-      if(ts %in% ts_0_Inf){
-        
-        tmp_df$mean_trans <- trans_log(tmp_df$mean)
-        
-      }
-      
-      if(ts %in% ts_0_1){
-        
-        tmp_df$mean_trans <- trans_logit(tmp_df$mean)
-        
-      }
-        
       tmp_df <- na.omit(tmp_df)
       
       mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
@@ -743,7 +727,11 @@ for(dataset in unique(ts_df_site$dataset)){
                               return(NA)
                               
                             }
-      )  
+      )
+      
+      mem_model$transformed <- FALSE
+      
+      ## If no model fit, skip remainder
       
       if(class(mem_model) != "lme"){
         
@@ -757,6 +745,92 @@ for(dataset in unique(ts_df_site$dataset)){
         row_index <- row_index + 1
         
         next()
+        
+      }
+      
+      ## Test for normality to see if we need to transform
+      
+      ### Extract residuals
+      
+      residuals <- resid(mem_model, type = "pearson")
+      
+      ### Correct residuals for variance structure
+      
+      cf <- coef(mem_model$modelStruct$varStruct, 
+                 unconstrained = FALSE)
+      
+      for(i in names(cf)){
+        
+        idx <- tmp_df$model == i
+        
+        residuals[idx] <- residuals[idx] / cf[i]
+        
+      }
+      
+      ### Check normality with Kolmogorov-Smirnov test
+      
+      extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+      
+      if(length(extreme_id) > 0){
+        
+        test_resid <- residuals[-extreme_id]
+        
+      } else {
+        
+        test_resid <- residuals
+        
+      }
+      
+      ks <- ks.test(test_resid, 
+                    pnorm, 
+                    mean(test_resid), 
+                    sd(test_resid))
+      
+      ## If fail KS-test, re-fit model with transformation
+      
+      if(ks$p.value < bonferroni_p){
+        
+        if(ts %in% ts_Inf_Inf){
+          
+          tmp_df$mean_trans <- tmp_df$mean
+          
+        }
+        
+        if(ts %in% ts_0_Inf){
+          
+          tmp_df$mean_trans <- trans_log(tmp_df$mean)
+          
+        }
+        
+        if(ts %in% ts_0_1){
+          
+          tmp_df$mean_trans <- trans_logit(tmp_df$mean)
+          
+        }
+        
+        tmp_df$mean_trans <- tmp_df$mean
+        
+        tmp_df <- na.omit(tmp_df)
+        
+        mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
+                                               random = ~ 1|site,
+                                               weights = varIdent(form = ~1|model),
+                                               data = tmp_df,
+                                               control = lmeControl(msMaxIter = 1000,
+                                                                    opt = "optim")),
+                              error = function(err){
+                                
+                                message(sprintf("Model fit failed for: %s - %s - %s",
+                                                dataset,
+                                                names(pred_sets[prediction]),
+                                                ts))
+                                
+                                return(NA)
+                                
+                              }
+        )
+        
+        mem_model$transformed <- TRUE
         
       }
       
@@ -803,7 +877,7 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ### Residuals boxplot
       
-      plot(residuals ~ tmp_df$model,
+      plot(residuals ~ factor(tmp_df$model),
            ylab = "Pearson residuals",
            xlab = "Model")
       
@@ -845,7 +919,6 @@ for(dataset in unique(ts_df_site$dataset)){
                                  ks$p.value,
                                  ks$statistic,
                                  1)
-      
       ### Save model to file
       
       filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
