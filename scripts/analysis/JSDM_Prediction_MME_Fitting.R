@@ -292,7 +292,7 @@ ts_0_1 <- c("AUC",
 
 trans_log <- function(x){
   
-  x[x == 0] <- 0.0000001
+  x[x == 0] <- .Machine$double.eps
   
   tmp <- log(x)
   
@@ -302,9 +302,9 @@ trans_log <- function(x){
 
 trans_logit <- function(x){
   
-  x[x == 0] <- 0.0000001
+  x[x == 0] <- .Machine$double.eps
   
-  x[x == 1] <- 0.9999999
+  x[x == 1] <- 1 - .Machine$double.eps
   
   tmp <- logit(x)
   
@@ -363,7 +363,15 @@ ts_df_site$fold <- as.factor(ts_df_site$fold)
 
 ts_df_species$model <- as.factor(ts_df_species$model)
 
+ts_df_species$model <- relevel(ts_df_species$model, "SSDM")
+
 ts_df_site$model <- as.factor(ts_df_site$model)
+
+ts_df_site$model <- relevel(ts_df_site$model, "SSDM")
+
+ts_df_species <- ts_df_species[order(ts_df_species$model), ]
+
+ts_df_site <- ts_df_site[order(ts_df_site$model), ]
 
 ############################
 ### Mixed Effects Models ###
@@ -422,27 +430,114 @@ for(dataset in unique(ts_df_species$dataset)){
       
       tmp_df$species <- as.factor(tmp_df$species)
       
-      tmp_df <- na.omit(tmp_df)
-      
       ## Fit mixed effects model
       
-      if(ts %in% ts_Inf_Inf){
+      tmp_df$mean_trans <- tmp_df$mean
+      
+      tmp_df <- na.omit(tmp_df)
+      
+      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
+                                             random = ~ 1|species,
+                                             weights = varIdent(form = ~1|model),
+                                             data = tmp_df,
+                                             control = lmeControl(msMaxIter = 1000,
+                                                                  opt = "optim")),
+                            error = function(err){
+                              
+                              message(sprintf("Model fit failed for: %s - %s - %s",
+                                              dataset,
+                                              names(pred_sets[prediction]),
+                                              ts))
+                              
+                              return(NA)
+                              
+                            }
+      )
+      
+      mem_model$transformed <- FALSE
+      
+      ## If no model fit, skip remainder
+      
+      if(class(mem_model) != "lme"){
+        
+        ks_df[row_index, ] <- list(dataset,
+                                   names(pred_sets[prediction]),
+                                   ts,
+                                   NA,
+                                   NA,
+                                   0)
+        
+        row_index <- row_index + 1
+        
+        next()
         
       }
       
-      if(ts %in% ts_0_Inf){
+      ## Test for normality to see if we need to transform
+      
+      ### Extract residuals
+      
+      residuals <- resid(mem_model, type = "pearson")
+      
+      ### Correct residuals for variance structure
+      
+      cf <- coef(mem_model$modelStruct$varStruct, 
+                 unconstrained = FALSE)
+      
+      for(i in names(cf)){
         
-        tmp_df$mean <- trans_log(tmp_df$mean)
+        idx <- tmp_df$model == i
+        
+        residuals[idx] <- residuals[idx] / cf[i]
         
       }
       
-      if(ts %in% ts_0_1){
+      ### Check normality with Kolmogorov-Smirnov test
+      
+      extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+      
+      if(length(extreme_id) > 0){
         
-        tmp_df$mean <- trans_logit(tmp_df$mean)
+        test_resid <- residuals[-extreme_id]
+        
+      } else {
+        
+        test_resid <- residuals
         
       }
       
-      mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
+      ks <- ks.test(test_resid, 
+                    pnorm, 
+                    mean(test_resid), 
+                    sd(test_resid))
+      
+      ## If fail KS-test, re-fit model with transformation
+      
+      if(ks$p.value < 0.05){
+        
+        if(ts %in% ts_Inf_Inf){
+          
+          tmp_df$mean_trans <- tmp_df$mean
+          
+        }
+        
+        if(ts %in% ts_0_Inf){
+          
+          tmp_df$mean_trans <- trans_log(tmp_df$mean)
+          
+        }
+        
+        if(ts %in% ts_0_1){
+          
+          tmp_df$mean_trans <- trans_logit(tmp_df$mean)
+          
+        }
+        
+        tmp_df$mean_trans <- tmp_df$mean
+        
+        tmp_df <- na.omit(tmp_df)
+        
+        mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
                                                random = ~ 1|species,
                                                weights = varIdent(form = ~1|model),
                                                data = tmp_df,
@@ -459,25 +554,27 @@ for(dataset in unique(ts_df_species$dataset)){
                                 
                               }
         )
-      
-      if(class(mme_model) != "lme"){
         
-        ks_df[row_index, ] <- list(dataset,
-                                   names(pred_sets[prediction]),
-                                   ts,
-                                   NA,
-                                   NA,
-                                   0)
-        
-        row_index <- row_index + 1
-        
-        next()
+        mem_model$transformed <- TRUE
         
       }
       
       ## Extract residuals
       
-      residuals <- resid(mme_model, type = "pearson")
+      residuals <- resid(mem_model, type = "pearson")
+      
+      ## Correct residuals for variance structure
+      
+      cf <- coef(mem_model$modelStruct$varStruct, 
+                 unconstrained = FALSE)
+      
+      for(i in names(cf)){
+        
+        idx <- tmp_df$model == i
+        
+        residuals[idx] <- residuals[idx] / cf[i]
+        
+      }
       
       ## Plot residuals and save to file
       
@@ -511,10 +608,22 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ### Residuals qq plot
       
-      qqplot(residuals, 
+      extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+      
+      if(length(extreme_id) > 0){
+        
+        test_resid <- residuals[-extreme_id]
+        
+      } else {
+        
+        test_resid <- residuals
+        
+      }
+      
+      qqplot(test_resid, 
              rnorm(n = 1000, 
-                   mean(residuals), 
-                   sd(residuals)),
+                   mean(test_resid), 
+                   sd(test_resid)),
              ylab = "N(mean(residuals), sd(residuals))",
              xlab = "Model Pearson residuals",
              main = "QQ-plot")
@@ -524,10 +633,10 @@ for(dataset in unique(ts_df_species$dataset)){
       
       ### Check normality with Kolmogorov-Smirnov test
       
-      ks <- ks.test(residuals, 
+      ks <- ks.test(test_resid, 
                     pnorm, 
-                    mean(residuals), 
-                    sd(residuals))
+                    mean(test_resid), 
+                    sd(test_resid))
       
       ks_df[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
@@ -535,7 +644,6 @@ for(dataset in unique(ts_df_species$dataset)){
                                  ks$p.value,
                                  ks$statistic,
                                  1)
-      
       ### Save model to file
       
       filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_%4$s_model.rds",
@@ -544,7 +652,7 @@ for(dataset in unique(ts_df_species$dataset)){
                           ts,
                           chapter)
       
-      saveRDS(mme_model,
+      saveRDS(mem_model,
               filename)
       
       ### Statusbar
@@ -597,27 +705,29 @@ for(dataset in unique(ts_df_site$dataset)){
       
       tmp_df$site <- as.factor(tmp_df$site)
       
-      tmp_df <- na.omit(tmp_df)
-      
       ## Fit mixed effects model
       
       if(ts %in% ts_Inf_Inf){
+        
+        tmp_df$mean_trans <- tmp_df$mean
         
       }
       
       if(ts %in% ts_0_Inf){
         
-        tmp_df$mean <- trans_log(tmp_df$mean)
+        tmp_df$mean_trans <- trans_log(tmp_df$mean)
         
       }
       
       if(ts %in% ts_0_1){
         
-        tmp_df$mean <- trans_logit(tmp_df$mean)
+        tmp_df$mean_trans <- trans_logit(tmp_df$mean)
         
       }
         
-      mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
+      tmp_df <- na.omit(tmp_df)
+      
+      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
                                              random = ~ 1|site,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -635,7 +745,7 @@ for(dataset in unique(ts_df_site$dataset)){
                             }
       )  
       
-      if(class(mme_model) != "lme"){
+      if(class(mem_model) != "lme"){
         
         ks_df[row_index, ] <- list(dataset,
                                    names(pred_sets[prediction]),
@@ -652,7 +762,20 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ## Extract residuals
       
-      residuals <- resid(mme_model, type = "pearson")
+      residuals <- resid(mem_model, type = "pearson")
+      
+      ## Correct residuals for variance structure
+      
+      cf <- coef(mem_model$modelStruct$varStruct, 
+                 unconstrained = FALSE)
+      
+      for(i in names(cf)){
+        
+        idx <- tmp_df$model == i
+        
+        residuals[idx] <- residuals[idx] / cf[i]
+        
+      }
       
       ## Plot residuals and save to file
       
@@ -686,10 +809,22 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ### Residuals qq plot
       
-      qqplot(residuals, 
+      extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+      
+      if(length(extreme_id) > 0){
+        
+        test_resid <- residuals[-extreme_id]
+        
+      } else {
+        
+        test_resid <- residuals
+        
+      }
+      
+      qqplot(test_resid, 
              rnorm(n = 1000, 
-                   mean(residuals), 
-                   sd(residuals)),
+                   mean(test_resid), 
+                   sd(test_resid)),
              ylab = "N(mean(residuals), sd(residuals))",
              xlab = "Model Pearson residuals",
              main = "QQ-plot")
@@ -699,10 +834,10 @@ for(dataset in unique(ts_df_site$dataset)){
       
       ### Check normality with Kolmogorov-Smirnov test
       
-      ks <- ks.test(residuals, 
+      ks <- ks.test(test_resid, 
                     pnorm, 
-                    mean(residuals), 
-                    sd(residuals))
+                    mean(test_resid), 
+                    sd(test_resid))
       
       ks_df[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
@@ -719,7 +854,7 @@ for(dataset in unique(ts_df_site$dataset)){
                           ts,
                           chapter)
       
-      saveRDS(mme_model,
+      saveRDS(mem_model,
               filename)
       
       ### Statusbar
@@ -755,6 +890,8 @@ sr_df$fold <- as.factor(sr_df$fold)
 
 sr_df$model <- as.factor(sr_df$model)
 
+sr_df$model <- relevel(sr_df$model, "SSDM")
+
 ############################
 ### Mixed Effects Models ###
 ############################
@@ -783,6 +920,8 @@ for(dataset in unique(sr_df$dataset)){
   
   for(prediction in seq_len(length(pred_sets))){
     
+    ts <- "species_richness_difference"
+    
     ## Subset dataset
     
     tmp_df <- sr_df[sr_df$dataset == dataset &
@@ -792,7 +931,25 @@ for(dataset in unique(sr_df$dataset)){
     
     ## Fit mixed effects model
     
-    mme_model <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
+    if(ts %in% ts_Inf_Inf){
+      
+      tmp_df$mean_trans <- tmp_df$mean
+      
+    }
+    
+    if(ts %in% ts_0_Inf){
+      
+      tmp_df$mean_trans <- trans_log(tmp_df$mean)
+      
+    }
+    
+    if(ts %in% ts_0_1){
+      
+      tmp_df$mean_trans <- trans_logit(tmp_df$mean)
+      
+    }
+    
+    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -810,7 +967,7 @@ for(dataset in unique(sr_df$dataset)){
                           }
     )
     
-    if(class(mme_model) != "lme"){
+    if(class(mem_model) != "lme"){
       
       ks_sr[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
@@ -827,7 +984,20 @@ for(dataset in unique(sr_df$dataset)){
     
     ## Extract residuals
     
-    residuals <- resid(mme_model, type = "pearson")
+    residuals <- resid(mem_model, type = "pearson")
+    
+    ## Correct residuals for variance structure
+    
+    cf <- coef(mem_model$modelStruct$varStruct, 
+               unconstrained = FALSE)
+    
+    for(i in names(cf)){
+      
+      idx <- tmp_df$model == i
+      
+      residuals[idx] <- residuals[idx] / cf[i]
+      
+    }
     
     ## Plot residuals and save to file
     
@@ -861,10 +1031,22 @@ for(dataset in unique(sr_df$dataset)){
     
     ### Residuals qq plot
     
-    qqplot(residuals, 
+    extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+    
+    if(length(extreme_id) > 0){
+      
+      test_resid <- residuals[-extreme_id]
+      
+    } else {
+      
+      test_resid <- residuals
+      
+    }
+    
+    qqplot(test_resid, 
            rnorm(n = 1000, 
-                 mean(residuals), 
-                 sd(residuals)),
+                 mean(test_resid), 
+                 sd(test_resid)),
            ylab = "N(mean(residuals), sd(residuals))",
            xlab = "Model Pearson residuals",
            main = "QQ-plot")
@@ -874,14 +1056,14 @@ for(dataset in unique(sr_df$dataset)){
     
     ### Check normality with Kolmogorov-Smirnov test
     
-    ks <- ks.test(residuals, 
+    ks <- ks.test(test_resid, 
                   pnorm, 
-                  mean(residuals), 
-                  sd(residuals))
+                  mean(test_resid), 
+                  sd(test_resid))
     
-    ks_sr[row_index, ] <- list(dataset,
+    ks_df[row_index, ] <- list(dataset,
                                names(pred_sets[prediction]),
-                               "species_richness_difference",
+                               ts,
                                ks$p.value,
                                ks$statistic,
                                1)
@@ -894,7 +1076,7 @@ for(dataset in unique(sr_df$dataset)){
                         "species_richness_difference",
                         chapter)
     
-    saveRDS(mme_model,
+    saveRDS(mem_model,
             filename)
     
     ### Statusbar
@@ -936,7 +1118,11 @@ ll_j_df$fold <- as.factor(ll_j_df$fold)
 
 ll_i_df$model <- as.factor(ll_i_df$model)
 
+ll_i_df$model <- relevel(ll_i_df$model, "SSDM")
+
 ll_j_df$model <- as.factor(ll_j_df$model)
+
+ll_j_df$model <- relevel(ll_j_df$model, "SSDM")
 
 ############################
 ### Mixed Effects Models ###
@@ -991,7 +1177,11 @@ for(dataset in unique(ll_i_df$dataset)){
     
     ## Fit mixed effects model
     
-    mme_model_i <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
+    tmp_df_i$mean_trans <- tmp_df_i$mean
+      
+    tmp_df_j$mean_trans <- tmp_df_j$mean
+    
+    mem_model_i <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
                                              random = ~ 1|species,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df_i[is.finite(tmp_df_i$mean), ],
@@ -1009,7 +1199,7 @@ for(dataset in unique(ll_i_df$dataset)){
                             }
     )
     
-    mme_model_j <- tryCatch(expr = nlme::lme(mean ~ -1 + model + fold, 
+    mem_model_j <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + fold, 
                                              random = ~ 1|site,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df_j,
@@ -1027,7 +1217,7 @@ for(dataset in unique(ll_i_df$dataset)){
                             }
     )
     
-    if(class(mme_model_i) != "lme"){
+    if(class(mem_model_i) != "lme"){
       
       ks_ll[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
@@ -1042,7 +1232,20 @@ for(dataset in unique(ll_i_df$dataset)){
       
       ## Extract residuals
       
-      residuals <- resid(mme_model_i, type = "pearson")
+      residuals <- resid(mem_model_i, type = "pearson")
+      
+      ## Correct residuals for variance structure
+      
+      cf <- coef(mem_model_i$modelStruct$varStruct, 
+                 unconstrained = FALSE)
+      
+      for(i in names(cf)){
+        
+        idx <- tmp_df_i$model == i
+        
+        residuals[idx] <- residuals[idx] / cf[i]
+        
+      }
       
       ## Plot residuals and save to file
       
@@ -1076,10 +1279,22 @@ for(dataset in unique(ll_i_df$dataset)){
       
       ### Residuals qq plot
       
-      qqplot(residuals, 
+      extreme_id <- which(tmp_df_i$mean == 0 | tmp_df_i$mean == 1)
+      
+      if(length(extreme_id) > 0){
+        
+        test_resid <- residuals[-extreme_id]
+        
+      } else {
+        
+        test_resid <- residuals
+        
+      }
+      
+      qqplot(test_resid, 
              rnorm(n = 1000, 
-                   mean(residuals), 
-                   sd(residuals)),
+                   mean(test_resid), 
+                   sd(test_resid)),
              ylab = "N(mean(residuals), sd(residuals))",
              xlab = "Model Pearson residuals",
              main = "QQ-plot")
@@ -1089,12 +1304,12 @@ for(dataset in unique(ll_i_df$dataset)){
       
       ### Check normality with Kolmogorov-Smirnov test
       
-      ks <- ks.test(residuals, 
+      ks <- ks.test(test_resid, 
                     pnorm, 
-                    mean(residuals), 
-                    sd(residuals))
+                    mean(test_resid), 
+                    sd(test_resid))
       
-      ks_ll[row_index, ] <- list(dataset,
+      ks_df[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
                                  "independent_log_likelihood",
                                  ks$p.value,
@@ -1109,7 +1324,7 @@ for(dataset in unique(ll_i_df$dataset)){
                           "independent_log_likelihood",
                           chapter)
       
-      saveRDS(mme_model_i,
+      saveRDS(mem_model_i,
               filename)
       
       ### Statusbar
@@ -1125,7 +1340,7 @@ for(dataset in unique(ll_i_df$dataset)){
       
     }
     
-    if(class(mme_model_j) != "lme"){
+    if(class(mem_model_j) != "lme"){
       
       ks_ll[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
@@ -1140,7 +1355,20 @@ for(dataset in unique(ll_i_df$dataset)){
       
       ## Extract residuals
       
-      residuals <- resid(mme_model_j, type = "pearson")
+      residuals <- resid(mem_model_j, type = "pearson")
+      
+      ## Correct residuals for variance structure
+      
+      cf <- coef(mem_model_j$modelStruct$varStruct, 
+                 unconstrained = FALSE)
+      
+      for(i in names(cf)){
+        
+        idx <- tmp_df_j$model == i
+        
+        residuals[idx] <- residuals[idx] / cf[i]
+        
+      }
       
       ## Plot residuals and save to file
       
@@ -1174,10 +1402,22 @@ for(dataset in unique(ll_i_df$dataset)){
       
       ### Residuals qq plot
       
-      qqplot(residuals, 
+      extreme_id <- which(tmp_df_j$mean == 0 | tmp_df_j$mean == 1)
+      
+      if(length(extreme_id) > 0){
+        
+        test_resid <- residuals[-extreme_id]
+        
+      } else {
+        
+        test_resid <- residuals
+        
+      }
+      
+      qqplot(test_resid, 
              rnorm(n = 1000, 
-                   mean(residuals), 
-                   sd(residuals)),
+                   mean(test_resid), 
+                   sd(test_resid)),
              ylab = "N(mean(residuals), sd(residuals))",
              xlab = "Model Pearson residuals",
              main = "QQ-plot")
@@ -1187,12 +1427,12 @@ for(dataset in unique(ll_i_df$dataset)){
       
       ### Check normality with Kolmogorov-Smirnov test
       
-      ks <- ks.test(residuals, 
+      ks <- ks.test(test_resid, 
                     pnorm, 
-                    mean(residuals), 
-                    sd(residuals))
+                    mean(test_resid), 
+                    sd(test_resid))
       
-      ks_ll[row_index, ] <- list(dataset,
+      ks_df[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
                                  "joint_log_likelihood",
                                  ks$p.value,
@@ -1207,7 +1447,7 @@ for(dataset in unique(ll_i_df$dataset)){
                           "joint_log_likelihood",
                           chapter)
       
-      saveRDS(mme_model_j,
+      saveRDS(mem_model_j,
               filename)
       
       ### Statusbar
@@ -1358,11 +1598,11 @@ for(dataset in dataset_options){
         
       }
       
-      mme_model <- readRDS(filename)
+      mem_model <- readRDS(filename)
       
       ## Extract values
       
-      model_summary <- summary(mme_model)
+      model_summary <- summary(mem_model)
       
       coefs <- model_summary$tTable
       
@@ -1390,34 +1630,46 @@ for(dataset in dataset_options){
         
         if(paste0("model", model) %in% rownames(coefs)){
           
-          plot_df[i, ] <- list(model,                                         # Model
-                               coefs[paste0("model", model), "Value"],        # Mean
-                               coefs[paste0("model", model), "Value"] +       # Upper
-                                 qnorm(0.975) * coefs[paste0("model", model), "Std.Error"],
-                               coefs[paste0("model", model), "Value"] +       # Lower
-                                 qnorm(0.025) * coefs[paste0("model", model), "Std.Error"])  
+          # plot_df[i, ] <- list(model,                                         # Model
+          #                      coefs[paste0("model", model), "Value"],        # Mean
+          #                      coefs[paste0("model", model), "Value"] +       # Upper
+          #                        qnorm(0.975) * coefs[paste0("model", model), "Std.Error"],
+          #                      coefs[paste0("model", model), "Value"] +       # Lower
+          #                        qnorm(0.025) * coefs[paste0("model", model), "Std.Error"])
+          
+          mn <- coefs[paste0("model", model), "Value"]
+          se <- coefs[paste0("model", model), "Std.Error"]
+          
+          if(ts %in% ts_Inf_Inf){
+            
+            quantile_fun <- qnorm
+            
+            mean <- mn
+            
+          }
+          
+          if(ts %in% ts_0_Inf){
+            
+            quantile_fun <- qlnorm
+            
+            mean <- exp(mn + se ^ 2 / 2)
+            
+          }
+          
+          if(ts %in% ts_0_1){
+            
+            quantile_fun <- qlogitnorm
+            
+            mean <- mean(plogis(rnorm(1000000, mn, se)))
+            
+          }
+          
+          plot_df[i, ] <- list(model,
+                               mean,
+                               quantile_fun(0.975, mn, se),
+                               quantile_fun(0.025, mn, se))
           
         }
-      }
-      
-      if(ts %in% ts_Inf_Inf){
-        
-      }
-      
-      if(ts %in% ts_0_Inf){
-        
-        plot_df[ , 2:4] <- apply(plot_df[ , 2:4], 
-                                 1:2, 
-                                 plnorm)
-        
-      }
-      
-      if(ts %in% ts_0_1){
-        
-        plot_df[ , 2:4] <- apply(plot_df[ , 2:4],
-                                 1:2,
-                                 plogitnorm)
-        
       }
       
       ## Make plot and save to file
