@@ -1798,7 +1798,7 @@ for(dataset in dataset_options){
           mn <- coefs[paste0("model", model), "Value"]
           se <- coefs[paste0("model", model), "Std.Error"]
           
-          if(ts %in% ts_Inf_Inf){
+          if(mem_model$transformed == FALSE | ts %in% ts_Inf_Inf){
             
             quantile_fun <- qnorm
             
@@ -1806,7 +1806,7 @@ for(dataset in dataset_options){
             
           }
           
-          if(ts %in% ts_0_Inf){
+          if(mem_model$transformed == TRUE & ts %in% ts_0_Inf){
             
             quantile_fun <- qlnorm
             
@@ -1814,7 +1814,7 @@ for(dataset in dataset_options){
             
           }
           
-          if(ts %in% ts_0_1){
+          if(mem_model$transformed == TRUE & ts %in% ts_0_1){
             
             quantile_fun <- qlogitnorm
             
