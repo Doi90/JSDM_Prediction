@@ -207,7 +207,8 @@ binary_ts <- c(#"TP",
                #"Mahalanobis",
                #"Manhattan",
                "Mountford",
-               "Raup")
+               "Raup",
+               "species_richness_difference")
 
 prob_ts <- c("AUC",
              "bias",
@@ -236,7 +237,24 @@ prob_ts <- c("AUC",
              "FDR",
              "NPV",
              "F_1",
-             "Youden_J")
+             "Youden_J",
+             "Kappa",
+             #"Binomial",
+             "Bray",
+             "Canberra",
+             #"Euclidean",
+             "Gower",
+             "Gower_alt",
+             #"Horn",
+             "Jaccard",
+             "Kulczynski",
+             #"Mahalanobis",
+             #"Manhattan",
+             "Mountford",
+             "Raup",
+             "independent_log_likelihood",
+             "joint_log_likelihood",
+             "species_richness_difference")
 
 ## Test Statistic range
 
@@ -1210,7 +1228,7 @@ for(dataset in unique(sr_df$dataset)){
     filename <- sprintf("outputs/test_statistics/plots/test_statistics_MME_%1$s_%2$s_%3$s_%4$s.pdf",
                         dataset,
                         names(pred_sets[prediction]),
-                        "SR",
+                        "species_richness_difference",
                         chapter)
     
     ### Plot to pdf
