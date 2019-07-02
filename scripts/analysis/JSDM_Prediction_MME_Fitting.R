@@ -742,7 +742,7 @@ for(dataset in unique(ts_df_species$dataset)){
       ### Statusbar
       
       statusbar(run = row_index,
-                max.run = n_row,
+                max.run = (n_row_ts + n_row_sr + n_row_ll),
                 info = sprintf("%s: %s - %s - %-15s",
                                row_index,
                                dataset,
@@ -1017,7 +1017,7 @@ for(dataset in unique(ts_df_site$dataset)){
       ### Statusbar
       
       statusbar(run = row_index,
-                max.run = n_row,
+                max.run = (n_row_ts + n_row_sr + n_row_ll),
                 info = sprintf("%s: %s - %s - %-15s",
                                row_index,
                                dataset,
@@ -1276,7 +1276,7 @@ for(dataset in unique(sr_df$dataset)){
     ### Statusbar
     
     statusbar(run = row_index,
-              max.run = n_row,
+              max.run = (n_row_ts + n_row_sr + n_row_ll),
               info = sprintf("%s: %s - %s - SR",
                              row_index,
                              dataset,
@@ -1322,13 +1322,13 @@ for(dataset in unique(ll_i_df$dataset)){
                           ll_i_df$prediction_type %in% pred_sets[[prediction]] &
                           ll_i_df$test_statistic == "independent_log_likelihood", ]
     
-    tmp_df_i <- na.omit(tmp_df_i)
+    tmp_df_i <- na.omit(tmp_df_i[is.finite(tmp_df_i$mean), ])
     
     tmp_df_j <- ll_j_df[ll_j_df$dataset == dataset &
                           ll_j_df$prediction_type %in% pred_sets[[prediction]] &
                           ll_j_df$test_statistic == "joint_log_likelihood", ]
     
-    tmp_df_j <- na.omit(tmp_df_j)
+    tmp_df_j <- na.omit(tmp_df_j[is.finite(tmp_df_j$mean), ])
     
     ## Fit mixed effects model
     
@@ -1469,7 +1469,7 @@ for(dataset in unique(ll_i_df$dataset)){
                     mean(test_resid), 
                     sd(test_resid))
       
-      ks_df[row_index, ] <- list(dataset,
+      ks_ll[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
                                  "independent_log_likelihood",
                                  ks$p.value,
@@ -1490,7 +1490,7 @@ for(dataset in unique(ll_i_df$dataset)){
       ### Statusbar
       
       statusbar(run = row_index,
-                max.run = n_row,
+                max.run = (n_row_ts + n_row_sr + n_row_ll),
                 info = sprintf("%s: %s - %s - LL_I",
                                row_index,
                                dataset,
@@ -1592,7 +1592,7 @@ for(dataset in unique(ll_i_df$dataset)){
                     mean(test_resid), 
                     sd(test_resid))
       
-      ks_df[row_index, ] <- list(dataset,
+      ks_ll[row_index, ] <- list(dataset,
                                  names(pred_sets[prediction]),
                                  "joint_log_likelihood",
                                  ks$p.value,
@@ -1613,7 +1613,7 @@ for(dataset in unique(ll_i_df$dataset)){
       ### Statusbar
       
       statusbar(run = row_index,
-                max.run = n_row,
+                max.run = (n_row_ts + n_row_sr + n_row_ll),
                 info = sprintf("%s: %s - %s - LL_J",
                                row_index,
                                dataset,
@@ -1810,7 +1810,7 @@ for(dataset in dataset_options){
             
             quantile_fun <- qlnorm
             
-            mean <- exp(mn + se ^ 2 / 2)
+            mean <- exp(mn + (se ^ 2 / 2))
             
           }
           
@@ -1839,36 +1839,41 @@ for(dataset in dataset_options){
                           chapter)
       pdf(filename)
       
-      tmp_plot <- ggplot(plot_df,
-                         aes(x = model,
-                             y = mean,
-                             colour = model)) +
-        geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "mean"],
-                   linetype = 11) +
-        geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "upper"],
-                   linetype = 11,
-                   colour = "lightgrey") +
-        geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "lower"],
-                   linetype = 11,
-                   colour = "lightgrey") + 
-        geom_point(position = dodge,
-                   size = 2) + 
-        geom_errorbar(aes(ymax = upper,
-                          ymin = lower,),
-                      position = dodge,
-                      width = 0.1) +
-        #ylim(c(graph_customisation[graph_customisation$test_statistic == ts, "y_min"],
-        #       graph_customisation[graph_customisation$test_statistic == ts, "y_max"])) +
-        xlab("Model") +
-        ylab(eval(parse(text = graph_customisation[graph_customisation$test_statistic == ts, "graph_label"]))) +
-        scale_colour_manual(values = colour,
-                            breaks = levels(plot_df$model)) +
-        theme_bw() +
-        theme(legend.position = "none",
-              panel.grid.minor = element_blank(),
-              panel.grid.major = element_blank()) +
-        ggtitle(label = pred_pairs[[prediction]][4],
-                subtitle = pred_pairs[[prediction]][5])
+      tmp_plot <- tryCatch(expr = ggplot(plot_df,
+                                         aes(x = model,
+                                             y = mean,
+                                             colour = model)) +
+                             geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "mean"],
+                                        linetype = 11) +
+                             geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "upper"],
+                                        linetype = 11,
+                                        colour = "lightgrey") +
+                             geom_hline(yintercept = plot_df[plot_df$model == "SSDM", "lower"],
+                                        linetype = 11,
+                                        colour = "lightgrey") + 
+                             geom_point(position = dodge,
+                                        size = 2) + 
+                             geom_errorbar(aes(ymax = upper,
+                                               ymin = lower,),
+                                           position = dodge,
+                                           width = 0.1) +
+                             ylim(c(graph_customisation[graph_customisation$test_statistic == ts, "y_min"],
+                                    graph_customisation[graph_customisation$test_statistic == ts, "y_max"])) +
+                             xlab("Model") +
+                             ylab(eval(parse(text = graph_customisation[graph_customisation$test_statistic == ts, "graph_label"]))) +
+                             scale_colour_manual(values = colour,
+                                                 breaks = levels(plot_df$model)) +
+                             theme_bw() +
+                             theme(legend.position = "none",
+                                   panel.grid.minor = element_blank(),
+                                   panel.grid.major = element_blank()) +
+                             ggtitle(label = pred_pairs[[prediction]][4],
+                                     subtitle = pred_pairs[[prediction]][5]),
+                           error = function(err){
+                             
+                             return(NA)
+                             
+                           })
       
       if(chapter == "Ch3"){
         
@@ -1877,7 +1882,16 @@ for(dataset in dataset_options){
         
       }
       
-      print(tmp_plot)
+      tryCatch(expr = print(tmp_plot),
+               error = function(err){
+                 
+                 message(sprintf("Plot failed for: %s - %s - %s",
+                                 dataset,
+                                 names(pred_sets)[prediction],
+                                 ts))
+                 
+               }
+      )
       
       dev.off()
     }
