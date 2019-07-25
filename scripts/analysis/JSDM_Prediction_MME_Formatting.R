@@ -43,53 +43,53 @@ message("Packages loaded")
 ## Models
 
 model_options <- c("MPR",
-                     #"HPR",
-                     #"LPR",
-                     #"DPR",
-                     #"HLR_NS",
-                     #"HLR_S",
-                   "SSDM")#,
-                   #"SESAM")
+                   "HPR",
+                   "LPR",
+                   "DPR",
+                   "HLR_NS",
+                   "HLR_S",
+                   "SSDM",
+                   "SESAM")
 
 model_order <- c("SSDM",
-                #"SESAM",
-                 "MPR")#,
-#  "HPR",
-#  "LPR",
-#  "DPR",
-#  "HLR_NS",
-#  "HLR_S")
+                 "SESAM",
+                 "MPR",
+                 "HPR",
+                 "LPR",
+                 "DPR",
+                 "HLR_NS",
+                 "HLR_S")
 
-JSDM_models <- model_options[1]#:6]
+JSDM_models <- model_options[1:6]
 
-SSDM_models <- model_options[2]#7:8]
+SSDM_models <- model_options[7:8]
 
 ## Datasets
 
-dataset_options <- c("frog")#,
-#"eucalypt")#,
-# "bird",
-# "butterfly",
-# "sim1random",
-# "sim2random",
-# "sim3random",
-# "sim4random",
-# "sim5random",
-# "sim6random",
-# "sim7random",
-# "sim8random",
-# "sim9random",
-# "sim10random",
-# "sim1spatial",
-# "sim2spatial",
-# "sim3spatial",
-# "sim4spatial",
-# "sim5spatial",
-# "sim6spatial",
-# "sim7spatial",
-# "sim8spatial",
-# "sim9spatial",
-# "sim10spatial")
+dataset_options <- c("frog",
+                     "eucalypt",
+                     # "bird",
+                     # "butterfly",
+                     "sim1random",
+                     "sim2random",
+                     "sim3random",
+                     "sim4random",
+                     "sim5random",
+                     "sim6random",
+                     "sim7random",
+                     "sim8random",
+                     "sim9random",
+                     "sim10random",
+                     "sim1spatial",
+                     "sim2spatial",
+                     "sim3spatial",
+                     "sim4spatial",
+                     "sim5spatial",
+                     "sim6spatial",
+                     "sim7spatial",
+                     "sim8spatial",
+                     "sim9spatial",
+                     "sim10spatial")
 
 ## Folds
 
@@ -361,7 +361,23 @@ for(dataset in dataset_options){
                               dataset,
                               fold)
           
-          ts_array <- readRDS(filename)
+          ts_array <- tryCatch(expr = readRDS(filename),
+                               error = function(err){
+                                 
+                                 message(sprintf("No ts_object for %s - %s - %s - %s",
+                                                 model,
+                                                 dataset,
+                                                 fold,
+                                                 pred_type))
+                                 
+                                 tmp <- NA
+                                 
+                                 attr(tmp, "No_Model") <- TRUE
+                                 
+                                 return(tmp)
+                                 
+                               })
+                              
           
         }
         
@@ -374,7 +390,22 @@ for(dataset in dataset_options){
                               dataset,
                               fold)
           
-          ts_array <- readRDS(filename)
+          ts_array <- tryCatch(expr = readRDS(filename),
+                               error = function(err){
+                                 
+                                 message(sprintf("No ts_object for %s - %s - %s - %s",
+                                                 model,
+                                                 dataset,
+                                                 fold,
+                                                 pred_type))
+                                 
+                                 tmp <- NA
+                                 
+                                 attr(tmp, "No_Model") <- TRUE
+                                 
+                                 return(tmp)
+                                 
+                               })
           
         }
         
@@ -390,7 +421,28 @@ for(dataset in dataset_options){
                               fold,
                               pred_type)
           
-          ts_array <- readRDS(filename)
+          ts_array <- tryCatch(expr = readRDS(filename),
+                               error = function(err){
+                                 
+                                 message(sprintf("No ts_object for %s - %s - %s - %s",
+                                                 model,
+                                                 dataset,
+                                                 fold,
+                                                 pred_type))
+                                 
+                                 tmp <- NA
+                                 
+                                 attr(tmp, "No_Model") <- TRUE
+                                 
+                                 return(tmp)
+                                 
+                               })
+          
+        }
+        
+        if(isTRUE(attr(ts_array, "No_Model"))){
+          
+          next()
           
         }
         
@@ -873,7 +925,22 @@ for(model in model_options){
                               dataset,
                               fold)
           
-          sr_array <- readRDS(filename)
+          sr_array <- tryCatch(expr = readRDS(filename),
+                               error = function(err){
+                                 
+                                 message(sprintf("No sr_object for %s - %s - %s - %s",
+                                                 model,
+                                                 dataset,
+                                                 fold,
+                                                 pred_type))
+                                 
+                                 tmp <- NA
+                                 
+                                 attr(tmp, "No_Model") <- TRUE
+                                 
+                                 return(tmp)
+                                 
+                               })
           
         }
         
@@ -886,7 +953,22 @@ for(model in model_options){
                               dataset,
                               fold)
           
-          sr_array <- readRDS(filename)
+          sr_array <- tryCatch(expr = readRDS(filename),
+                               error = function(err){
+                                 
+                                 message(sprintf("No sr_object for %s - %s - %s - %s",
+                                                 model,
+                                                 dataset,
+                                                 fold,
+                                                 pred_type))
+                                 
+                                 tmp <- NA
+                                 
+                                 attr(tmp, "No_Model") <- TRUE
+                                 
+                                 return(tmp)
+                                 
+                               })
           
         }
         
@@ -902,7 +984,28 @@ for(model in model_options){
                               fold,
                               pred_type)
           
-          sr_array <- readRDS(filename)
+          sr_array <- tryCatch(expr = readRDS(filename),
+                               error = function(err){
+                                 
+                                 message(sprintf("No sr_object for %s - %s - %s - %s",
+                                                 model,
+                                                 dataset,
+                                                 fold,
+                                                 pred_type))
+                                 
+                                 tmp <- NA
+                                 
+                                 attr(tmp, "No_Model") <- TRUE
+                                 
+                                 return(tmp)
+                                 
+                               })
+          
+        }
+        
+        if(isTRUE(attr(sr_array, "No_Model"))){
+          
+          next()
           
         }
         
@@ -1262,14 +1365,44 @@ for(model in model_options){
                                 dataset,
                                 fold)
           
-          ll_i_array <- readRDS(filename_i)
+          ll_i_array <- tryCatch(expr = readRDS(filename_i),
+                                 error = function(err){
+                                   
+                                   message(sprintf("No ll_object for %s - %s - %s - %s",
+                                                   model,
+                                                   dataset,
+                                                   fold,
+                                                   pred_type))
+                                   
+                                   tmp <- NA
+                                   
+                                   attr(tmp, "No_Model") <- TRUE
+                                   
+                                   return(tmp)
+                                   
+                                 })
           
           filename_j <- sprintf("outputs/likelihood/%1$s_%2$s_fold%3$s_joint_likelihood.rds",
                                 pred_type,
                                 dataset,
                                 fold)
           
-          ll_j_array <- readRDS(filename_j)
+          ll_j_array <- tryCatch(expr = readRDS(filename_j),
+                                 error = function(err){
+                                   
+                                   message(sprintf("No ll_object for %s - %s - %s - %s",
+                                                   model,
+                                                   dataset,
+                                                   fold,
+                                                   pred_type))
+                                   
+                                   tmp <- NA
+                                   
+                                   attr(tmp, "No_Model") <- TRUE
+                                   
+                                   return(tmp)
+                                   
+                                 })
           
         }
         
@@ -1285,7 +1418,22 @@ for(model in model_options){
                                 fold,
                                 pred_name)
           
-          ll_i_array <- readRDS(filename_i)
+          ll_i_array <- tryCatch(expr = readRDS(filename_i),
+                                 error = function(err){
+                                   
+                                   message(sprintf("No ll_object for %s - %s - %s - %s",
+                                                   model,
+                                                   dataset,
+                                                   fold,
+                                                   pred_type))
+                                   
+                                   tmp <- NA
+                                   
+                                   attr(tmp, "No_Model") <- TRUE
+                                   
+                                   return(tmp)
+                                   
+                                 })
           
           filename_j <- sprintf("outputs/likelihood/%1$s_%2$s_fold%3$s_%4$s_joint_likelihood.rds",
                                 model,
@@ -1293,7 +1441,34 @@ for(model in model_options){
                                 fold,
                                 pred_name)
           
-          ll_j_array <- readRDS(filename_j)
+          ll_j_array <- tryCatch(expr = readRDS(filename_j),
+                                 error = function(err){
+                                   
+                                   message(sprintf("No ll_object for %s - %s - %s - %s",
+                                                   model,
+                                                   dataset,
+                                                   fold,
+                                                   pred_type))
+                                   
+                                   tmp <- NA
+                                   
+                                   attr(tmp, "No_Model") <- TRUE
+                                   
+                                   return(tmp)
+                                   
+                                 })
+          
+        }
+        
+        if(isTRUE(attr(ll_i_array, "No_Model"))){
+          
+          next()
+          
+        }
+        
+        if(isTRUE(attr(ll_j_array, "No_Model"))){
+          
+          next()
           
         }
         
