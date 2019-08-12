@@ -479,6 +479,10 @@ for(dataset in dataset_options){
       means <- c(coef_matrix["modelSSDM", "Value"],
                  coef_matrix["modelMPR", "Value"])
       
+      SSDM_mean <- coef_matrix["modelSSDM", "Value"]
+      
+      SSDM_se <- coef_matrix["modelSSDM", "Std.Error"]
+      
       covar_matrix <- matrix(c(vc_matrix["modelSSDM", "modelSSDM"],
                                vc_matrix["modelSSDM", "modelMPR"],
                                vc_matrix["modelSSDM", "modelMPR"],
@@ -496,6 +500,8 @@ for(dataset in dataset_options){
       
       if(mem_model$transformed == FALSE | ts %in% ts_Inf_Inf){
         
+        SSDM_coef <- SSDM_mean
+        
       }
       
       if(mem_model$transformed == TRUE & ts %in% ts_0_Inf){
@@ -503,6 +509,8 @@ for(dataset in dataset_options){
         SSDM_orig_scale <- exp(SSDM_orig_scale)
         
         MPR_orig_scale <- exp(MPR_orig_scale)
+        
+        SSDM_coef <- exp(SSDM_mean + (SSDM_se ^ 2 / 2)) 
         
       }
       
@@ -512,9 +520,12 @@ for(dataset in dataset_options){
         
         MPR_orig_scale <- plogis(MPR_orig_scale)
         
+        SSDM_coef <- mean(plogis(rnorm(1000000, SSDM_mean, SSDM_se)))
       }
       
       diff_samples <- SSDM_orig_scale - MPR_orig_scale
+      
+      diff_samples <- (diff_samples / SSDM_coef) * 100 - 100
       
       ## Divide by backtransformed regression coefficient here
       
@@ -618,7 +629,7 @@ for(dataset in unique(plot_df$dataset)){
                     position = dodge,
                     width = 0.1) +
       xlab("") +
-      ylab("Relative Performance") +
+      ylab("Relative Performance Difference (%)") +
       theme_bw() +
       theme(legend.position = "none",
             panel.grid.minor = element_blank(),
@@ -783,37 +794,47 @@ for(dataset in unique(plot_df$dataset)){
       
     }
     
-    range <- range(tmp_df[ , c("mean_diff", "upper", "lower")])
-    
-    diff_range <- range[2] - range[1]
+    y_range <- ggplot_build(tmp_plot)$layout$panel_scales_y[[1]]$range$range
     
     if(subset %in% names(subsets)[c(2,3,7)]){
       
+      # tmp_plot <- tmp_plot +
+      #   annotate("segment", 
+      #            x = 0.8, 
+      #            xend = 0.8, 
+      #            y = 0 - diff_range / 10, 
+      #            yend = 0 + diff_range / 10, 
+      #            colour = "black", 
+      #            size = 0.5,
+      #            arrow = arrow(ends = "last",
+      #                          length = unit(0.1, "inches")))
+      # 
       tmp_plot <- tmp_plot +
-        annotate("segment", 
-                 x = 0.8, 
-                 xend = 0.8, 
-                 y = 0 - diff_range / 10, 
-                 yend = 0 + diff_range / 10, 
-                 colour = "black", 
-                 size = 0.5,
-                 arrow = arrow(ends = "last",
-                               length = unit(0.1, "inches")))
+        annotate("text",
+                 label = "JSDM better",
+                 x = 0.7,
+                 y = y_range[2] - ((y_range[2] - y_range[1]) / 10) * 9)
       
     }
     
     if(subset %in% names(subsets)[c(1,4,5)]){
       
+      # tmp_plot <- tmp_plot +
+      #   annotate("segment", 
+      #            x = 0.5, 
+      #            xend = 0.5, 
+      #            y = 0 - diff_range / 10, 
+      #            yend = 0 + diff_range / 10, 
+      #            colour = "black", 
+      #            size = 0.5,
+      #            arrow = arrow(ends = "first",
+      #                          length = unit(0.1, "inches")))
+      
       tmp_plot <- tmp_plot +
-        annotate("segment", 
-                 x = 0.5, 
-                 xend = 0.5, 
-                 y = 0 - diff_range / 10, 
-                 yend = 0 + diff_range / 10, 
-                 colour = "black", 
-                 size = 0.5,
-                 arrow = arrow(ends = "first",
-                               length = unit(0.1, "inches")))
+        annotate("text",
+                 label = "JSDM better",
+                 x = 0.7,
+                 y = y_range[1] + ((y_range[2] - y_range[1]) / 10) * 9)
       
     }
     
