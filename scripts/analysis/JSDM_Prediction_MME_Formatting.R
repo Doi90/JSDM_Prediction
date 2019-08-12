@@ -1472,6 +1472,18 @@ for(model in model_options){
           
         }
         
+        if(model != "SSDM" & is.null(dim(ll_i_array))){
+          
+          next()
+          
+        }
+        
+        if(model != "SSDM" & is.null(dim(ll_j_array))){
+          
+          next()
+          
+        }
+        
         # ### Bird dataset
         # 
         # if(model %in% JSDM_models & dataset == "birds"){
