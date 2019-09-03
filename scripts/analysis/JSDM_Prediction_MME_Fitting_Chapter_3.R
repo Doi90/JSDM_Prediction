@@ -610,7 +610,19 @@ for(prediction in seq_len(length(pred_sets))){
     
     tmp_df$mean_trans <- tmp_df$mean
     
-    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+    if(ts %in% prob_ts){
+      
+      formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
+    
+    }
+    
+    if(ts %in% binary_ts){
+      
+      formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
+    
+    }
+    
+    mem_model <- tryCatch(expr = nlme::lme(formula, 
                                            random = ~ 1|species,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -711,7 +723,19 @@ for(prediction in seq_len(length(pred_sets))){
       
       tmp_df$mean_trans <- tmp_df$mean
       
-      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+      if(ts %in% prob_ts){
+        
+        formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
+        
+      }
+      
+      if(ts %in% binary_ts){
+        
+        formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
+        
+      }
+      
+      mem_model <- tryCatch(expr = nlme::lme(formula,
                                              random = ~ 1|species,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -878,7 +902,19 @@ for(prediction in seq_len(length(pred_sets))){
     
     tmp_df$mean_trans <- tmp_df$mean
     
-    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+    if(ts %in% prob_ts){
+      
+      formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
+      
+    }
+    
+    if(ts %in% binary_ts){
+      
+      formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
+      
+    }
+    
+    mem_model <- tryCatch(expr = nlme::lme(formula,
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -979,7 +1015,19 @@ for(prediction in seq_len(length(pred_sets))){
       
       tmp_df$mean_trans <- tmp_df$mean
       
-      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+      if(ts %in% prob_ts){
+        
+        formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
+        
+      }
+      
+      if(ts %in% binary_ts){
+        
+        formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
+        
+      }
+      
+      mem_model <- tryCatch(expr = nlme::lme(formula,
                                              random = ~ 1|site,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -1133,7 +1181,19 @@ for(prediction in seq_len(length(pred_sets))){
   
   tmp_df$mean_trans <- tmp_df$mean
   
-  mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+  if(ts %in% prob_ts){
+    
+    formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
+    
+  }
+  
+  if(ts %in% binary_ts){
+    
+    formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
+    
+  }
+  
+  mem_model <- tryCatch(expr = nlme::lme(formula,
                                          random = ~ 1|site,
                                          weights = varIdent(form = ~1|model),
                                          data = tmp_df,
@@ -1228,7 +1288,19 @@ for(prediction in seq_len(length(pred_sets))){
       
     }
     
-    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+    if(ts %in% prob_ts){
+      
+      formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
+      
+    }
+    
+    if(ts %in% binary_ts){
+      
+      formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
+      
+    }
+    
+    mem_model <- tryCatch(expr = nlme::lme(formula,
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -1404,7 +1476,19 @@ for(prediction in seq_len(length(pred_sets))){
   
   tmp_df_j$mean_trans <- tmp_df_j$mean
   
-  mem_model_i <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+  if(ts %in% prob_ts){
+    
+    formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
+    
+  }
+  
+  if(ts %in% binary_ts){
+    
+    formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
+    
+  }
+  
+  mem_model_i <- tryCatch(expr = nlme::lme(formula,
                                            random = ~ 1|species,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df_i[is.finite(tmp_df_i$mean), ],
@@ -1421,7 +1505,7 @@ for(prediction in seq_len(length(pred_sets))){
                           }
   )
   
-  mem_model_j <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
+  mem_model_j <- tryCatch(expr = nlme::lme(formula, 
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df_j,
