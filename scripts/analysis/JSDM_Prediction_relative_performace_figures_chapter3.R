@@ -304,6 +304,44 @@ ts_0_1 <- c("AUC",
             "Mountford",
             "Raup")
 
+## Test statistic subsets
+
+subsets <- list(ts_0_1_H = c("Accuracy",
+                             "AUC",
+                             "Kappa",
+                             "F_1",
+                             "PPV",
+                             "NPV",
+                             "R2",
+                             "TPR",
+                             "TNR",
+                             "Youden_J"),
+                ts_0_1_L_a = c("FDR",
+                               "FNR",
+                               "FOR",
+                               "FPR"),
+                ts_0_1_L_b = c("Bray",
+                               "Canberra",
+                               "Gower",
+                               "Gower_alt",
+                               "Jaccard",
+                               "Kulczynski",
+                               "Mountford",
+                               "Raup"),
+                ts_1_1 = c("Kendall",
+                           "Pearson",
+                           "Spearman"),
+                ts_Inf_Inf_H = c("independent_log_likelihood",
+                                 "joint_log_likelihood"),
+                ts_Inf_Inf_0 = c("bias",
+                                 "species_richness_difference"),
+                ts_0_Inf_L = c("MSE",
+                               "RMSE",
+                               "SSE",
+                               "PLR",
+                               "NLR",
+                               "DOR"))
+
 ## Transformation functions
 
 trans_log <- function(x){
@@ -563,29 +601,29 @@ for(prediction in seq_len(length(pred_sets))){
       
       ## Divide by backtransformed regression coefficient here
       
-      MPR_diff_samples <- SSDM_orig_scale - MPR_orig_scale
+      MPR_diff_samples <- MPR_orig_scale - SSDM_orig_scale
       
-      MPR_diff_samples <- (MPR_diff_samples / SSDM_coef) * 100 - 100
+      MPR_diff_samples <- (MPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      HPR_diff_samples <- SSDM_orig_scale - HPR_orig_scale
+      HPR_diff_samples <- HPR_orig_scale - SSDM_orig_scale
       
-      HPR_diff_samples <- (HPR_diff_samples / SSDM_coef) * 100 - 100
+      HPR_diff_samples <- (HPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      LPR_diff_samples <- SSDM_orig_scale - LPR_orig_scale
+      LPR_diff_samples <- LPR_orig_scale - SSDM_orig_scale
       
-      LPR_diff_samples <- (LPR_diff_samples / SSDM_coef) * 100 - 100
+      LPR_diff_samples <- (LPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      DPR_diff_samples <- SSDM_orig_scale - DPR_orig_scale
+      DPR_diff_samples <- DPR_orig_scale - SSDM_orig_scale
       
-      DPR_diff_samples <- (DPR_diff_samples / SSDM_coef) * 100 - 100
+      DPR_diff_samples <- (DPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      HLR_NS_diff_samples <- SSDM_orig_scale - HLR_NS_orig_scale
+      HLR_NS_diff_samples <- HLR_NS_orig_scale - SSDM_orig_scale
       
-      HLR_NS_diff_samples <- (HLR_NS_diff_samples / SSDM_coef) * 100 - 100
+      HLR_NS_diff_samples <- (HLR_NS_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      HLR_S_diff_samples <- SSDM_orig_scale - HLR_S_orig_scale
+      HLR_S_diff_samples <- HLR_S_orig_scale - SSDM_orig_scale
       
-      HLR_S_diff_samples <- (HLR_S_diff_samples / SSDM_coef) * 100 - 100
+      HLR_S_diff_samples <- (HLR_S_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
       ## Save to data frame
       
@@ -801,33 +839,33 @@ for(prediction in seq_len(length(pred_sets))){
       
       ## Divide by backtransformed regression coefficient here
       
-      MPR_diff_samples <- SSDM_orig_scale - MPR_orig_scale
+      MPR_diff_samples <- MPR_orig_scale - SSDM_orig_scale
       
-      MPR_diff_samples <- (MPR_diff_samples / SSDM_coef) * 100 - 100
+      MPR_diff_samples <- (MPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      HPR_diff_samples <- SSDM_orig_scale - HPR_orig_scale
+      HPR_diff_samples <- HPR_orig_scale - SSDM_orig_scale
       
-      HPR_diff_samples <- (HPR_diff_samples / SSDM_coef) * 100 - 100
+      HPR_diff_samples <- (HPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      LPR_diff_samples <- SSDM_orig_scale - LPR_orig_scale
+      LPR_diff_samples <- LPR_orig_scale - SSDM_orig_scale
       
-      LPR_diff_samples <- (LPR_diff_samples / SSDM_coef) * 100 - 100
+      LPR_diff_samples <- (LPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      DPR_diff_samples <- SSDM_orig_scale - DPR_orig_scale
+      DPR_diff_samples <- DPR_orig_scale - SSDM_orig_scale
       
-      DPR_diff_samples <- (DPR_diff_samples / SSDM_coef) * 100 - 100
+      DPR_diff_samples <- (DPR_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      HLR_NS_diff_samples <- SSDM_orig_scale - HLR_NS_orig_scale
+      HLR_NS_diff_samples <- HLR_NS_orig_scale - SSDM_orig_scale
       
-      HLR_NS_diff_samples <- (HLR_NS_diff_samples / SSDM_coef) * 100 - 100
+      HLR_NS_diff_samples <- (HLR_NS_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      HLR_S_diff_samples <- SSDM_orig_scale - HLR_S_orig_scale
+      HLR_S_diff_samples <- HLR_S_orig_scale - SSDM_orig_scale
       
-      HLR_S_diff_samples <- (HLR_S_diff_samples / SSDM_coef) * 100 - 100
+      HLR_S_diff_samples <- (HLR_S_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
-      SESAM_diff_samples <- SSDM_orig_scale - SESAM_orig_scale
+      SESAM_diff_samples <- SESAM_orig_scale - SSDM_orig_scale
       
-      SESAM_diff_samples <- (SESAM_diff_samples / SSDM_coef) * 100 - 100
+      SESAM_diff_samples <- (SESAM_diff_samples / abs(SSDM_coef)) * 100 #- 100
       
       ## Save to data frame
       
@@ -909,46 +947,49 @@ for(prediction in seq_len(length(pred_sets))){
 
 plot_df <- plot_df[plot_df$ts != "", ]
 
+plot_df$ts_class <- NA
+  
+for(i in seq_len(nrow(plot_df))){
+  
+  plot_df$ts_class[i] <- names(subsets)[unlist(lapply(subsets, function(x) plot_df$ts[i] %in% x))]
+
+}
+
 ################
 ### Plotting ###
 ################
 
 dodge <- position_dodge(width = 0.5)
 
-## Test statistic subsets
+col_palette <- brewer.pal(8, "Dark2")
 
-subsets <- list(ts_0_1_H = c("Accuracy",
-                             "AUC",
-                             "Kappa",
-                             "F_1",
-                             "PPV",
-                             "NPV",
-                             "R2",
-                             "TPR",
-                             "TNR",
-                             "Youden_J"),
-                ts_0_1_L_a = c("FDR",
-                               "FNR",
-                               "FOR",
-                               "FPR"),
-                ts_0_1_L_b = c("Bray",
-                               "Canberra",
-                               "Gower",
-                               "Gower_alt",
-                               "Jaccard",
-                               "Kulczynski",
-                               "Mountford",
-                               "Raup"),
-                ts_1_1 = c("Kendall",
-                           "Pearson",
-                           "Spearman"),
-                ts_Inf_Inf_H = c("independent_log_likelihood",
-                                 "joint_log_likelihood"),
-                ts_Inf_Inf_0 = c("bias",
-                                 "species_richness_difference"),
-                ts_0_Inf_L = c("MSE",
-                               "RMSE",
-                               "SSE"))
+colour <- c()
+
+if("SSDM" %in% model_options){
+  colour <- c(colour, col_palette[8])
+}
+if("SESAM" %in% model_options){
+  colour <- c(colour, col_palette[7])
+}
+if("MPR" %in% model_options){
+  colour <- c(colour, col_palette[6])
+}
+if("HPR" %in% model_options){
+  colour <- c(colour, col_palette[5])
+}
+if("LPR" %in% model_options){
+  colour <- c(colour, col_palette[4])
+}
+if("DPR" %in% model_options){
+  colour <- c(colour, col_palette[3])
+}
+if("HLR_S" %in% model_options){
+  colour <- c(colour, col_palette[2])
+}
+if("HLR_NS" %in% model_options){
+  colour <- c(colour, col_palette[1])
+}
+
 
 ## Plot
 
@@ -981,7 +1022,8 @@ for(pred_type in unique(plot_df$pred_type)){
       
       tmp_plot <- ggplot(tmp_df,
                          aes(x = ts,
-                             y = mean_diff)) +
+                             y = mean_diff,
+                             colour = model)) +
         geom_hline(yintercept = 0) +
         geom_point(position = dodge,
                    size = 2) + 
