@@ -610,13 +610,13 @@ for(prediction in seq_len(length(pred_sets))){
     
     tmp_df$mean_trans <- tmp_df$mean
     
-    if(ts %in% prob_ts){
+    if(ts %in% prob_ts & names(pred_sets)[prediction] %in% probability_predictions){
       
       formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
     
     }
     
-    if(ts %in% binary_ts){
+    if(ts %in% binary_ts & names(pred_sets)[prediction] %in% binary_predictions){
       
       formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
     
@@ -723,13 +723,13 @@ for(prediction in seq_len(length(pred_sets))){
       
       tmp_df$mean_trans <- tmp_df$mean
       
-      if(ts %in% prob_ts){
+      if(ts %in% prob_ts & names(pred_sets)[prediction] %in% probability_predictions){
         
         formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
         
       }
       
-      if(ts %in% binary_ts){
+      if(ts %in% binary_ts & names(pred_sets)[prediction] %in% binary_predictions){
         
         formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
         
@@ -902,13 +902,13 @@ for(prediction in seq_len(length(pred_sets))){
     
     tmp_df$mean_trans <- tmp_df$mean
     
-    if(ts %in% prob_ts){
+    if(ts %in% prob_ts & names(pred_sets)[prediction] %in% probability_predictions){
       
       formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
       
     }
     
-    if(ts %in% binary_ts){
+    if(ts %in% binary_ts & names(pred_sets)[prediction] %in% binary_predictions){
       
       formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
       
@@ -1015,13 +1015,13 @@ for(prediction in seq_len(length(pred_sets))){
       
       tmp_df$mean_trans <- tmp_df$mean
       
-      if(ts %in% prob_ts){
+      if(ts %in% prob_ts & names(pred_sets)[prediction] %in% probability_predictions){
         
         formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
         
       }
       
-      if(ts %in% binary_ts){
+      if(ts %in% binary_ts & names(pred_sets)[prediction] %in% binary_predictions){
         
         formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
         
@@ -1181,13 +1181,13 @@ for(prediction in seq_len(length(pred_sets))){
   
   tmp_df$mean_trans <- tmp_df$mean
   
-  if(ts %in% prob_ts){
+  if(ts %in% prob_ts & names(pred_sets)[prediction] %in% probability_predictions){
     
     formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
     
   }
   
-  if(ts %in% binary_ts){
+  if(ts %in% binary_ts & names(pred_sets)[prediction] %in% binary_predictions){
     
     formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
     
@@ -1288,13 +1288,13 @@ for(prediction in seq_len(length(pred_sets))){
       
     }
     
-    if(ts %in% prob_ts){
+    if(ts %in% prob_ts & names(pred_sets)[prediction] %in% probability_predictions){
       
       formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
       
     }
     
-    if(ts %in% binary_ts){
+    if(ts %in% binary_ts & names(pred_sets)[prediction] %in% binary_predictions){
       
       formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
       
@@ -1476,13 +1476,13 @@ for(prediction in seq_len(length(pred_sets))){
   
   tmp_df_j$mean_trans <- tmp_df_j$mean
   
-  if(ts %in% prob_ts){
+  if(ts %in% prob_ts & names(pred_sets)[prediction] %in% probability_predictions){
     
     formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + HPR * dataset + DPR * dataset")
     
   }
   
-  if(ts %in% binary_ts){
+  if(ts %in% binary_ts & names(pred_sets)[prediction] %in% binary_predictions){
     
     formula <- as.formula("mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset")
     
