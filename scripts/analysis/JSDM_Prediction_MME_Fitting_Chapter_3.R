@@ -11,6 +11,7 @@ library(RColorBrewer)
 library(PassButter)
 library(psych)
 library(logitnorm)
+library(AICcmodavg)
 
 ##################################
 ### Set combination parameters ###
@@ -392,6 +393,38 @@ ts_df_species <- ts_df_species[order(ts_df_species$model), ]
 
 ts_df_site <- ts_df_site[order(ts_df_site$model), ]
 
+ts_df_species$SSDM <- as.numeric(ts_df_species$model == "SSDM")
+
+ts_df_species$SESAM <- as.numeric(ts_df_species$model == "SESAM")
+
+ts_df_species$MPR <- as.numeric(ts_df_species$model == "MPR")
+
+ts_df_species$HPR <- as.numeric(ts_df_species$model == "HPR")
+
+ts_df_species$LPR <- as.numeric(ts_df_species$model == "LPR")
+
+ts_df_species$DPR <- as.numeric(ts_df_species$model == "DPR")
+
+ts_df_species$HLR_NS <- as.numeric(ts_df_species$model == "HLR_NS")
+
+ts_df_species$HLR_S <- as.numeric(ts_df_species$model == "HLR_S")
+
+ts_df_site$SSDM <- as.numeric(ts_df_site$model == "SSDM")
+
+ts_df_site$SESAM <- as.numeric(ts_df_site$model == "SESAM")
+
+ts_df_site$MPR <- as.numeric(ts_df_site$model == "MPR")
+
+ts_df_site$HPR <- as.numeric(ts_df_site$model == "HPR")
+
+ts_df_site$LPR <- as.numeric(ts_df_site$model == "LPR")
+
+ts_df_site$DPR <- as.numeric(ts_df_site$model == "DPR")
+
+ts_df_site$HLR_NS <- as.numeric(ts_df_site$model == "HLR_NS")
+
+ts_df_site$HLR_S <- as.numeric(ts_df_site$model == "HLR_S")
+
 ## Empty dataframe to store Kolmogorov-Smirnov test outputs
 
 n_row_ts <- (length(unique(ts_df_species$test_statistic)) + 
@@ -419,6 +452,22 @@ sr_df$fold <- as.factor(sr_df$fold)
 sr_df$model <- as.factor(sr_df$model)
 
 sr_df$model <- relevel(sr_df$model, "SSDM")
+
+sr_df$SSDM <- as.numeric(sr_df$model == "SSDM")
+
+sr_df$SESAM <- as.numeric(sr_df$model == "SESAM")
+
+sr_df$MPR <- as.numeric(sr_df$model == "MPR")
+
+sr_df$HPR <- as.numeric(sr_df$model == "HPR")
+
+sr_df$LPR <- as.numeric(sr_df$model == "LPR")
+
+sr_df$DPR <- as.numeric(sr_df$model == "DPR")
+
+sr_df$HLR_NS <- as.numeric(sr_df$model == "HLR_NS")
+
+sr_df$HLR_S <- as.numeric(sr_df$model == "HLR_S")
 
 ## Empty dataframe to store Kolmogorov-Smirnov test outputs
 
@@ -455,6 +504,38 @@ ll_i_df$model <- relevel(ll_i_df$model, "SSDM")
 ll_j_df$model <- as.factor(ll_j_df$model)
 
 ll_j_df$model <- relevel(ll_j_df$model, "SSDM")
+
+ll_i_df$SSDM <- as.numeric(ll_i_df$model == "SSDM")
+
+ll_i_df$SESAM <- as.numeric(ll_i_df$model == "SESAM")
+
+ll_i_df$MPR <- as.numeric(ll_i_df$model == "MPR")
+
+ll_i_df$HPR <- as.numeric(ll_i_df$model == "HPR")
+
+ll_i_df$LPR <- as.numeric(ll_i_df$model == "LPR")
+
+ll_i_df$DPR <- as.numeric(ll_i_df$model == "DPR")
+
+ll_i_df$HLR_NS <- as.numeric(ll_i_df$model == "HLR_NS")
+
+ll_i_df$HLR_S <- as.numeric(ll_i_df$model == "HLR_S")
+
+ll_j_df$SSDM <- as.numeric(ll_j_df$model == "SSDM")
+
+ll_j_df$SESAM <- as.numeric(ll_j_df$model == "SESAM")
+
+ll_j_df$MPR <- as.numeric(ll_j_df$model == "MPR")
+
+ll_j_df$HPR <- as.numeric(ll_j_df$model == "HPR")
+
+ll_j_df$LPR <- as.numeric(ll_j_df$model == "LPR")
+
+ll_j_df$DPR <- as.numeric(ll_j_df$model == "DPR")
+
+ll_j_df$HLR_NS <- as.numeric(ll_j_df$model == "HLR_NS")
+
+ll_j_df$HLR_S <- as.numeric(ll_j_df$model == "HLR_S")
 
 ## Empty dataframe to store Kolmogorov-Smirnov test outputs
 
@@ -529,7 +610,7 @@ for(prediction in seq_len(length(pred_sets))){
     
     tmp_df$mean_trans <- tmp_df$mean
     
-    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                            random = ~ 1|species,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -630,7 +711,7 @@ for(prediction in seq_len(length(pred_sets))){
       
       tmp_df$mean_trans <- tmp_df$mean
       
-      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                              random = ~ 1|species,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -797,7 +878,7 @@ for(prediction in seq_len(length(pred_sets))){
     
     tmp_df$mean_trans <- tmp_df$mean
     
-    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -898,7 +979,7 @@ for(prediction in seq_len(length(pred_sets))){
       
       tmp_df$mean_trans <- tmp_df$mean
       
-      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+      mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                              random = ~ 1|site,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -1052,7 +1133,7 @@ for(prediction in seq_len(length(pred_sets))){
   
   tmp_df$mean_trans <- tmp_df$mean
   
-  mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+  mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                          random = ~ 1|site,
                                          weights = varIdent(form = ~1|model),
                                          data = tmp_df,
@@ -1147,7 +1228,7 @@ for(prediction in seq_len(length(pred_sets))){
       
     }
     
-    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+    mem_model <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -1323,7 +1404,7 @@ for(prediction in seq_len(length(pred_sets))){
   
   tmp_df_j$mean_trans <- tmp_df_j$mean
   
-  mem_model_i <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+  mem_model_i <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                            random = ~ 1|species,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df_i[is.finite(tmp_df_i$mean), ],
@@ -1340,7 +1421,7 @@ for(prediction in seq_len(length(pred_sets))){
                           }
   )
   
-  mem_model_j <- tryCatch(expr = nlme::lme(mean_trans ~ -1 + model + dataset + fold, 
+  mem_model_j <- tryCatch(expr = nlme::lme(mean_trans ~ dataset + fold + MPR + LPR + HLR_NS + HLR_S + SESAM + HPR * dataset + DPR * dataset, 
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df_j,
