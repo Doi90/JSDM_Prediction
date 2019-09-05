@@ -1930,8 +1930,11 @@ for(prediction in seq_len(length(pred_sets))){
         #                      coefs[paste0("model", model), "Value"] +       # Lower
         #                        qnorm(0.025) * coefs[paste0("model", model), "Std.Error"])
         
-        mn <- coefs[paste0("model", model), "Value"]
-        se <- coefs[paste0("model", model), "Std.Error"]
+        pred_coef <- MEM_predict(mem = mem_model,
+                                 model = model)
+        
+        mn <- pred_coef$mean
+        se <- pred_coef$se
         
         if(mem_model$transformed == FALSE | ts %in% ts_Inf_Inf){
           
