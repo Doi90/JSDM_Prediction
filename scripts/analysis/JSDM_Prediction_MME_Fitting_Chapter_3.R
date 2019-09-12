@@ -735,7 +735,7 @@ for(prediction in seq_len(length(pred_sets))){
         
       }
       
-      mem_model <- tryCatch(expr = nlme::lme(formula,
+      mem_model2 <- tryCatch(expr = nlme::lme(formula,
                                              random = ~ 1|species,
                                              weights = varIdent(form = ~1|model),
                                              data = tmp_df,
@@ -752,7 +752,51 @@ for(prediction in seq_len(length(pred_sets))){
                             }
       )
       
-      mem_model$transformed <- TRUE
+      mem_model2$transformed <- TRUE
+      
+    }
+    
+    ## Check if transformed is better or not
+    
+    ### Extract residuals
+    
+    residuals <- resid(mem_model2, type = "pearson")
+    
+    ### Correct residuals for variance structure
+    
+    cf <- coef(mem_model2$modelStruct$varStruct, 
+               unconstrained = FALSE)
+    
+    for(i in names(cf)){
+      
+      idx <- tmp_df$model == i
+      
+      residuals[idx] <- residuals[idx] / cf[i]
+      
+    }
+    
+    ### Residuals qq plot
+    
+    extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+    
+    if(length(extreme_id) > 0){
+      
+      test_resid <- residuals[-extreme_id]
+      
+    } else {
+      
+      test_resid <- residuals
+      
+    }
+    
+    ks2 <- ks.test(test_resid, 
+                   pnorm, 
+                   mean(test_resid), 
+                   sd(test_resid))
+    
+    if(ks2$p.value > ks$p.value){
+      
+      mem_model <- mem_model2
       
     }
     
@@ -1027,24 +1071,68 @@ for(prediction in seq_len(length(pred_sets))){
         
       }
       
-      mem_model <- tryCatch(expr = nlme::lme(formula,
-                                             random = ~ 1|site,
-                                             weights = varIdent(form = ~1|model),
-                                             data = tmp_df,
-                                             control = lmeControl(msMaxIter = 1000,
-                                                                  opt = "optim")),
-                            error = function(err){
-                              
-                              message(sprintf("Model fit failed for: %s - %s",
-                                              names(pred_sets[prediction]),
-                                              ts))
-                              
-                              return(NA)
-                              
-                            }
+      mem_model2 <- tryCatch(expr = nlme::lme(formula,
+                                              random = ~ 1|site,
+                                              weights = varIdent(form = ~1|model),
+                                              data = tmp_df,
+                                              control = lmeControl(msMaxIter = 1000,
+                                                                   opt = "optim")),
+                             error = function(err){
+                               
+                               message(sprintf("Model fit failed for: %s - %s",
+                                               names(pred_sets[prediction]),
+                                               ts))
+                               
+                               return(NA)
+                               
+                             }
       )
       
-      mem_model$transformed <- TRUE
+      mem_model2$transformed <- TRUE
+      
+    }
+    
+    ## Check if transformed is better or not
+    
+    ### Extract residuals
+    
+    residuals <- resid(mem_model2, type = "pearson")
+    
+    ### Correct residuals for variance structure
+    
+    cf <- coef(mem_model2$modelStruct$varStruct, 
+               unconstrained = FALSE)
+    
+    for(i in names(cf)){
+      
+      idx <- tmp_df$model == i
+      
+      residuals[idx] <- residuals[idx] / cf[i]
+      
+    }
+    
+    ### Residuals qq plot
+    
+    extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+    
+    if(length(extreme_id) > 0){
+      
+      test_resid <- residuals[-extreme_id]
+      
+    } else {
+      
+      test_resid <- residuals
+      
+    }
+    
+    ks2 <- ks.test(test_resid, 
+                   pnorm, 
+                   mean(test_resid), 
+                   sd(test_resid))
+    
+    if(ks2$p.value > ks$p.value){
+      
+      mem_model <- mem_model2
       
     }
     
@@ -1300,7 +1388,7 @@ for(prediction in seq_len(length(pred_sets))){
       
     }
     
-    mem_model <- tryCatch(expr = nlme::lme(formula,
+    mem_model2 <- tryCatch(expr = nlme::lme(formula,
                                            random = ~ 1|site,
                                            weights = varIdent(form = ~1|model),
                                            data = tmp_df,
@@ -1317,7 +1405,51 @@ for(prediction in seq_len(length(pred_sets))){
                           }
     )
     
-    mem_model$transformed <- TRUE
+    mem_model2$transformed <- TRUE
+    
+  }
+  
+  ## Check if transformed is better or not
+  
+  ### Extract residuals
+  
+  residuals <- resid(mem_model2, type = "pearson")
+  
+  ### Correct residuals for variance structure
+  
+  cf <- coef(mem_model2$modelStruct$varStruct, 
+             unconstrained = FALSE)
+  
+  for(i in names(cf)){
+    
+    idx <- tmp_df$model == i
+    
+    residuals[idx] <- residuals[idx] / cf[i]
+    
+  }
+  
+  ### Residuals qq plot
+  
+  extreme_id <- which(tmp_df$mean == 0 | tmp_df$mean == 1)
+  
+  if(length(extreme_id) > 0){
+    
+    test_resid <- residuals[-extreme_id]
+    
+  } else {
+    
+    test_resid <- residuals
+    
+  }
+  
+  ks2 <- ks.test(test_resid, 
+                 pnorm, 
+                 mean(test_resid), 
+                 sd(test_resid))
+  
+  if(ks2$p.value > ks$p.value){
+    
+    mem_model <- mem_model2
     
   }
   
