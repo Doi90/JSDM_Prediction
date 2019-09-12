@@ -115,9 +115,19 @@ MEM_predict <- function(mem = NULL,
   
   ## Extract mean value of model response
   
+  sim <- function(preds){
+    
+    sd(rnorm(n = nrow(preds), 
+             mean = preds[ , 1], 
+             sd = preds[ , 2]))
+    
+  }
+  
   p_mean <- mean(preds[ , 1])
   
-  p_se <- sqrt(sum(preds[ , 2] ^ 2) * (1 / nrow(preds)) ^ 2)
+  p_se <- mean(replicate(10, sim(preds)))
+  
+  #p_se <- sqrt(sum(preds[ , 2] ^ 2) * (1 / nrow(preds)) ^ 2)
   
   ## Return values
   
