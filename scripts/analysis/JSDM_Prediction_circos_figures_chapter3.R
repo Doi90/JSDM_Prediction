@@ -21,6 +21,26 @@ source("scripts/prediction/MEM_predict.R")
 ### Set combination parameters ###
 ##################################
 
+## Models
+
+model_options <- c("MPR",
+                   "HPR",
+                   "LPR",
+                   "DPR",
+                   "HLR_NS",
+                   "HLR_S",
+                   "SSDM",
+                   "SESAM")
+
+model_order <- c("SSDM",
+                 "SESAM",
+                 "MPR",
+                 "HPR",
+                 "LPR",
+                 "DPR",
+                 "HLR_NS",
+                 "HLR_S")
+
 model_order_binary <- c("SESAM",
                         "MPR",
                         "HPR",
@@ -36,20 +56,140 @@ model_order_prob <- c("MPR",
                       "HLR_NS",
                       "HLR_S")
 
+JSDM_models <- model_options[1:6]
+
+SSDM_models <- model_options[7:8]
+
+## Datasets
+
+dataset_options <- c("frog",
+                     "eucalypt",
+                     # "bird",
+                     # "butterfly",
+                     "sim1random",
+                     "sim2random",
+                     "sim3random",
+                     "sim4random",
+                     "sim5random",
+                     "sim6random",
+                     "sim7random",
+                     "sim8random",
+                     "sim9random",
+                     "sim10random",
+                     "sim1spatial",
+                     "sim2spatial",
+                     "sim3spatial",
+                     "sim4spatial",
+                     "sim5spatial",
+                     "sim6spatial",
+                     "sim7spatial",
+                     "sim8spatial",
+                     "sim9spatial",
+                     "sim10spatial")
+
+## Folds
+
+fold_options <- 1:5
+
+## Prediction types
+
+prediction_options <- c("marginal_bin",
+                        "marginal_prob",
+                        "condLOI",
+                        "condLOI_marg",
+                        "joint",
+                        "SESAM",
+                        "SSDM_bin",
+                        "SSDM_prob")
+
+prediction_levels <- c("marginal_bin",
+                       "marginal_prob",
+                       "condLOI_low",
+                       "condLOI_med",
+                       "condLOI_high",
+                       "condLOI_marg_low",
+                       "condLOI_marg_med",
+                       "condLOI_marg_high",
+                       "condLOI_marg",      # Joint likelihood doesn't utilise prediction so no L/M/H designation
+                       "joint",
+                       "SESAM",
+                       "SSDM_bin",
+                       "SSDM_prob")
+
 binary_predictions <- c("marginal_bin",
                         "condLOI_low",
                         "condLOI_med",
                         "condLOI_high",
-                        "joint",
-                        "SESAM",
-                        "SSDM_bin")
+                        "joint")
 
 probability_predictions <- c("marginal_prob",
                              "condLOI_marg_low",
                              "condLOI_marg_med",
-                             "condLOI_marg_high",
-                             "condLOI_marg",
-                             "SSDM_prob")
+                             "condLOI_marg_high")
+
+## Define prediction combinations for subsetting
+
+pred_sets <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM"),
+                  marginal_prob = c("marginal_prob", "SSDM_prob"),
+                  condLOI_low = c("condLOI_low", "SSDM_bin", "SESAM"),
+                  condLOI_med = c("condLOI_med", "SSDM_bin", "SESAM"),
+                  condLOI_high = c("condLOI_high", "SSDM_bin", "SESAM"),
+                  condLOI_marg_low = c("condLOI_marg_low", "condLOI_marg", "SSDM_prob"),
+                  condLOI_marg_med = c("condLOI_marg_med", "condLOI_marg", "SSDM_prob"),
+                  condLOI_marg_high = c("condLOI_marg_high", "condLOI_marg", "SSDM_prob"),
+                  joint = c("joint", "SSDM_bin", "SESAM"))
+
+## Test statistics
+
+### By Species
+
+ts_species <- c("AUC",
+                "bias",
+                "MSE",
+                "R2",
+                "RMSE",
+                "SSE",
+                "Pearson",
+                "Spearman",
+                "Kendall",
+                #"TP",
+                #"FP",
+                #"TN",
+                #"FN",
+                "TPR",
+                "FPR",
+                "TNR",
+                "FNR",
+                "PLR",
+                "NLR",
+                "DOR",
+                #"Prevalence",
+                "Accuracy",
+                "PPV",
+                "FOR",
+                "FDR",
+                "NPV",
+                "F_1",
+                "Youden_J",
+                "Kappa")
+
+### By Site
+
+ts_site <- c(#"Binomial",
+  "Bray",
+  "Canberra",
+  #"Euclidean",
+  "Gower",
+  "Gower_alt",
+  #"Horn",
+  "Jaccard",
+  "Kulczynski",
+  #"Mahalanobis",
+  #"Manhattan",
+  "Mountford",
+  "Raup")
+
+## Test statistic / prediction type compatibility
 
 binary_ts <- c(#"TP",
   #"FP",
@@ -62,7 +202,7 @@ binary_ts <- c(#"TP",
   # "PLR",
   # "NLR",
   # "DOR",
-  "Accuracy",
+  # "Accuracy",
   "PPV",
   "FOR",
   "FDR",
@@ -113,7 +253,7 @@ prob_ts <- c("AUC",
              "NPV",
              "F_1",
              "Youden_J",
-             #"Kappa",
+             "Kappa",
              #"Binomial",
              "Bray",
              "Canberra",
@@ -130,6 +270,56 @@ prob_ts <- c("AUC",
              "independent_log_likelihood",
              "joint_log_likelihood",
              "species_richness_difference")
+
+## Test Statistic range
+
+ts_Inf_Inf <- c("bias",
+                "Pearson",
+                "Spearman",
+                "Kendall",
+                "species_richness_difference",
+                "independent_log_likelihood",
+                "joint_log_likelihood")
+
+ts_0_Inf <- c("MSE",
+              "RMSE",
+              "SSE",
+              "TP",
+              "FP",
+              "TN",
+              "FN",
+              "PLR",
+              "NLR",
+              "DOR",
+              "Binomial",
+              "Euclidean",
+              "Mahalanobis",
+              "Manhattan")
+
+ts_0_1 <- c("AUC",
+            "R2",
+            "TPR",
+            "FPR",
+            "TNR",
+            "FNR",
+            "Prevalence",
+            "Accuracy",
+            "PPV",
+            "FOR",
+            "FDR",
+            "NPV",
+            "F_1",
+            "Youden_J",
+            "Kappa",
+            "Bray",
+            "Canberra",
+            "Gower",
+            "Gower_alt",
+            "Horn",
+            "Jaccard",
+            "Kulczynski",
+            "Mountford",
+            "Raup")
 
 subsets <- list(ts_0_1_H = c("Accuracy",
                              "AUC",
@@ -167,9 +357,269 @@ subsets <- list(ts_0_1_H = c("Accuracy",
                                # "NLR",
                                # "DOR"))
 
+## Chapter
+
+if(length(model_options) == 2){
+  
+  chapter <- "Ch2"
+  
+} else {
+  
+  chapter <- "Ch3"
+  
+}
+
 ########################################################
 ### Load MEMs and create big dataframe of all values ###
 ########################################################
+
+## Build empty data.frame
+
+n_row <- length(model_order_binary) * length(binary_predictions) * length(binary_ts) +
+  length(model_order_prob) * length(probability_predictions) * length(prob_ts)
+
+plot_df <- data.frame(model = character(n_row),
+                      metric = character(n_row),
+                      pred_type = character(n_row),
+                      pred_class = character(n_row),
+                      value = numeric(n_row),
+                      rel_value = numeric(n_row))
+
+## Extract values
+
+row_index <- 1
+
+for(prediction in binary_predictions){
+  
+  for(ts in binary_ts){
+    
+    ## Load Model
+    
+    filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_model.rds",
+                        prediction,
+                        ts,
+                        chapter)
+    
+    if(!file.exists(filename)){
+      
+      message(sprintf("No model for: %s - %s",
+                      prediction,
+                      ts))
+      
+      next()
+      
+    }
+    
+    mem_model <- readRDS(filename)
+    
+    ## SSDM calculation
+    
+    SSDM_pred <- MEM_predict(mem = mem_model,
+                             model = "SSDM")
+    
+    SSDM_mn <- SSDM_pred$mean
+    SSDM_se <- SSDM_pred$se
+    
+    if(mem_model$transformed == FALSE | ts %in% ts_Inf_Inf){
+      
+      quantile_fun <- qnorm
+      
+      SSDM_mean <- SSDM_mn
+      
+    }
+    
+    if(mem_model$transformed == TRUE & ts %in% ts_0_Inf){
+      
+      quantile_fun <- qlnorm
+      
+      SSDM_mean <- exp(SSDM_mn + (SSDM_se ^ 2 / 2))
+      
+    }
+    
+    if(mem_model$transformed == TRUE & ts %in% ts_0_1){
+      
+      quantile_fun <- qlogitnorm
+      
+      SSDM_mean <- mean(plogis(rnorm(1000000, SSDM_mn, SSDM_se)))
+      
+    }
+    
+    plot_df[row_index, ] <- list("SSDM",
+                                 ts,
+                                 prediction,
+                                 "binary",
+                                 SSDM_mean,
+                                 0)
+    
+    row_index <- row_index + 1
+    
+    ## Other model calculations
+    
+    for(model in model_order_binary){
+      
+      pred <- MEM_predict(mem = mem_model,
+                          model = model)
+      
+      mn <- pred$mean
+      se <- pred$se
+      
+      if(mem_model$transformed == FALSE | ts %in% ts_Inf_Inf){
+        
+        quantile_fun <- qnorm
+        
+        mean <- mn
+        
+      }
+      
+      if(mem_model$transformed == TRUE & ts %in% ts_0_Inf){
+        
+        quantile_fun <- qlnorm
+        
+        mean <- exp(mn + (se ^ 2 / 2))
+        
+      }
+      
+      if(mem_model$transformed == TRUE & ts %in% ts_0_1){
+        
+        quantile_fun <- qlogitnorm
+        
+        mean <- mean(plogis(rnorm(1000000, mn, se)))
+        
+      }
+      
+      rel_mean <- ((mean - SSDM_mean) / abs(SSDM_mean)) * 100
+      
+      plot_df[row_index, ] <- list(model,
+                                   ts,
+                                   prediction,
+                                   "binary",
+                                   mean,
+                                   rel_mean)
+      
+      row_index <- row_index + 1
+      
+    }
+  }
+}
+
+for(prediction in probability_predictions){
+  
+  for(ts in prob_ts){
+    
+    ## Load Model
+    
+    filename <- sprintf("outputs/test_statistics/models/%1$s_%2$s_%3$s_model.rds",
+                        prediction,
+                        ts,
+                        chapter)
+    
+    if(!file.exists(filename)){
+      
+      message(sprintf("No model for: %s - %s",
+                      prediction,
+                      ts))
+      
+      next()
+      
+    }
+    
+    mem_model <- readRDS(filename)
+    
+    ## SSDM calculation
+    
+    SSDM_pred <- MEM_predict(mem = mem_model,
+                             model = "SSDM")
+    
+    SSDM_mn <- SSDM_pred$mean
+    SSDM_se <- SSDM_pred$se
+    
+    if(mem_model$transformed == FALSE | ts %in% ts_Inf_Inf){
+      
+      quantile_fun <- qnorm
+      
+      SSDM_mean <- SSDM_mn
+      
+    }
+    
+    if(mem_model$transformed == TRUE & ts %in% ts_0_Inf){
+      
+      quantile_fun <- qlnorm
+      
+      SSDM_mean <- exp(SSDM_mn + (SSDM_se ^ 2 / 2))
+      
+    }
+    
+    if(mem_model$transformed == TRUE & ts %in% ts_0_1){
+      
+      quantile_fun <- qlogitnorm
+      
+      SSDM_mean <- mean(plogis(rnorm(1000000, SSDM_mn, SSDM_se)))
+      
+    }
+    
+    plot_df[row_index, ] <- list("SSDM",
+                                 ts,
+                                 prediction,
+                                 "probabilistic",
+                                 SSDM_mean,
+                                 0)
+    
+    row_index <- row_index + 1
+    
+    ## Other model calculations
+    
+    for(model in model_order_binary){
+      
+      pred <- MEM_predict(mem = mem_model,
+                          model = model)
+      
+      mn <- pred$mean
+      se <- pred$se
+      
+      if(mem_model$transformed == FALSE | ts %in% ts_Inf_Inf){
+        
+        quantile_fun <- qnorm
+        
+        mean <- mn
+        
+      }
+      
+      if(mem_model$transformed == TRUE & ts %in% ts_0_Inf){
+        
+        quantile_fun <- qlnorm
+        
+        mean <- exp(mn + (se ^ 2 / 2))
+        
+      }
+      
+      if(mem_model$transformed == TRUE & ts %in% ts_0_1){
+        
+        quantile_fun <- qlogitnorm
+        
+        mean <- mean(plogis(rnorm(1000000, mn, se)))
+        
+      }
+      
+      rel_mean <- ((mean - SSDM_mean) / abs(SSDM_mean)) * 100
+      
+      plot_df[row_index, ] <- list(model,
+                                   ts,
+                                   prediction,
+                                   "probabilistic",
+                                   mean,
+                                   rel_mean)
+      
+      row_index <- row_index + 1
+      
+    }
+  }
+}
+
+
+
+
+
+
 
 #########################
 ### Old circlize code ###
