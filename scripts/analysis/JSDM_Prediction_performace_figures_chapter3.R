@@ -496,7 +496,7 @@ for(prediction in seq_len(length(pred_sets))){
                              NA)
       }
       
-      if(model != "SSDM" & model %nin% rownames(coefs)){
+      if(model != "SSDM" & model %in% rownames(coefs)){
         
         # plot_df[i, ] <- list(model,                                         # Model
         #                      coefs[paste0("model", model), "Value"],        # Mean
@@ -587,6 +587,28 @@ for(prediction in seq_len(length(pred_sets))){
                              quantile_fun(0.025, mn, se))
         
       }
+      
+    }
+    
+    ## Plot constraints
+    
+    if(ts %in% ts_0_Inf){
+      
+      plot_df$lower <- ifelse(plot_df$lower < 0,
+                              0,
+                              plot_df$lower)
+      
+    }
+    
+    if(ts %in% ts_0_1){
+      
+      plot_df$lower <- ifelse(plot_df$lower < 0,
+                              0,
+                              plot_df$lower)
+      
+      plot_df$upper <- ifelse(plot_df$upper > 1,
+                              1,
+                              plot_df$upper)
       
     }
     
