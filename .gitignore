@@ -13,3 +13,6 @@ outputs/**
 **.pdf
 **.xlsx
 **.png
+roozbeh/**
+back_transform*
+tmp.txt
