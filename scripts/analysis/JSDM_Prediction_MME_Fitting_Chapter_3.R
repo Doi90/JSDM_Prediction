@@ -574,7 +574,7 @@ row_index <- 1
 ## Species-based statistics
 
 for(prediction in seq_len(length(pred_sets))){
-  
+
   for(ts in ts_species){
     
     ## Check ts/prediction compatibility
@@ -754,7 +754,6 @@ for(prediction in seq_len(length(pred_sets))){
       
       mem_model2$transformed <- TRUE
       
-    }
     
     ## Check if transformed is better or not
     
@@ -798,6 +797,8 @@ for(prediction in seq_len(length(pred_sets))){
       
       mem_model <- mem_model2
       
+    }
+    
     }
     
     ## Extract residuals
@@ -904,13 +905,16 @@ for(prediction in seq_len(length(pred_sets))){
     
     row_index <- row_index + 1
     
+    suppressWarnings(rm(ks))
+    suppressWarnings(rm(ks2))
+    
   }
 }
 
 ## Site-based statistics
 
 for(prediction in seq_len(length(pred_sets))){
-  
+
   for(ts in ts_site){
     
     ## Check ts/prediction compatibility
@@ -1090,7 +1094,6 @@ for(prediction in seq_len(length(pred_sets))){
       
       mem_model2$transformed <- TRUE
       
-    }
     
     ## Check if transformed is better or not
     
@@ -1136,6 +1139,7 @@ for(prediction in seq_len(length(pred_sets))){
       
     }
     
+    }
     ## Extract residuals
     
     residuals <- resid(mem_model, type = "pearson")
@@ -1240,6 +1244,8 @@ for(prediction in seq_len(length(pred_sets))){
     
     row_index <- row_index + 1
     
+    suppressWarnings(rm(ks))
+    suppressWarnings(rm(ks2))
   }
 }
 
@@ -1254,7 +1260,7 @@ for(prediction in seq_len(length(pred_sets))){
 row_index <- 1
 
 for(prediction in seq_len(length(pred_sets))){
-  
+
   ts <- "species_richness_difference"
   
   ## Subset dataset
@@ -1407,7 +1413,6 @@ for(prediction in seq_len(length(pred_sets))){
     
     mem_model2$transformed <- TRUE
     
-  }
   
   ## Check if transformed is better or not
   
@@ -1453,6 +1458,7 @@ for(prediction in seq_len(length(pred_sets))){
     
   }
   
+  }
   ## Extract residuals
   
   residuals <- resid(mem_model, type = "pearson")
@@ -1557,6 +1563,8 @@ for(prediction in seq_len(length(pred_sets))){
   
   row_index <- row_index + 1
   
+  suppressWarnings(rm(ks))
+  suppressWarnings(rm(ks2))
 }
 
 ks_df <- rbind(ks_df,
@@ -1577,7 +1585,7 @@ ks_df <- rbind(ks_df,
 row_index <- 1
 
 for(prediction in seq_len(length(pred_sets))){
-  
+
   ## Only run for probabilistic predictions
   
   if(prediction %nin% c(2, 6:8)){
