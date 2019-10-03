@@ -16,31 +16,33 @@ library(dplyr)
 
 ### Species the first. Pr(z>0)=0.76
 
-sp1 <- data.frame(points = rnorm(1000000,
-                                 mean = 0.5,
-                                 sd = 1))
+sp1 <- data.frame(x = seq(-5, 5, 0.1),
+                  y = dnorm(seq(-5, 5, 0.1),
+                            mean = 0.5,
+                            sd = 1))
 
 sp1_PrOcc_marginal <- pnorm(q = 0,
                             mean = 0.5,
                             sd = 1,
                             lower.tail = FALSE)
 
-sp1_density <- data.frame(x = density(sp1$points)$x,
-                          y = density(sp1$points)$y)
+# sp1_density <- data.frame(x = density(sp1$points)$x,
+#                           y = density(sp1$points)$y)
 
 ### Species the second. Pr(z>0)=0.38
 
-sp2 <- data.frame(points = rnorm(1000000,
-                                 mean = -1,
-                                 sd = 1))
+sp2 <- data.frame(x = seq(-5, 5, 0.1),
+                  y = dnorm(seq(-5, 5, 0.1),
+                            mean = -1,
+                            sd = 1))
 
 sp2_PrOcc_marginal <- pnorm(q = 0,
                             mean = -1,
                             sd = 1,
                             lower.tail = FALSE)
 
-sp2_density <- data.frame(x = density(sp2$points)$x,
-                          y = density(sp2$points)$y)
+# sp2_density <- data.frame(x = density(sp2$points)$x,
+#                           y = density(sp2$points)$y)
 
 ## Two species with correlations
 
@@ -159,16 +161,17 @@ p_1 <- 1 - pnorm(0, 0.5, 1)
 
 a <- image_graph(width = 1200, height = 800, antialias = TRUE, res = 300)
 
-ggplot(sp1, aes(points)) +
-  geom_ribbon(data = subset(sp1_density, x>=0),
+ggplot(sp1, aes(x = x,
+                y = y)) +
+  geom_ribbon(data = subset(sp1, x>=0),
               aes(x = x,
                   ymax = y),
               ymin = 0,
               fill = "grey",
               alpha = 0.8) +
-  stat_density(aes(x = points),
-               geom = "line",
-               size = 0.2) +
+  geom_line(aes(x = x,
+                y = y),
+            size = 0.2) +
   theme_minimal() +
   theme(panel.grid = element_blank(),
         axis.text = element_blank(),
@@ -197,16 +200,17 @@ p_1 <- 1 - pnorm(0, -1, 1)
 
 a <- image_graph(width = 1200, height = 800, antialias = TRUE, res = 300)
 
-ggplot(sp2, aes(points)) +
-  geom_ribbon(data = subset(sp2_density, x>=0),
+ggplot(sp2, aes(x = x,
+                y = y)) +
+  geom_ribbon(data = subset(sp2, x>=0),
               aes(x = x,
                   ymax = y),
               ymin = 0,
               fill = "grey",
               alpha = 0.8) +
-  stat_density(aes(x = points),
-               geom = "line",
-               size = 0.2) +
+  geom_line(aes(x = x,
+                y = y),
+            size = 0.2) +
   theme_minimal() +
   theme(panel.grid = element_blank(),
         axis.text = element_blank(),
