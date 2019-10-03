@@ -523,9 +523,9 @@ for(dataset in dataset_options){
         SSDM_coef <- mean(plogis(rnorm(1000000, SSDM_mean, SSDM_se)))
       }
       
-      diff_samples <- SSDM_orig_scale - MPR_orig_scale
+      diff_samples <- MPR_orig_scale - SSDM_orig_scale
       
-      diff_samples <- (diff_samples / SSDM_coef) * 100 - 100
+      diff_samples <- (diff_samples / SSDM_coef) * 100
       
       ## Divide by backtransformed regression coefficient here
       
@@ -603,6 +603,18 @@ for(dataset in unique(plot_df$dataset)){
       
     }
     
+    if(subset %in% c("ts_0_1_L_a",
+                     "ts_0_1_L_b",
+                     "ts_0_Inf_L")){
+      
+      tmp_df$mean_diff <- tmp_df$mean_diff * -1
+      
+      tmp_df$upper <- tmp_df$upper * -1
+      
+      tmp_df$lower <- tmp_df$lower * -1
+      
+    }
+    
     tmp_df$ts <- factor(tmp_df$ts,
                         levels = sort(subsets[[subset]]))
     
@@ -629,7 +641,7 @@ for(dataset in unique(plot_df$dataset)){
                     position = dodge,
                     width = 0.1) +
       xlab("") +
-      ylab("Relative Performance Difference (%)") +
+      ylab("Relative Performance Difference (%)\n(JSDM - SSDM)") +
       theme_bw() +
       theme(legend.position = "none",
             panel.grid.minor = element_blank(),
@@ -725,7 +737,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "marginal_bin"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Marginal (binary)")
       
     }
@@ -733,7 +745,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "marginal_prob"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Marginal (probabilistic)")
       
     }
@@ -741,7 +753,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "condLOI_low"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Conditional (Low)")
       
     }
@@ -749,7 +761,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "condLOI_med"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Conditional (Medium)")
       
     }
@@ -757,7 +769,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "condLOI_high"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Conditional (High)")
       
     }
@@ -765,7 +777,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "condLOI_marg_low"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Conditional marginal (Low)")
       
     }
@@ -773,7 +785,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "condLOI_marg_med"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Conditional marginal (Medium)")
       
     }
@@ -781,7 +793,7 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "condLOI_marg_high"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Conditional marginal (High)")
       
     }
@@ -789,58 +801,58 @@ for(dataset in unique(plot_df$dataset)){
     if(pred_type == "joint"){
       
       tmp_plot <- tmp_plot +
-        ggtitle(label = "Relative test statistic performance (SSDM - JSDM)",
+        ggtitle(label = "Relative evaluation metric performance",
                 subtitle = "Prediction type: Joint")
       
     }
     
-    y_range <- ggplot_build(tmp_plot)$layout$panel_scales_y[[1]]$range$range
+    # y_range <- ggplot_build(tmp_plot)$layout$panel_scales_y[[1]]$range$range
     
-    if(subset %in% names(subsets)[c(2,3,7)]){
-      
-      # tmp_plot <- tmp_plot +
-      #   annotate("segment", 
-      #            x = 0.8, 
-      #            xend = 0.8, 
-      #            y = 0 - diff_range / 10, 
-      #            yend = 0 + diff_range / 10, 
-      #            colour = "black", 
-      #            size = 0.5,
-      #            arrow = arrow(ends = "last",
-      #                          length = unit(0.1, "inches")))
-      # 
-      tmp_plot <- tmp_plot +
-        annotate("text",
-                 label = "JSDM better",
-                 x = 0.7,
-                 y = y_range[2] - ((y_range[2] - y_range[1]) / 10) * 9)
-      
-    }
-    
-    if(subset %in% names(subsets)[c(1,4,5)]){
-      
-      # tmp_plot <- tmp_plot +
-      #   annotate("segment", 
-      #            x = 0.5, 
-      #            xend = 0.5, 
-      #            y = 0 - diff_range / 10, 
-      #            yend = 0 + diff_range / 10, 
-      #            colour = "black", 
-      #            size = 0.5,
-      #            arrow = arrow(ends = "first",
-      #                          length = unit(0.1, "inches")))
-      
-      tmp_plot <- tmp_plot +
-        annotate("text",
-                 label = "JSDM better",
-                 x = 0.7,
-                 y = y_range[1] + ((y_range[2] - y_range[1]) / 10) * 9)
-      
-    }
-    
-    if(subset %in% names(subsets)[c(6)]){
-      
-    }
+    # if(subset %in% names(subsets)[c(2,3,7)]){
+    #   
+    #   # tmp_plot <- tmp_plot +
+    #   #   annotate("segment", 
+    #   #            x = 0.8, 
+    #   #            xend = 0.8, 
+    #   #            y = 0 - diff_range / 10, 
+    #   #            yend = 0 + diff_range / 10, 
+    #   #            colour = "black", 
+    #   #            size = 0.5,
+    #   #            arrow = arrow(ends = "last",
+    #   #                          length = unit(0.1, "inches")))
+    #   # 
+    #   tmp_plot <- tmp_plot +
+    #     annotate("text",
+    #              label = "JSDM better",
+    #              x = 0.7,
+    #              y = y_range[2] - ((y_range[2] - y_range[1]) / 10) * 9)
+    #   
+    # }
+    # 
+    # if(subset %in% names(subsets)[c(1,4,5)]){
+    #   
+    #   # tmp_plot <- tmp_plot +
+    #   #   annotate("segment", 
+    #   #            x = 0.5, 
+    #   #            xend = 0.5, 
+    #   #            y = 0 - diff_range / 10, 
+    #   #            yend = 0 + diff_range / 10, 
+    #   #            colour = "black", 
+    #   #            size = 0.5,
+    #   #            arrow = arrow(ends = "first",
+    #   #                          length = unit(0.1, "inches")))
+    #   
+    #   tmp_plot <- tmp_plot +
+    #     annotate("text",
+    #              label = "JSDM better",
+    #              x = 0.7,
+    #              y = y_range[1] + ((y_range[2] - y_range[1]) / 10) * 9)
+    #   
+    # }
+    # 
+    # if(subset %in% names(subsets)[c(6)]){
+    #   
+    # }
     
     print(tmp_plot)
     
