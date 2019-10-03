@@ -2,6 +2,8 @@
 ### Load Packages ###
 #####################
 
+.libPaths("/home/davidpw/R/lib/3.5")
+
 library(nlme)
 library(ggplot2)
 library(RColorBrewer)
@@ -9,7 +11,12 @@ library(PassButter)
 library(psych)
 library(logitnorm)
 library(AICcmodavg)
+library(stringi)
 # library(circlize)
+library(scales)
+library(reshape)
+library(data.table)
+library(tidyverse)
 
 ##############################
 ### Load Prediction Script ###
@@ -353,9 +360,47 @@ subsets <- list(ts_0_1_H = c("Accuracy",
                 ts_0_Inf_L = c("MSE",
                                "RMSE",
                                "SSE"))#,
-                               # "PLR",
-                               # "NLR",
-                               # "DOR"))
+# "PLR",
+# "NLR",
+# "DOR"))
+
+## Metric classes
+
+metric_classes <- list(threshold_independent = c("AUC",
+                                                 "bias",
+                                                 "Kendall",
+                                                 "MSE",
+                                                 "Pearson",
+                                                 "RMSE",
+                                                 "Spearman",
+                                                 "SSE"),
+                       threshold_dependent = c("Accuracy",
+                                               "Kappa",
+                                               #"DOR",
+                                               "F_1",
+                                               "FDR",
+                                               "FNR",
+                                               "FOR",
+                                               "FPR",
+                                               #"NLR",
+                                               "NPV",
+                                               #"PLR",
+                                               "PPV",
+                                               "R2",
+                                               "TNR",
+                                               "TPR",
+                                               "Youden_J"),
+                       community_dissimilarity = c("Bray",
+                                                   "Canberra",
+                                                   "Gower",
+                                                   "Gower_alt",
+                                                   "Jaccard",
+                                                   "Kulczynski",
+                                                   "Mountford",
+                                                   "Raup"),
+                       species_richness = c("species_richness_difference"),
+                       likelihood = c("independent_log_likelihood",
+                                      "joint_log_likelihood"))
 
 ## Chapter
 
@@ -375,15 +420,19 @@ if(length(model_options) == 2){
 
 ## Build empty data.frame
 
-n_row <- length(model_order_binary) * length(binary_predictions) * length(binary_ts) +
-  length(model_order_prob) * length(probability_predictions) * length(prob_ts)
+n_row <- (length(model_order_binary) + 1) * length(binary_predictions) * length(binary_ts) +
+  (length(model_order_prob) + 1) * length(probability_predictions) * length(prob_ts)
 
 plot_df <- data.frame(model = character(n_row),
                       metric = character(n_row),
+                      metric_class = character(n_row),
                       pred_type = character(n_row),
                       pred_class = character(n_row),
                       value = numeric(n_row),
-                      rel_value = numeric(n_row))
+                      value_lower = numeric(n_row),
+                      value_upper = numeric(n_row),
+                      rel_value = numeric(n_row),
+                      stringsAsFactors = FALSE)
 
 ## Extract values
 
@@ -446,9 +495,13 @@ for(prediction in binary_predictions){
     
     plot_df[row_index, ] <- list("SSDM",
                                  ts,
+                                 suppressWarnings(names(subsets)[stri_detect_fixed(str = subsets, 
+                                                                                   pattern = ts)]),
                                  prediction,
                                  "binary",
                                  SSDM_mean,
+                                 quantile_fun(0.975, SSDM_mn, SSDM_se),
+                                 quantile_fun(0.025, SSDM_mn, SSDM_se),
                                  0)
     
     row_index <- row_index + 1
@@ -491,9 +544,13 @@ for(prediction in binary_predictions){
       
       plot_df[row_index, ] <- list(model,
                                    ts,
+                                   suppressWarnings(names(subsets)[stri_detect_fixed(str = subsets, 
+                                                                                     pattern = ts)]),
                                    prediction,
                                    "binary",
                                    mean,
+                                   quantile_fun(0.975, mn, se),
+                                   quantile_fun(0.025, mn, se),
                                    rel_mean)
       
       row_index <- row_index + 1
@@ -559,9 +616,13 @@ for(prediction in probability_predictions){
     
     plot_df[row_index, ] <- list("SSDM",
                                  ts,
+                                 suppressWarnings(names(subsets)[stri_detect_fixed(str = subsets, 
+                                                                                   pattern = ts)]),
                                  prediction,
                                  "probabilistic",
                                  SSDM_mean,
+                                 quantile_fun(0.975, SSDM_mn, SSDM_se),
+                                 quantile_fun(0.025, SSDM_mn, SSDM_se),
                                  0)
     
     row_index <- row_index + 1
@@ -604,9 +665,13 @@ for(prediction in probability_predictions){
       
       plot_df[row_index, ] <- list(model,
                                    ts,
+                                   suppressWarnings(names(subsets)[stri_detect_fixed(str = subsets,
+                                                                                     pattern = ts)]),
                                    prediction,
                                    "probabilistic",
                                    mean,
+                                   quantile_fun(0.975, mn, se),
+                                   quantile_fun(0.025, mn, se),
                                    rel_mean)
       
       row_index <- row_index + 1
@@ -615,9 +680,279 @@ for(prediction in probability_predictions){
   }
 }
 
+####################################
+### Save Plot Data.Frame To File ###
+####################################
 
+saveRDS(plot_df,
+        "outputs/test_statistics/plots/plot_df.rds")
 
+######################################
+### Read Plot Data.Frame From File ###
+######################################
 
+## plot_df was created on Spartan, need to load it in here
+
+plot_df <- readRDS("outputs/test_statistics/plots/plot_df.rds")
+
+plot_df$metric_class_paper <- NA
+
+for(i in seq_len(nrow(plot_df))){
+  
+  plot_df$metric_class_paper[i] <- names(metric_classes)[unlist(lapply(metric_classes, 
+                                                                       function(x){any(grep(plot_df$metric[i],
+                                                                                            x))}))]
+  
+}
+
+#############################
+### Create Circos Outputs ###
+#############################
+
+## Adapting code from Matthew Cantele.
+
+for(p_type in unique(plot_df$pred_type)){
+  
+  ## Subset
+  
+  tmp_df <- plot_df[plot_df$pred_type == p_type, ]
+  
+  tmp_df <- tmp_df[tmp_df$model != "SSDM", ]
+  
+  if(p_type %in% probability_predictions){
+    
+    tmp_df <- tmp_df[tmp_df$model != "SESAM", ]
+    
+  }
+  
+  ## Correction for relative values calculated in different directions
+  ## i.e. 0-1 and want to be closer to 0 or 1
+  
+  tmp_df$rel_value <- ifelse(tmp_df$metric_class %in% c("ts_0_1_L_a",
+                                                        "ts_0_1_L_b",
+                                                        "ts_0_Inf_L"),
+                             tmp_df$rel_value * -1,
+                             tmp_df$rel_value)
+  
+  ## Start Matthew's code
+  
+  tmp_df$identity <- paste0(tmp_df$metric_class_paper,
+                             "_",
+                            tmp_df$metric) 
+  
+  tmp_df <- select(tmp_df, -value, -value_lower, -value_upper)
+  
+  ## Model rank
+  
+  # ranking <- aggregate(plot_df[ , "rel_value"], list(plot_df$model), mean) %>% 
+  #   arrange(desc(x)) %>%
+  #   mutate(m_ranking = paste0("model",seq_along(unique(plot_df$model)))) %>%
+  #   select(-x) %>%
+  #   setNames(c("model","m_ranking"))
+  
+  ## Don't want to order by performance so use this:
+  
+  ranking <- data.frame(model = unique(tmp_df$model),
+                        m_ranking = paste0("model",
+                                           seq_along(unique(tmp_df$model))),
+                        stringsAsFactors = FALSE)
+  
+  tmp_df2 <- left_join(tmp_df, 
+                       ranking, 
+                       by = "model")
+  
+  cols <- c(colnames(tmp_df), 
+            unique(tmp_df$model))
+  
+  wide <- spread(tmp_df, model, rel_value) %>%
+    arrange(identity)
+  # arrange(desc(rel_value2)) %>%
+  # arrange(metric_class)
+  
+  wide <- select(wide, 
+                 cols[cols %nin% c("model", "rel_value")])
+  
+  ## Karyotype header
+  
+  if(p_type %in% binary_predictions){
+  
+    karyotype.header <- data.frame(chr = rep("chr", length(unique(wide$metric_class_paper))),
+                                   dash = rep("-", length(unique(wide$metric_class_paper))),
+                                   sector = c("community_dissimilarity",
+                                              "species_richness",
+                                              "threshold_dependent"),
+                                   label = c("community_dissimilarity",
+                                             "species_richness",
+                                             "threshold_dependent"),
+                                   start = rep(0, length(unique(wide$metric_class_paper))),
+                                   end = c(sum(wide$metric_class_paper == "community_dissimilarity") * 100 - 1,
+                                           sum(wide$metric_class_paper == "species_richness") * 100 - 1,
+                                           sum(wide$metric_class_paper == "threshold_dependent") * 100 - 1),
+                                   color = "black")
+    
+    #karyotype bands 
+    karyotype.data <- data.frame(band = rep("band", nrow(wide)),
+                                 sector = c(rep("community_dissimilarity", sum(wide$metric_class_paper == "community_dissimilarity")),
+                                            rep("species_richness", sum(wide$metric_class_paper == "species_richness")),
+                                            rep("threshold_dependent", sum(wide$metric_class_paper == "threshold_dependent"))),
+                                 label1 = unique(wide$identity),
+                                 label2 = unique(wide$identity),
+                                 start = c(seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "community_dissimilarity")  * 100 - 100,
+                                               by = 100),
+                                           seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "species_richness")  * 100 - 100,
+                                               by = 100),
+                                           seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "threshold_dependent")  * 100 - 100,
+                                               by = 100)),
+                                 end = c(seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "community_dissimilarity")  * 100,
+                                             by = 100),
+                                         seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "species_richness")  * 100,
+                                             by = 100),
+                                         seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "threshold_dependent")  * 100,
+                                             by = 100)),
+                                 color = "black")
+    
+  }
+  
+  if(p_type %in% probability_predictions){
+    
+    karyotype.header <- data.frame(chr = rep("chr", length(unique(wide$metric_class_paper))),
+                                   dash = rep("-", length(unique(wide$metric_class_paper))),
+                                   sector = c("community_dissimilarity",
+                                              "likelihood",
+                                              "species_richness",
+                                              "threshold_dependent",
+                                              "threshold_independent"),
+                                   label = c("community_dissimilarity",
+                                             "likelihood",
+                                             "species_richness",
+                                             "threshold_dependent",
+                                             "threshold_independent"),
+                                   start = rep(0, length(unique(wide$metric_class_paper))),
+                                   end = c(sum(wide$metric_class_paper == "community_dissimilarity") * 100 - 1,
+                                           sum(wide$metric_class_paper == "likelihood") * 100 - 1,
+                                           sum(wide$metric_class_paper == "species_richness") * 100 - 1,
+                                           sum(wide$metric_class_paper == "threshold_dependent") * 100 - 1,
+                                           sum(wide$metric_class_paper == "threshold_independent") * 100 - 1),
+                                   color = "black")
+    
+    #karyotype bands 
+    karyotype.data <- data.frame(band = rep("band", nrow(wide)),
+                                 sector = c(rep("community_dissimilarity", sum(wide$metric_class_paper == "community_dissimilarity")),
+                                            rep("likelihood", sum(wide$metric_class_paper == "likelihood")),
+                                            rep("species_richness", sum(wide$metric_class_paper == "species_richness")),
+                                            rep("threshold_dependent", sum(wide$metric_class_paper == "threshold_dependent")),
+                                            rep("threshold_independent", sum(wide$metric_class_paper == "threshold_independent"))),
+                                 label1 = unique(wide$identity),
+                                 label2 = unique(wide$identity),
+                                 start = c(seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "community_dissimilarity")  * 100 - 100,
+                                               by = 100),
+                                           seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "likelihood")  * 100 - 100,
+                                               by = 100),
+                                           seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "species_richness")  * 100 - 100,
+                                               by = 100),
+                                           seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "threshold_dependent")  * 100 - 100,
+                                               by = 100),
+                                           seq(from = 0,
+                                               to = sum(wide$metric_class_paper == "threshold_independent")  * 100 - 100,
+                                               by = 100)),
+                                 end = c(seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "community_dissimilarity")  * 100,
+                                             by = 100),
+                                         seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "likelihood")  * 100,
+                                             by = 100),
+                                         seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "species_richness")  * 100,
+                                             by = 100),
+                                         seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "threshold_dependent")  * 100,
+                                             by = 100),
+                                         seq(from = 99,
+                                             to = sum(wide$metric_class_paper == "threshold_independent")  * 100,
+                                             by = 100)),
+                                 color = "black")
+    
+  }
+  
+  ## Scientific notation not accepted by circos
+  
+  karyotype.data$start <- format(karyotype.data$start, 
+                                 scientific = FALSE) %>%
+    trimws(which = "both")
+  
+  karyotype.data$end <- format(karyotype.data$end, 
+                               scientific = FALSE) %>%
+    trimws(which = "both")
+  
+  ## Heatmap tracks (models) considering automated tracks (see circos documentation)
+  
+  h_maptracks <- cbind(karyotype.data, 
+                       wide[,6:ncol(wide)])
+  
+  narrow <- h_maptracks %>%
+    gather(model, performance, 8:ncol(h_maptracks))
+  
+  row_idx <- match(narrow$model, tmp_df2$model)
+  
+  narrow$m_ranking <- paste0("id=",
+                             tmp_df2$m_ranking[row_idx])
+  
+  #for individual heatmap tracks (without automation)
+  
+  # for (cur_method in unique(narrow$method)) {
+  #   
+  #   cur_data <- narrow[narrow$method == cur_method, ]
+  #   sub_cols <- cur_data[, c('sector', 'start', 'end', 'performance')]
+  #   write.table(sub_cols, paste0('./c_scripts/heatmaps/', cur_method, '.txt'), 
+  #               sep = '\t', row.names = F, col.names = F, quote = F)
+  #   
+  # }
+  
+  heatmaps <- select(narrow, 
+                     sector, 
+                     start, 
+                     end, 
+                     performance, 
+                     m_ranking)
+  
+  ## Write files
+  
+  write.table(heatmaps,
+              file = sprintf("outputs/test_statistics/plots/heatmaps_%s.txt",
+                             p_type),
+              sep = "\t",
+              row.names = FALSE,
+              col.names = FALSE,
+              quote = FALSE)
+  
+  write.table(karyotype.header,
+              file = sprintf("outputs/test_statistics/plots/karyotype_%s.txt",
+                             p_type),
+              sep = "\t",
+              row.names = FALSE,
+              col.names = FALSE,
+              quote = FALSE)
+  
+  write.table(karyotype.data,
+              file = sprintf("outputs/test_statistics/plots/karyotype_%s.txt",
+                             p_type),
+              sep = "\t",
+              row.names = FALSE,
+              col.names = FALSE,
+              quote = FALSE,
+              append = TRUE)
+  
+}
 
 
 
