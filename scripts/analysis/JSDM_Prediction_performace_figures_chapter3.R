@@ -10,6 +10,12 @@ library(psych)
 library(logitnorm)
 library(AICcmodavg)
 
+##############################
+### Load Prediction Script ###
+##############################
+
+source("scripts/prediction/MEM_predict.R")
+
 ##################################
 ### Set combination parameters ###
 ##################################
@@ -424,7 +430,7 @@ pred_pairs <- list(marginal_bin = c("marginal_bin", "SSDM_bin", "SESAM", "Binary
 ################################################
 
 for(prediction in seq_len(length(pred_sets))){
-  
+
   for(ts in c(ts_species, 
               ts_site, 
               "species_richness_difference",
