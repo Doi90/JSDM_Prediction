@@ -525,7 +525,7 @@ for(dataset in dataset_options){
       
       diff_samples <- MPR_orig_scale - SSDM_orig_scale
       
-      diff_samples <- (diff_samples / SSDM_coef) * 100
+      diff_samples <- (diff_samples / abs(SSDM_coef)) * 100
       
       ## Divide by backtransformed regression coefficient here
       

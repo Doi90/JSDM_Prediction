@@ -209,7 +209,7 @@ binary_ts <- c(#"TP",
   # "PLR",
   # "NLR",
   # "DOR",
-  # "Accuracy",
+  "Accuracy",
   "PPV",
   "FOR",
   "FDR",
@@ -260,7 +260,7 @@ prob_ts <- c("AUC",
              "NPV",
              "F_1",
              "Youden_J",
-             "Kappa",
+             #"Kappa",
              #"Binomial",
              "Bray",
              "Canberra",
@@ -371,6 +371,7 @@ metric_classes <- list(threshold_independent = c("AUC",
                                                  "Kendall",
                                                  "MSE",
                                                  "Pearson",
+                                                 "R2",
                                                  "RMSE",
                                                  "Spearman",
                                                  "SSE"),
@@ -386,7 +387,6 @@ metric_classes <- list(threshold_independent = c("AUC",
                                                "NPV",
                                                #"PLR",
                                                "PPV",
-                                               "R2",
                                                "TNR",
                                                "TPR",
                                                "Youden_J"),
@@ -432,6 +432,7 @@ plot_df <- data.frame(model = character(n_row),
                       value_lower = numeric(n_row),
                       value_upper = numeric(n_row),
                       rel_value = numeric(n_row),
+                      concordance = logical(n_row),
                       stringsAsFactors = FALSE)
 
 ## Extract values
@@ -502,7 +503,8 @@ for(prediction in binary_predictions){
                                  SSDM_mean,
                                  quantile_fun(0.975, SSDM_mn, SSDM_se),
                                  quantile_fun(0.025, SSDM_mn, SSDM_se),
-                                 0)
+                                 0,
+                                 NA)
     
     row_index <- row_index + 1
     
@@ -540,7 +542,24 @@ for(prediction in binary_predictions){
         
       }
       
-      rel_mean <- ((mean - SSDM_mean) / abs(SSDM_mean)) * 100
+      if(ts %in% c("bias",
+                   "species_richness_difference")){
+        
+        J_sign <- sign(mean)
+        
+        S_sign <- sign(SSDM_mean)
+        
+        rel_mean <- ((abs(mean) - abs(SSDM_mean)) / abs(SSDM_mean)) * 100
+        
+        concordance <- J_sign == S_sign
+        
+      } else {
+        
+        rel_mean <- ((mean - SSDM_mean) / abs(SSDM_mean)) * 100
+        
+        concordance <- NA
+        
+      }
       
       plot_df[row_index, ] <- list(model,
                                    ts,
@@ -551,7 +570,8 @@ for(prediction in binary_predictions){
                                    mean,
                                    quantile_fun(0.975, mn, se),
                                    quantile_fun(0.025, mn, se),
-                                   rel_mean)
+                                   rel_mean,
+                                   concordance)
       
       row_index <- row_index + 1
       
@@ -623,7 +643,8 @@ for(prediction in probability_predictions){
                                  SSDM_mean,
                                  quantile_fun(0.975, SSDM_mn, SSDM_se),
                                  quantile_fun(0.025, SSDM_mn, SSDM_se),
-                                 0)
+                                 0,
+                                 NA)
     
     row_index <- row_index + 1
     
@@ -661,7 +682,24 @@ for(prediction in probability_predictions){
         
       }
       
-      rel_mean <- ((mean - SSDM_mean) / abs(SSDM_mean)) * 100
+      if(ts %in% c("bias",
+                   "species_richness_difference")){
+        
+        J_sign <- sign(mean)
+        
+        S_sign <- sign(SSDM_mean)
+        
+        rel_mean <- ((abs(mean) - abs(SSDM_mean)) / abs(SSDM_mean)) * 100
+        
+        concordance <- J_sign == S_sign
+        
+      } else {
+        
+        rel_mean <- ((mean - SSDM_mean) / abs(SSDM_mean)) * 100
+        
+        concordance <- NA
+        
+      }
       
       plot_df[row_index, ] <- list(model,
                                    ts,
@@ -672,7 +710,8 @@ for(prediction in probability_predictions){
                                    mean,
                                    quantile_fun(0.975, mn, se),
                                    quantile_fun(0.025, mn, se),
-                                   rel_mean)
+                                   rel_mean,
+                                   concordance)
       
       row_index <- row_index + 1
       
@@ -725,12 +764,19 @@ for(p_type in unique(plot_df$pred_type)){
     
   }
   
+  if(p_type %in% probability_predictions){
+    
+    tmp_df <- tmp_df[tmp_df$metric != "Kappa", ]
+    
+  }
+  
   ## Correction for relative values calculated in different directions
   ## i.e. 0-1 and want to be closer to 0 or 1
   
   tmp_df$rel_value <- ifelse(tmp_df$metric_class %in% c("ts_0_1_L_a",
                                                         "ts_0_1_L_b",
-                                                        "ts_0_Inf_L"),
+                                                        "ts_0_Inf_L",
+                                                        "ts_Inf_Inf_0"),
                              tmp_df$rel_value * -1,
                              tmp_df$rel_value)
   
@@ -740,7 +786,7 @@ for(p_type in unique(plot_df$pred_type)){
                              "_",
                             tmp_df$metric) 
   
-  tmp_df <- select(tmp_df, -value, -value_lower, -value_upper)
+  tmp_df <- select(tmp_df, -value, -value_lower, -value_upper, -concordance)
   
   ## Model rank
   
@@ -788,7 +834,7 @@ for(p_type in unique(plot_df$pred_type)){
                                    end = c(sum(wide$metric_class_paper == "community_dissimilarity") * 100 - 1,
                                            sum(wide$metric_class_paper == "species_richness") * 100 - 1,
                                            sum(wide$metric_class_paper == "threshold_dependent") * 100 - 1),
-                                   color = "black")
+                                   color = "white")
     
     #karyotype bands 
     karyotype.data <- data.frame(band = rep("band", nrow(wide)),
@@ -815,7 +861,7 @@ for(p_type in unique(plot_df$pred_type)){
                                          seq(from = 99,
                                              to = sum(wide$metric_class_paper == "threshold_dependent")  * 100,
                                              by = 100)),
-                                 color = "black")
+                                 color = "white")
     
   }
   
@@ -839,7 +885,7 @@ for(p_type in unique(plot_df$pred_type)){
                                            sum(wide$metric_class_paper == "species_richness") * 100 - 1,
                                            sum(wide$metric_class_paper == "threshold_dependent") * 100 - 1,
                                            sum(wide$metric_class_paper == "threshold_independent") * 100 - 1),
-                                   color = "black")
+                                   color = "white")
     
     #karyotype bands 
     karyotype.data <- data.frame(band = rep("band", nrow(wide)),
@@ -880,7 +926,7 @@ for(p_type in unique(plot_df$pred_type)){
                                          seq(from = 99,
                                              to = sum(wide$metric_class_paper == "threshold_independent")  * 100,
                                              by = 100)),
-                                 color = "black")
+                                 color = "white")
     
   }
   

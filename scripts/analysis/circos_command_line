@@ -1,1 +1,9 @@
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_marginal_prob.conf -outputdir . -outputfile circos_marginal_prob.png
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_marginal_bin.conf -outputdir . -outputfile circos_marginal_bin.png
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_joint.conf -outputdir . -outputfile circos_joint.png
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_condLOI_low.conf -outputdir . -outputfile circos_condLOI_low.png
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_condLOI_med.conf -outputdir . -outputfile circos_condLOI_med.png
 perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_condLOI_high.conf -outputdir . -outputfile circos_condLOI_high.png
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_condLOI_marg_low.conf -outputdir . -outputfile circos_condLOI_marg_low.png
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_condLOI_marg_med.conf -outputdir . -outputfile circos_condLOI_marg_med.png
+perl "C:\Program Files\Circos\circos-0.69-9\bin\circos" -conf circos_condLOI_marg_high.conf -outputdir . -outputfile circos_condLOI_marg_high.png
