@@ -17,6 +17,7 @@ library(scales)
 library(reshape)
 library(data.table)
 library(tidyverse)
+library(dplyr)
 
 ##############################
 ### Load Prediction Script ###
@@ -744,6 +745,41 @@ for(i in seq_len(nrow(plot_df))){
   
 }
 
+## Rename metrics to specify the order within sectors
+  
+plot_df$metric <- case_when(plot_df$metric == "Bray" ~ "01_Bray",
+                            plot_df$metric == "Canberra" ~ "02_Canberra",
+                            plot_df$metric == "Gower" ~ "03_Gower",
+                            plot_df$metric == "Gower_alt" ~ "04_Gower_alt",
+                            plot_df$metric == "Jaccard" ~ "05_Jaccard",
+                            plot_df$metric == "Kulczynski" ~ "06_Kulczynski",
+                            plot_df$metric == "Mountford" ~ "07_Mountford",
+                            plot_df$metric == "Raup" ~ "08_Raup",
+                            plot_df$metric == "independent_log_likelihood" ~ "01_independent_log_likelihood",
+                            plot_df$metric == "joint_log_likelihood" ~ "02_joint_log_likelihood",
+                            plot_df$metric == "species_richness_difference" ~ "01_species_richness_difference",
+                            plot_df$metric == "FDR" ~ "01_FDR",
+                            plot_df$metric == "FOR" ~ "02_FOR",
+                            plot_df$metric == "FNR" ~ "03_FNR",
+                            plot_df$metric == "FPR" ~ "04_FPR",
+                            plot_df$metric == "TNR" ~ "05_TNR",
+                            plot_df$metric == "TPR" ~ "06_TPR",
+                            plot_df$metric == "Accuracy" ~ "07_Accuracy",
+                            plot_df$metric == "F_1" ~ "08_F_1",
+                            plot_df$metric == "Kappa" ~ "09_Kappa",
+                            plot_df$metric == "Youden_J" ~ "10_Youden_J",
+                            plot_df$metric == "NPV" ~ "11_NPV",
+                            plot_df$metric == "PPV" ~ "12_PPV",
+                            plot_df$metric == "AUC" ~ "01_AUC",
+                            plot_df$metric == "bias" ~ "02_bias",
+                            plot_df$metric == "MSE" ~ "03_MSE",
+                            plot_df$metric == "RMSE" ~ "04_RMSE",
+                            plot_df$metric == "SSE" ~ "05_SSE",
+                            plot_df$metric == "R2" ~ "06_R2",
+                            plot_df$metric == "Kendall" ~ "07_Kendall",
+                            plot_df$metric == "Pearson" ~ "08_Pearson",
+                            plot_df$metric == "Spearman" ~ "09_Spearman")  
+
 #############################
 ### Create Circos Outputs ###
 #############################
@@ -766,7 +802,7 @@ for(p_type in unique(plot_df$pred_type)){
   
   if(p_type %in% probability_predictions){
     
-    tmp_df <- tmp_df[tmp_df$metric != "Kappa", ]
+    tmp_df <- tmp_df[tmp_df$metric != "09_Kappa", ]
     
   }
   
